@@ -263,16 +263,19 @@
       const [y, m, day] = d.split("-");
       return `${day}/${m}/${y}`;
     }
-
-    
+    function exportToPDF() {
+      // Maak een PDF-export aan van alle items van de huidige maand
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const thisMonth = new Date().toISOString().slice(0, 7);
+      const monthEntries = log.filter(e => e.datum.startsWith(thisMonth));
+      const total = log.reduce((sum, e) => sum + e.bedrag, 0);
       const start = parseFloat(localStorage.getItem('startAmount')) || 0;
       const totalWithStart = total + start;
-      const monthTotal = monthEntries.reduce((sum, e) => sum + e.bedrag, 0);
 
       doc.text(`Overuren Tracker - ${thisMonth}`, 10, 10);
       doc.text(`Startbedrag: €${start.toFixed(2)}`, 10, 20);
       doc.text(`Totaal (alle tijd): €${totalWithStart.toFixed(2)}`, 10, 30);
-      
 
       let y = 40;
       monthEntries.forEach(entry => {
@@ -283,6 +286,7 @@
 
       localStorage.setItem('exportedMonth', thisMonth);
       doc.save(`overuren_${thisMonth}.pdf`);
+    }
     }
 
     function toggleInfoBox() {
