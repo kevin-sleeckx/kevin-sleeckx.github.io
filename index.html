@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -32,7 +33,7 @@
     .actions i:hover { color: #007bff; }
 
     .top-buttons { display: flex; justify-content: space-between; margin-bottom: 1em; flex-wrap: wrap; gap: 10px; }
-    .info-box {
+  .info-box {
       display: none;
       background-color: #f1f1f1;
       border: 1px solid #ccc;
@@ -46,22 +47,21 @@
       color: blue;
       font-weight: bold;
     }
+  
   </style>
 </head>
 <body>
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.0.9</p>
+  <h1>Overuren Tracker</h1>
 
   <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span> €</div>
 
   <div class="top-buttons">
     <button onclick="exportToPDF()">Exporteer PDF</button>
+    <button onclick="deleteAll()">Verwijder alles (test)</button>
   </div>
-    <form id="entryForm">
-  <div id="warningBox" style="display:none; background-color:#fff3cd; border:1px solid #ffeeba; padding:10px; margin-bottom:1em; color:#856404; border-radius:4px; position:relative;">
-    <strong><i class='fas fa-exclamation-triangle'></i> Waarschuwing</strong>
-    <button onclick="this.parentElement.style.display='none'" style="position:absolute; top:5px; right:10px; background:none; border:none; font-size:16px; cursor:pointer; color:#856404;">&times;</button>
-  </div>
- <label>Datum: <input type="date" id="date" required></label>
+
+  <form id="entryForm">
+    <label>Datum: <input type="date" id="date" required></label>
     <label>Type:
       <select id="entryType">
         <option value="recupPlus">Recup+</option>
@@ -79,36 +79,36 @@
     </label>
     <span class="question-icon" onclick="toggleInfoBox()">?</span>
     <div id="infoBox" class="info-box">
-      <strong>Berekening Recup:</strong>
-      <ul>
-        <li><u>Recup+</u> (toevoegen van overuren):
-          <ul>
-            <li>Dag: +50%</li>
-            <li>Vroege: +55%</li>
-            <li>Late: +65%</li>
-            <li>Nacht: +100%</li>
-          </ul>
-        </li>
-        <li><u>Recup−</u> (oppakken van overuren):
-          <ul>
-            <li>Dag: geen extra</li>
-            <li>Vroege: +5%</li>
-            <li>Late: +15%</li>
-            <li>Nacht: +50%</li>
-          </ul>
-        </li>
-      </ul>
-    </div>
+    <strong>Berekening Recup:</strong>
+    <ul>
+      <li><u>Recup+</u> (toevoegen van overuren):
+        <ul>
+          <li>Dag: +50%</li>
+          <li>Vroege: +55%</li>
+          <li>Late: +65%</li>
+          <li>Nacht: +100%</li>
+        </ul>
+      </li>
+      <li><u>Recup−</u> (oppakken van overuren):
+        <ul>
+          <li>Dag: geen extra</li>
+          <li>Vroege: +5%</li>
+          <li>Late: +15%</li>
+          <li>Nacht: +50%</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
     <div id="hoursDiv" class="inline-inputs">
-  <input type="number" id="hours" min="0" max="24" placeholder="0">
-  <span>uren en</span>
-  <input type="number" id="minutes" min="0" max="59" placeholder="0">
-  <span>minuten</span>
-</div>
+      <input type="number" id="hours" min="0" max="24" placeholder="Uren">
+      <span>uren en</span>
+      <input type="number" id="quarters" min="0" max="3" placeholder="0-3">
+      <span>kwartier(en)</span>
+    </div>
     <label id="wageLabel">Dagloon (€): <input type="number" id="dailyWage" step="0.01" placeholder="vb. 148.65"></label>
     <label id="customLabel" class="hide">Bedrag (enkel voor bestellingen): <input type="number" id="customAmount" step="0.01" value="0"></label>
     <button type="submit">Toevoegen</button>
-</form>
+  </form>
 
   <table id="logTable">
     <thead><tr><th>Datum</th><th>Shift</th><th>Uren</th><th>Bedrag (€)</th><th>Acties</th></tr></thead>
@@ -117,10 +117,9 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    // ==== CONFIGURATIE EN INITIATIE ====
-    const STANDARD_HOURS = 7.25; // Aantal standaard werkuren per dag
-    const shiftBonuses = { dag: 0.5, vroeg: 0.55, laat: 0.65, nacht: 1.0 }; // Bonuspercentages voor Recup+ per shift
-    const oppakBonuses = { dag: 0.0, vroeg: 0.05, laat: 0.10, nacht: 0.5 }; // Bonuspercentages voor Recup- per shift
+    const STANDARD_HOURS = 7.25;
+    const shiftBonuses = { dag: 0.5, vroeg: 0.55, laat: 0.65, nacht: 1.0 };
+    const oppakBonuses = { dag: 0.0, vroeg: 0.05, laat: 0.10, nacht: 0.5 };
     let log = JSON.parse(localStorage.getItem('overurenLog') || '[]');
     let storedWage = parseFloat(localStorage.getItem('defaultDailyWage')) || null;
 
@@ -132,9 +131,11 @@
     const wageInput = document.getElementById('dailyWage');
     const typeInput = document.getElementById('entryType');
 
-    document.addEventListener('DOMContentLoaded', () => {
+    window.onload = () => {
+      dateInput.value = new Date().toISOString().split('T')[0];
+      if (storedWage) wageInput.value = storedWage;
       renderTable();
-    });
+    };
 
     typeInput.addEventListener('change', () => {
       const isBestelling = typeInput.value === 'bestelling';
@@ -145,47 +146,13 @@
     });
 
     form.addEventListener('submit', e => {
-      e.preventDefault(); // Formulierverzending blokkeren om JS-afhandeling toe te staan
-      // Afhandeling van het formulier bij klikken op "Toevoegen"
-      const warningBox = document.getElementById('warningBox');
-      warningBox.innerHTML = '';
-      warningBox.style.display = 'none';
-      const warnings = [];
-
-      const hoursVal = document.getElementById('hours').value;
-      const minutesVal = document.getElementById('minutes').value;
-      const type = typeInput.value;
-
-      if ((hoursVal === '' || parseFloat(hoursVal) === 0) && (minutesVal === '' || parseFloat(minutesVal) === 0) && type !== 'bestelling') {
-        warnings.push('Vul minstens uren of minuten in.');
-      }
-
-      if (type !== 'bestelling') {
-        const dagloonCheck = document.getElementById('dailyWage').value;
-        if (dagloonCheck === '' || isNaN(parseFloat(dagloonCheck)) || parseFloat(dagloonCheck) === 0) {
-          warnings.push('Vul een geldig dagloon in.');
-        }
-      }
-
-      if (type === 'bestelling') {
-        const customVal = document.getElementById('customAmount').value;
-        if (customVal === '' || isNaN(parseFloat(customVal)) || parseFloat(customVal) === 0) {
-          warnings.push('Vul een geldig bedrag in voor de bestelling.');
-        }
-      }
-
-      // Toon alle foutmeldingen bovenaan het formulier indien er iets ontbreekt
-      if (warnings.length > 0) {
-        warningBox.innerHTML = warnings.map(w => `<p>${w}</p>`).join('');
-        warningBox.style.display = 'block';
-        return;
-      }
+      e.preventDefault();
       const datum = dateInput.value;
       const type = typeInput.value;
       const shift = shiftInput.value;
       const hours = parseFloat(document.getElementById('hours').value) || 0;
-      const minutes = parseFloat(document.getElementById('minutes').value) || 0;
-      const uren = hours + (minutes / 60);
+      const quarters = parseFloat(document.getElementById('quarters').value) || 0;
+      const uren = hours + quarters * 0.25;
       const dagloon = parseFloat(wageInput.value);
       const custom = parseFloat(document.getElementById('customAmount').value) || 0;
 
@@ -203,21 +170,12 @@
       log.push({ datum, type, shift, uren, bedrag });
       localStorage.setItem('overurenLog', JSON.stringify(log));
       renderTable();
-
-      // Reset alleen specifieke velden
-      form.reset(); // Reset alleen de inhoud van het formulier (niet dropdowns)
+      form.reset();
       dateInput.value = new Date().toISOString().split('T')[0];
-      document.getElementById('hours').value = '';
-      document.getElementById('minutes').value = '';
-      document.getElementById('customAmount').value = 0;
-      typeInput.value = type;
-      shiftInput.value = shift;
-      if (!isNaN(dagloon)) wageInput.value = dagloon;
-      typeInput.dispatchEvent(new Event('change'));
+      if (storedWage) wageInput.value = storedWage;
     });
 
     function renderTable() {
-      // Herteken de tabel met alle ingevoerde gegevens en kleurcodeer volgens positief of negatief bedrag
       tbody.innerHTML = '';
       let totaal = 0;
       log.forEach(entry => {
@@ -240,21 +198,25 @@
     }
 
     function deleteEntry(index) {
-      // Vraag bevestiging voor het verwijderen van een item
-  if (!confirm('Weet je zeker dat je deze entry wilt verwijderen?')) return;
       log.splice(index, 1);
       localStorage.setItem('overurenLog', JSON.stringify(log));
       renderTable();
     }
 
+    function deleteAll() {
+      if (confirm("Weet je zeker dat je alles wil wissen?")) {
+        localStorage.removeItem('overurenLog');
+        log = [];
+        renderTable();
+      }
+    }
+
     function formatDate(d) {
-      // Formatteer een datum naar dd/mm/jjjj
       const [y, m, day] = d.split("-");
       return `${day}/${m}/${y}`;
     }
 
     function exportToPDF() {
-      // Maak een PDF-export aan van alle items van de huidige maand
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
       const thisMonth = new Date().toISOString().slice(0, 7);
@@ -276,15 +238,13 @@
       localStorage.setItem('exportedMonth', thisMonth);
       doc.save(`overuren_${thisMonth}.pdf`);
     }
-
-    function toggleInfoBox() {
-      // Toon of verberg de extra uitleg over de berekeningsregels
+  
+  function toggleInfoBox() {
       const infoBox = document.getElementById('infoBox');
       infoBox.style.display = infoBox.style.display === 'block' ? 'none' : 'block';
     }
 
     document.addEventListener('click', function(event) {
-      // Sluit de uitlegbox als je buiten het icoontje of de box klikt
       const infoBox = document.getElementById('infoBox');
       const icon = document.querySelector('.question-icon');
       if (!infoBox.contains(event.target) && !icon.contains(event.target)) {
