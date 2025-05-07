@@ -1,0 +1,256 @@
+
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overuren Tracker</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { font-family: Arial, sans-serif; background: #f7f7f7; padding: 2em; max-width: 900px; margin: auto; }
+    h1 { text-align: center; color: #333; }
+    .totals { padding: 1em; border-radius: 8px; font-weight: bold; margin-bottom: 1.5em; text-align: center; color: white; }
+    .totals.positief { background: #28a745; }
+    .totals.negatief { background: #dc3545; }
+
+    form, table { width: 100%; background: #fff; padding: 1em; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 2em; }
+    label { display: block; margin-bottom: 0.6em; }
+    input, select, button { width: 100%; padding: 0.5em; margin-top: 0.3em; font-size: 1em; border: 1px solid #ccc; border-radius: 4px; }
+    .inline-inputs { display: flex; gap: 8px; align-items: center; margin-bottom: 1em; }
+    .inline-inputs input { width: 4ch; }
+
+    button { background-color: #007bff; color: white; font-weight: bold; cursor: pointer; border: none; }
+    button:hover { background-color: #0056b3; }
+    .hide { display: none; }
+
+    table { border-collapse: collapse; font-size: 0.95em; }
+    th, td { border: 1px solid #ddd; padding: 0.5em; text-align: center; }
+    th { background-color: #007bff; color: white; }
+    tr.positief { background-color: #e6ffe6; }
+    tr.negatief { background-color: #ffe6e6; }
+
+    .actions i { cursor: pointer; margin: 0 5px; }
+    .actions i:hover { color: #007bff; }
+
+    .top-buttons { display: flex; justify-content: space-between; margin-bottom: 1em; flex-wrap: wrap; gap: 10px; }
+  .info-box {
+      display: none;
+      background-color: #f1f1f1;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-top: 5px;
+      width: 300px;
+    }
+    .question-icon {
+      cursor: pointer;
+      margin-left: 5px;
+      color: blue;
+      font-weight: bold;
+    }
+  
+  </style>
+</head>
+<body>
+  <h1>Overuren Tracker</h1>
+
+  <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span> €</div>
+
+  <div class="top-buttons">
+    <button onclick="exportToPDF()">Exporteer PDF</button>
+    <button onclick="deleteAll()">Verwijder alles (test)</button>
+  </div>
+
+  <form id="entryForm">
+    <label>Datum: <input type="date" id="date" required></label>
+    <label>Type:
+      <select id="entryType">
+        <option value="recupPlus">Recup+</option>
+        <option value="recupMin">Recup-</option>
+        <option value="bestelling">Bestelling</option>
+      </select>
+    </label>
+    <label id="shiftLabel">Shift:
+      <select id="shift">
+        <option value="dag">Dag</option>
+        <option value="vroeg">Vroege</option>
+        <option value="laat">Late</option>
+        <option value="nacht">Nacht</option>
+      </select>
+    </label>
+    <span class="question-icon" onclick="toggleInfoBox()">?</span>
+    <div id="infoBox" class="info-box">
+    <strong>Berekening Recup:</strong>
+    <ul>
+      <li><u>Recup+</u> (toevoegen van overuren):
+        <ul>
+          <li>Dag: +50%</li>
+          <li>Vroege: +55%</li>
+          <li>Late: +65%</li>
+          <li>Nacht: +100%</li>
+        </ul>
+      </li>
+      <li><u>Recup−</u> (oppakken van overuren):
+        <ul>
+          <li>Dag: geen extra</li>
+          <li>Vroege: +5%</li>
+          <li>Late: +15%</li>
+          <li>Nacht: +50%</li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+    <div id="hoursDiv" class="inline-inputs">
+      <input type="number" id="hours" min="0" max="24" placeholder="Uren">
+      <span>uren en</span>
+      <input type="number" id="quarters" min="0" max="3" placeholder="0-3">
+      <span>kwartier(en)</span>
+    </div>
+    <label id="wageLabel">Dagloon (€): <input type="number" id="dailyWage" step="0.01" placeholder="vb. 148.65"></label>
+    <label id="customLabel" class="hide">Bedrag (enkel voor bestellingen): <input type="number" id="customAmount" step="0.01" value="0"></label>
+    <button type="submit">Toevoegen</button>
+  </form>
+
+  <table id="logTable">
+    <thead><tr><th>Datum</th><th>Shift</th><th>Uren</th><th>Bedrag (€)</th><th>Acties</th></tr></thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    const STANDARD_HOURS = 7.25;
+    const shiftBonuses = { dag: 0.5, vroeg: 0.55, laat: 0.65, nacht: 1.0 };
+    const oppakBonuses = { dag: 0.0, vroeg: 0.05, laat: 0.10, nacht: 0.5 };
+    let log = JSON.parse(localStorage.getItem('overurenLog') || '[]');
+    let storedWage = parseFloat(localStorage.getItem('defaultDailyWage')) || null;
+
+    const form = document.getElementById('entryForm');
+    const tbody = document.querySelector('#logTable tbody');
+    const totalNet = document.getElementById('totalNet');
+    const dateInput = document.getElementById('date');
+    const shiftInput = document.getElementById('shift');
+    const wageInput = document.getElementById('dailyWage');
+    const typeInput = document.getElementById('entryType');
+
+    window.onload = () => {
+      dateInput.value = new Date().toISOString().split('T')[0];
+      if (storedWage) wageInput.value = storedWage;
+      renderTable();
+    };
+
+    typeInput.addEventListener('change', () => {
+      const isBestelling = typeInput.value === 'bestelling';
+      document.getElementById('shiftLabel').classList.toggle('hide', isBestelling);
+      document.getElementById('hoursDiv').classList.toggle('hide', isBestelling);
+      document.getElementById('wageLabel').classList.toggle('hide', isBestelling);
+      document.getElementById('customLabel').classList.toggle('hide', !isBestelling);
+    });
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const datum = dateInput.value;
+      const type = typeInput.value;
+      const shift = shiftInput.value;
+      const hours = parseFloat(document.getElementById('hours').value) || 0;
+      const quarters = parseFloat(document.getElementById('quarters').value) || 0;
+      const uren = hours + quarters * 0.25;
+      const dagloon = parseFloat(wageInput.value);
+      const custom = parseFloat(document.getElementById('customAmount').value) || 0;
+
+      if (!isNaN(dagloon)) localStorage.setItem('defaultDailyWage', dagloon);
+
+      let bedrag = 0;
+      if (type === 'recupPlus') {
+        bedrag = uren * (dagloon / STANDARD_HOURS) * (1 + shiftBonuses[shift]);
+      } else if (type === 'recupMin') {
+        bedrag = -uren * (dagloon / STANDARD_HOURS) * (1 + oppakBonuses[shift]);
+      } else if (type === 'bestelling') {
+        bedrag = -custom;
+      }
+
+      log.push({ datum, type, shift, uren, bedrag });
+      localStorage.setItem('overurenLog', JSON.stringify(log));
+      renderTable();
+      form.reset();
+      dateInput.value = new Date().toISOString().split('T')[0];
+      if (storedWage) wageInput.value = storedWage;
+    });
+
+    function renderTable() {
+      tbody.innerHTML = '';
+      let totaal = 0;
+      log.forEach(entry => {
+        const tr = document.createElement('tr');
+        tr.className = entry.bedrag >= 0 ? 'positief' : 'negatief';
+        tr.innerHTML = `
+          <td>${formatDate(entry.datum)}</td>
+          <td>${entry.type === 'bestelling' ? 'Bestelling' : entry.shift}</td>
+          <td>${entry.uren?.toFixed(2) || ''}</td>
+          <td>${entry.bedrag.toFixed(2)}</td>
+          <td class="actions">
+            <i class="fas fa-trash-alt" title="Verwijder" onclick="deleteEntry(${log.indexOf(entry)})"></i>
+          </td>
+        `;
+        tbody.appendChild(tr);
+        totaal += entry.bedrag;
+      });
+      totalNet.textContent = totaal.toFixed(2);
+      document.getElementById('totalsDisplay').className = 'totals ' + (totaal >= 0 ? 'positief' : 'negatief');
+    }
+
+    function deleteEntry(index) {
+      log.splice(index, 1);
+      localStorage.setItem('overurenLog', JSON.stringify(log));
+      renderTable();
+    }
+
+    function deleteAll() {
+      if (confirm("Weet je zeker dat je alles wil wissen?")) {
+        localStorage.removeItem('overurenLog');
+        log = [];
+        renderTable();
+      }
+    }
+
+    function formatDate(d) {
+      const [y, m, day] = d.split("-");
+      return `${day}/${m}/${y}`;
+    }
+
+    function exportToPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const thisMonth = new Date().toISOString().slice(0, 7);
+      const monthEntries = log.filter(e => e.datum.startsWith(thisMonth));
+      const total = log.reduce((sum, e) => sum + e.bedrag, 0);
+      const monthTotal = monthEntries.reduce((sum, e) => sum + e.bedrag, 0);
+
+      doc.text(`Overuren Tracker - ${thisMonth}`, 10, 10);
+      doc.text(`Totaal (alle tijd): €${total.toFixed(2)}`, 10, 20);
+      doc.text(`Totaal deze maand: €${monthTotal.toFixed(2)}`, 10, 30);
+
+      let y = 40;
+      monthEntries.forEach(entry => {
+        const lijn = `${formatDate(entry.datum)} - ${entry.type === 'bestelling' ? 'Bestelling' : entry.shift} - ${entry.uren?.toFixed(2) || ''}u - €${entry.bedrag.toFixed(2)}`;
+        doc.text(lijn, 10, y);
+        y += 8;
+      });
+
+      localStorage.setItem('exportedMonth', thisMonth);
+      doc.save(`overuren_${thisMonth}.pdf`);
+    }
+  
+  function toggleInfoBox() {
+      const infoBox = document.getElementById('infoBox');
+      infoBox.style.display = infoBox.style.display === 'block' ? 'none' : 'block';
+    }
+
+    document.addEventListener('click', function(event) {
+      const infoBox = document.getElementById('infoBox');
+      const icon = document.querySelector('.question-icon');
+      if (!infoBox.contains(event.target) && !icon.contains(event.target)) {
+        infoBox.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
