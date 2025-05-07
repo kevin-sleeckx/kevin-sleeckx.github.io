@@ -243,6 +243,8 @@
         `;
         tbody.appendChild(tr);
         totaal += entry.bedrag;
+        totalNet.textContent = totaal.toFixed(2);
+
       });
       
       document.getElementById('totalsDisplay').className = 'totals ' + (totaal >= 0 ? 'positief' : 'negatief');
