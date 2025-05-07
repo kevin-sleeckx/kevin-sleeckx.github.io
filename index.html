@@ -49,7 +49,7 @@
   </style>
 </head>
 <body>
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.2.6</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.2.7</p>
 
   <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span> €</div>
 
@@ -106,7 +106,7 @@
     <label id="wageLabel">Dagloon (€): <input type="number" id="dailyWage" step="0.01" placeholder="vb. 148.65"></label>
     <label id="customLabel" class="hide">Bedrag (enkel voor bestellingen): <input type="number" id="customAmount" step="0.01" value="0"></label>
   <button type="submit">Toevoegen</button>
-
+    </form>
 
   <table id="logTable">
     <thead><tr><th>Datum</th><th>Shift</th><th>Uren</th><th>Bedrag (€)</th><th>Acties</th></tr></thead>
@@ -138,6 +138,7 @@
       if (storedWage) wageInput.value = storedWage;
       if (!isNaN(startAmount)) document.getElementById('startAmount').value = startAmount;
       renderTable();
+      totalNet.textContent = totaal.toFixed(2);
     };
 
     typeInput.addEventListener('change', () => {
