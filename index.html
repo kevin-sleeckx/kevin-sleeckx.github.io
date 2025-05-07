@@ -49,8 +49,7 @@
   </style>
 </head>
 <body>
-
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.0.0</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.0.2</p>
 
   <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span> €</div>
 
@@ -58,7 +57,10 @@
     <button onclick="exportToPDF()">Exporteer PDF</button>
   </div>
 
-  <form id="entryForm">
+  
+    <div id="warningBox" style="display:none; background-color:#fff3cd; border:1px solid #ffeeba; padding:10px; margin-bottom:1em; color:#856404; border-radius:4px; position:relative;">
+  <strong><i class='fas fa-exclamation-triangle'></i> Waarschuwing</strong>
+  <button onclick="this.parentElement.style.display='none'" style="position:absolute; top:5px; right:10px; background:none; border:none; font-size:16px; cursor:pointer; color:#856404;">&times;</button></div>
     <label>Datum: <input type="date" id="date" required></label>
     <label>Type:
       <select id="entryType">
@@ -98,11 +100,11 @@
       </ul>
     </div>
     <div id="hoursDiv" class="inline-inputs">
-      <input type="number" id="hours" min="0" max="24" placeholder="Uren">
-      <span>uren en</span>
-      <input type="number" id="quarters" min="0" max="3" placeholder="0-3">
-      <span>kwartier(en)</span>
-    </div>
+  <input type="number" id="hours" min="0" max="24" placeholder="0">
+  <span>uren en</span>
+  <input type="number" id="minutes" min="0" max="59" placeholder="0">
+  <span>minuten</span>
+</div>
     <label id="wageLabel">Dagloon (€): <input type="number" id="dailyWage" step="0.01" placeholder="vb. 148.65"></label>
     <label id="customLabel" class="hide">Bedrag (enkel voor bestellingen): <input type="number" id="customAmount" step="0.01" value="0"></label>
     <button type="submit">Toevoegen</button>
@@ -144,13 +146,46 @@
     });
 
     form.addEventListener('submit', e => {
+      const warningBox = document.getElementById('warningBox');
+      warningBox.innerHTML = '';
+      warningBox.style.display = 'none';
+      const warnings = [];
+
+      const hoursVal = document.getElementById('hours').value;
+      const minutesVal = document.getElementById('minutes').value;
+      const type = typeInput.value;
+
+      if ((hoursVal === '' || parseFloat(hoursVal) === 0) && (minutesVal === '' || parseFloat(minutesVal) === 0) && type !== 'bestelling') {
+        warnings.push('Vul minstens uren of minuten in.');
+      }
+
+      if (type !== 'bestelling') {
+        const dagloonCheck = document.getElementById('dailyWage').value;
+        if (dagloonCheck === '' || isNaN(parseFloat(dagloonCheck)) || parseFloat(dagloonCheck) === 0) {
+          warnings.push('Vul een geldig dagloon in.');
+        }
+      }
+
+      if (type === 'bestelling') {
+        const customVal = document.getElementById('customAmount').value;
+        if (customVal === '' || isNaN(parseFloat(customVal)) || parseFloat(customVal) === 0) {
+          warnings.push('Vul een geldig bedrag in voor de bestelling.');
+        }
+      }
+
+      if (warnings.length > 0) {
+        warningBox.innerHTML = warnings.map(w => `<p>${w}</p>`).join('');
+        warningBox.style.display = 'block';
+        return;
+      }
+
       e.preventDefault();
       const datum = dateInput.value;
       const type = typeInput.value;
       const shift = shiftInput.value;
       const hours = parseFloat(document.getElementById('hours').value) || 0;
-      const quarters = parseFloat(document.getElementById('quarters').value) || 0;
-      const uren = hours + quarters * 0.25;
+      const minutes = parseFloat(document.getElementById('minutes').value) || 0;
+      const uren = hours + (minutes / 60);
       const dagloon = parseFloat(wageInput.value);
       const custom = parseFloat(document.getElementById('customAmount').value) || 0;
 
@@ -173,7 +208,7 @@
       form.reset();
       dateInput.value = new Date().toISOString().split('T')[0];
       document.getElementById('hours').value = '';
-      document.getElementById('quarters').value = '';
+      document.getElementById('minutes').value = '';
       document.getElementById('customAmount').value = 0;
       typeInput.value = type;
       shiftInput.value = shift;
