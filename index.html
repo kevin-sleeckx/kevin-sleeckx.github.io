@@ -49,7 +49,7 @@
   </style>
 </head>
 <body>
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.0.5</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.0.7</p>
 
   <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span> €</div>
 
@@ -61,7 +61,7 @@
     <strong><i class='fas fa-exclamation-triangle'></i> Waarschuwing</strong>
     <button onclick="this.parentElement.style.display='none'" style="position:absolute; top:5px; right:10px; background:none; border:none; font-size:16px; cursor:pointer; color:#856404;">&times;</button>
   </div>
- <input type="date" id="date" required></label>
+ <label>Datum: <input type="date" id="date" required></label>
     <label>Type:
       <select id="entryType">
         <option value="recupPlus">Recup+</option>
@@ -117,9 +117,10 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    const STANDARD_HOURS = 7.25;
-    const shiftBonuses = { dag: 0.5, vroeg: 0.55, laat: 0.65, nacht: 1.0 };
-    const oppakBonuses = { dag: 0.0, vroeg: 0.05, laat: 0.10, nacht: 0.5 };
+    // ==== CONFIGURATIE EN INITIATIE ====
+    const STANDARD_HOURS = 7.25; // Aantal standaard werkuren per dag
+    const shiftBonuses = { dag: 0.5, vroeg: 0.55, laat: 0.65, nacht: 1.0 }; // Bonuspercentages voor Recup+ per shift
+    const oppakBonuses = { dag: 0.0, vroeg: 0.05, laat: 0.10, nacht: 0.5 }; // Bonuspercentages voor Recup- per shift
     let log = JSON.parse(localStorage.getItem('overurenLog') || '[]');
     let storedWage = parseFloat(localStorage.getItem('defaultDailyWage')) || null;
 
@@ -132,6 +133,7 @@
     const typeInput = document.getElementById('entryType');
 
     window.onload = () => {
+      // Bij laden van de pagina: datum invullen en eventueel vorig dagloon terugzetten
       dateInput.value = new Date().toISOString().split('T')[0];
       if (storedWage) wageInput.value = storedWage;
       renderTable();
@@ -146,6 +148,7 @@
     });
 
     form.addEventListener('submit', e => {
+      // Afhandeling van het formulier bij klikken op "Toevoegen"
       const warningBox = document.getElementById('warningBox');
       warningBox.innerHTML = '';
       warningBox.style.display = 'none';
@@ -173,6 +176,7 @@
         }
       }
 
+      // Toon alle foutmeldingen bovenaan het formulier indien er iets ontbreekt
       if (warnings.length > 0) {
         warningBox.innerHTML = warnings.map(w => `<p>${w}</p>`).join('');
         warningBox.style.display = 'block';
@@ -205,7 +209,7 @@
       renderTable();
 
       // Reset alleen specifieke velden
-      form.reset();
+      form.reset(); // Reset alleen de inhoud van het formulier (niet dropdowns)
       dateInput.value = new Date().toISOString().split('T')[0];
       document.getElementById('hours').value = '';
       document.getElementById('minutes').value = '';
@@ -217,6 +221,7 @@
     });
 
     function renderTable() {
+      // Herteken de tabel met alle ingevoerde gegevens en kleurcodeer volgens positief of negatief bedrag
       tbody.innerHTML = '';
       let totaal = 0;
       log.forEach(entry => {
@@ -239,6 +244,7 @@
     }
 
     function deleteEntry(index) {
+      // Vraag bevestiging voor het verwijderen van een item
   if (!confirm('Weet je zeker dat je deze entry wilt verwijderen?')) return;
       log.splice(index, 1);
       localStorage.setItem('overurenLog', JSON.stringify(log));
@@ -246,11 +252,13 @@
     }
 
     function formatDate(d) {
+      // Formatteer een datum naar dd/mm/jjjj
       const [y, m, day] = d.split("-");
       return `${day}/${m}/${y}`;
     }
 
     function exportToPDF() {
+      // Maak een PDF-export aan van alle items van de huidige maand
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
       const thisMonth = new Date().toISOString().slice(0, 7);
@@ -274,11 +282,13 @@
     }
 
     function toggleInfoBox() {
+      // Toon of verberg de extra uitleg over de berekeningsregels
       const infoBox = document.getElementById('infoBox');
       infoBox.style.display = infoBox.style.display === 'block' ? 'none' : 'block';
     }
 
     document.addEventListener('click', function(event) {
+      // Sluit de uitlegbox als je buiten het icoontje of de box klikt
       const infoBox = document.getElementById('infoBox');
       const icon = document.querySelector('.question-icon');
       if (!infoBox.contains(event.target) && !icon.contains(event.target)) {
