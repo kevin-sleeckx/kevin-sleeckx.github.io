@@ -49,7 +49,7 @@
   </style>
 </head>
 <body>
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.0.8</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.0.9</p>
 
   <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span> €</div>
 
@@ -133,11 +133,8 @@
     const typeInput = document.getElementById('entryType');
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Bij laden van de pagina: datum invullen en eventueel vorig dagloon terugzetten
-      dateInput.value = new Date().toISOString().split('T')[0];
-      if (storedWage) wageInput.value = storedWage;
       renderTable();
-    };
+    });
 
     typeInput.addEventListener('change', () => {
       const isBestelling = typeInput.value === 'bestelling';
@@ -183,8 +180,6 @@
         warningBox.style.display = 'block';
         return;
       }
-
-      e.preventDefault();
       const datum = dateInput.value;
       const type = typeInput.value;
       const shift = shiftInput.value;
