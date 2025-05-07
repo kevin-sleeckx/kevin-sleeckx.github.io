@@ -124,9 +124,10 @@
     const oppakBonuses = { dag: 0.0, vroeg: 0.05, laat: 0.10, nacht: 0.5 }; // Bonuspercentages voor Recup- per shift
     let log = JSON.parse(localStorage.getItem('overurenLog') || '[]');
     
+    let storedWage = parseFloat(localStorage.getItem('defaultDailyWage')) || null;
     let startAmount = parseFloat(localStorage.getItem('startAmount')) || 0;
 
-    const form = document.getElementById('entryForm');
+    const form = document.querySelector('form'); // Aangepast zodat het formulier correct wordt gevonden
     const tbody = document.querySelector('#logTable tbody');
     const totalNet = document.getElementById('totalNet');
     const dateInput = document.getElementById('date');
@@ -287,7 +288,6 @@
       localStorage.setItem('exportedMonth', thisMonth);
       doc.save(`overuren_${thisMonth}.pdf`);
     }
-  
 
     function toggleInfoBox() {
       // Toon of verberg de extra uitleg over de berekeningsregels
