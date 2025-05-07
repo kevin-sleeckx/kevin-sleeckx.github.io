@@ -49,7 +49,7 @@
   </style>
 </head>
 <body>
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.0.7</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.0.8</p>
 
   <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span> €</div>
 
@@ -132,7 +132,7 @@
     const wageInput = document.getElementById('dailyWage');
     const typeInput = document.getElementById('entryType');
 
-    window.onload = () => {
+    document.addEventListener('DOMContentLoaded', () => {
       // Bij laden van de pagina: datum invullen en eventueel vorig dagloon terugzetten
       dateInput.value = new Date().toISOString().split('T')[0];
       if (storedWage) wageInput.value = storedWage;
@@ -148,6 +148,7 @@
     });
 
     form.addEventListener('submit', e => {
+      e.preventDefault(); // Formulierverzending blokkeren om JS-afhandeling toe te staan
       // Afhandeling van het formulier bij klikken op "Toevoegen"
       const warningBox = document.getElementById('warningBox');
       warningBox.innerHTML = '';
