@@ -49,7 +49,7 @@
   </style>
 </head>
 <body>
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.2.0</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.2.4</p>
 
   <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span> €</div>
 
@@ -116,21 +116,14 @@
     <tbody></tbody>
   </table>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
-    // Algemene foutafhandelaar voor JS-fouten
-    window.onerror = function(message, source, lineno, colno, error) {
-      const box = document.getElementById('warningBox');
-      box.innerHTML = `<p><strong>JavaScript-fout:</strong> ${message} (regel ${lineno})</p>`;
-      box.style.display = 'block';
-      return false; // ook naar console loggen
-    };
-  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
     // ==== CONFIGURATIE EN INITIATIE ====
     const STANDARD_HOURS = 7.25; // Aantal standaard werkuren per dag
     const shiftBonuses = { dag: 0.5, vroeg: 0.55, laat: 0.65, nacht: 1.0 }; // Bonuspercentages voor Recup+ per shift
     const oppakBonuses = { dag: 0.0, vroeg: 0.05, laat: 0.10, nacht: 0.5 }; // Bonuspercentages voor Recup- per shift
     let log = JSON.parse(localStorage.getItem('overurenLog') || '[]');
+    
     let startAmount = parseFloat(localStorage.getItem('startAmount')) || 0;
 
     const form = document.getElementById('entryForm');
@@ -141,7 +134,12 @@
     const wageInput = document.getElementById('dailyWage');
     const typeInput = document.getElementById('entryType');
    
+      window.onload = () => {
+      // Initieer datum en dagloon bij laden van de pagina
+      dateInput.value = new Date().toISOString().split('T')[0];
+      if (storedWage) wageInput.value = storedWage;
       if (!isNaN(startAmount)) document.getElementById('startAmount').value = startAmount;
+      renderTable();
     };
 
     typeInput.addEventListener('change', () => {
@@ -195,6 +193,8 @@
       const uren = hours + (minutes / 60); // omzetting van minuten naar fractie van uur
       const dagloon = parseFloat(wageInput.value);
       const custom = parseFloat(document.getElementById('customAmount').value) || 0;
+
+      
       const sa = parseFloat(document.getElementById('startAmount').value);
       if (!isNaN(sa)) localStorage.setItem('startAmount', sa);
 
@@ -226,6 +226,8 @@
     function renderTable() {
       // Herteken de tabel met alle ingevoerde gegevens en kleurcodeer volgens positief of negatief bedrag
       tbody.innerHTML = '';
+      
+      let totaal = 0;
       let start = parseFloat(localStorage.getItem('startAmount')) || 0;
       totaal += start;
       log.forEach(entry => {
@@ -243,6 +245,7 @@
         tbody.appendChild(tr);
         totaal += entry.bedrag;
       });
+      
       document.getElementById('totalsDisplay').className = 'totals ' + (totaal >= 0 ? 'positief' : 'negatief');
       document.getElementById('totalsDisplay').className = 'totals ' + (totaal >= 0 ? 'positief' : 'negatief');
     }
@@ -260,6 +263,8 @@
       const [y, m, day] = d.split("-");
       return `${day}/${m}/${y}`;
     }
+
+    
       const start = parseFloat(localStorage.getItem('startAmount')) || 0;
       const totalWithStart = total + start;
       const monthTotal = monthEntries.reduce((sum, e) => sum + e.bedrag, 0);
@@ -267,6 +272,7 @@
       doc.text(`Overuren Tracker - ${thisMonth}`, 10, 10);
       doc.text(`Startbedrag: €${start.toFixed(2)}`, 10, 20);
       doc.text(`Totaal (alle tijd): €${totalWithStart.toFixed(2)}`, 10, 30);
+      
 
       let y = 40;
       monthEntries.forEach(entry => {
