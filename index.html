@@ -32,7 +32,7 @@
     .actions i:hover { color: #007bff; }
 
     .top-buttons { display: flex; justify-content: space-between; margin-bottom: 1em; flex-wrap: wrap; gap: 10px; }
-  .info-box {
+    .info-box {
       display: none;
       background-color: #f1f1f1;
       border: 1px solid #ccc;
@@ -46,7 +46,6 @@
       color: blue;
       font-weight: bold;
     }
-  
   </style>
 </head>
 <body>
@@ -77,26 +76,26 @@
     </label>
     <span class="question-icon" onclick="toggleInfoBox()">?</span>
     <div id="infoBox" class="info-box">
-    <strong>Berekening Recup:</strong>
-    <ul>
-      <li><u>Recup+</u> (toevoegen van overuren):
-        <ul>
-          <li>Dag: +50%</li>
-          <li>Vroege: +55%</li>
-          <li>Late: +65%</li>
-          <li>Nacht: +100%</li>
-        </ul>
-      </li>
-      <li><u>Recup−</u> (oppakken van overuren):
-        <ul>
-          <li>Dag: geen extra</li>
-          <li>Vroege: +5%</li>
-          <li>Late: +15%</li>
-          <li>Nacht: +50%</li>
-        </ul>
-      </li>
-    </ul>
-  </div>
+      <strong>Berekening Recup:</strong>
+      <ul>
+        <li><u>Recup+</u> (toevoegen van overuren):
+          <ul>
+            <li>Dag: +50%</li>
+            <li>Vroege: +55%</li>
+            <li>Late: +65%</li>
+            <li>Nacht: +100%</li>
+          </ul>
+        </li>
+        <li><u>Recup−</u> (oppakken van overuren):
+          <ul>
+            <li>Dag: geen extra</li>
+            <li>Vroege: +5%</li>
+            <li>Late: +15%</li>
+            <li>Nacht: +50%</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
     <div id="hoursDiv" class="inline-inputs">
       <input type="number" id="hours" min="0" max="24" placeholder="Uren">
       <span>uren en</span>
@@ -168,9 +167,17 @@
       log.push({ datum, type, shift, uren, bedrag });
       localStorage.setItem('overurenLog', JSON.stringify(log));
       renderTable();
+
+      // Reset alleen specifieke velden
       form.reset();
       dateInput.value = new Date().toISOString().split('T')[0];
-      if (storedWage) wageInput.value = storedWage;
+      document.getElementById('hours').value = '';
+      document.getElementById('quarters').value = '';
+      document.getElementById('customAmount').value = 0;
+      typeInput.value = type;
+      shiftInput.value = shift;
+      if (!isNaN(dagloon)) wageInput.value = dagloon;
+      typeInput.dispatchEvent(new Event('change'));
     });
 
     function renderTable() {
@@ -228,8 +235,8 @@
       localStorage.setItem('exportedMonth', thisMonth);
       doc.save(`overuren_${thisMonth}.pdf`);
     }
-  
-  function toggleInfoBox() {
+
+    function toggleInfoBox() {
       const infoBox = document.getElementById('infoBox');
       infoBox.style.display = infoBox.style.display === 'block' ? 'none' : 'block';
     }
