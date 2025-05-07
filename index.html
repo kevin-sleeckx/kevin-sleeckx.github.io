@@ -49,17 +49,19 @@
   </style>
 </head>
 <body>
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.0.2</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.0.5</p>
 
   <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span> €</div>
 
   <div class="top-buttons">
     <button onclick="exportToPDF()">Exporteer PDF</button>
   </div>
-    <div id="warningBox" style="display:none; background-color:#fff3cd; border:1px solid #ffeeba; padding:10px; margin-bottom:1em; color:#856404; border-radius:4px; position:relative;">
-  <strong><i class='fas fa-exclamation-triangle'></i> Waarschuwing</strong>
-  <button onclick="this.parentElement.style.display='none'" style="position:absolute; top:5px; right:10px; background:none; border:none; font-size:16px; cursor:pointer; color:#856404;">&times;</button></div>
-    <label>Datum: <input type="date" id="date" required></label>
+    <form id="entryForm">
+  <div id="warningBox" style="display:none; background-color:#fff3cd; border:1px solid #ffeeba; padding:10px; margin-bottom:1em; color:#856404; border-radius:4px; position:relative;">
+    <strong><i class='fas fa-exclamation-triangle'></i> Waarschuwing</strong>
+    <button onclick="this.parentElement.style.display='none'" style="position:absolute; top:5px; right:10px; background:none; border:none; font-size:16px; cursor:pointer; color:#856404;">&times;</button>
+  </div>
+ <input type="date" id="date" required></label>
     <label>Type:
       <select id="entryType">
         <option value="recupPlus">Recup+</option>
@@ -106,7 +108,7 @@
     <label id="wageLabel">Dagloon (€): <input type="number" id="dailyWage" step="0.01" placeholder="vb. 148.65"></label>
     <label id="customLabel" class="hide">Bedrag (enkel voor bestellingen): <input type="number" id="customAmount" step="0.01" value="0"></label>
     <button type="submit">Toevoegen</button>
-  </form>
+</form>
 
   <table id="logTable">
     <thead><tr><th>Datum</th><th>Shift</th><th>Uren</th><th>Bedrag (€)</th><th>Acties</th></tr></thead>
@@ -237,6 +239,7 @@
     }
 
     function deleteEntry(index) {
+  if (!confirm('Weet je zeker dat je deze entry wilt verwijderen?')) return;
       log.splice(index, 1);
       localStorage.setItem('overurenLog', JSON.stringify(log));
       renderTable();
