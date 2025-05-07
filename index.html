@@ -49,14 +49,15 @@
   </style>
 </head>
 <body>
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.1.5</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.2.0</p>
 
   <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span> €</div>
 
   <div class="top-buttons">
     <button onclick="exportToPDF()">Exporteer PDF</button>
   </div>
-    <form id="entryForm">
+    
+    <label>Startbedrag (€): <input type="number" id="startAmount" step="0.01" placeholder="vb. 100.00"></label>
   <div id="warningBox" style="display:none; background-color:#fff3cd; border:1px solid #ffeeba; padding:10px; margin-bottom:1em; color:#856404; border-radius:4px; position:relative;">
     <strong><i class='fas fa-exclamation-triangle'></i> Waarschuwing</strong>
     <button onclick="this.parentElement.style.display='none'" style="position:absolute; top:5px; right:10px; background:none; border:none; font-size:16px; cursor:pointer; color:#856404;">&times;</button>
@@ -130,7 +131,8 @@
     const shiftBonuses = { dag: 0.5, vroeg: 0.55, laat: 0.65, nacht: 1.0 }; // Bonuspercentages voor Recup+ per shift
     const oppakBonuses = { dag: 0.0, vroeg: 0.05, laat: 0.10, nacht: 0.5 }; // Bonuspercentages voor Recup- per shift
     let log = JSON.parse(localStorage.getItem('overurenLog') || '[]');
-    let storedWage = parseFloat(localStorage.getItem('defaultDailyWage')) || null;
+    
+    let startAmount = parseFloat(localStorage.getItem('startAmount')) || 0;
 
     const form = document.getElementById('entryForm');
     const tbody = document.querySelector('#logTable tbody');
@@ -139,12 +141,8 @@
     const shiftInput = document.getElementById('shift');
     const wageInput = document.getElementById('dailyWage');
     const typeInput = document.getElementById('entryType');
-
-    window.onload = () => {
-      // Initieer datum en dagloon bij laden van de pagina
-      dateInput.value = new Date().toISOString().split('T')[0];
-      if (storedWage) wageInput.value = storedWage;
-      renderTable();
+   
+      if (!isNaN(startAmount)) document.getElementById('startAmount').value = startAmount;
     };
 
     typeInput.addEventListener('change', () => {
@@ -199,7 +197,9 @@
       const dagloon = parseFloat(wageInput.value);
       const custom = parseFloat(document.getElementById('customAmount').value) || 0;
 
-      if (!isNaN(dagloon)) localStorage.setItem('defaultDailyWage', dagloon);
+      
+      const sa = parseFloat(document.getElementById('startAmount').value);
+      if (!isNaN(sa)) localStorage.setItem('startAmount', sa);
 
       let bedrag = 0;
       if (type === 'recupPlus') {
@@ -229,7 +229,9 @@
     function renderTable() {
       // Herteken de tabel met alle ingevoerde gegevens en kleurcodeer volgens positief of negatief bedrag
       tbody.innerHTML = '';
-      let totaal = 0;
+      
+      let start = parseFloat(localStorage.getItem('startAmount')) || 0;
+      totaal += start;
       log.forEach(entry => {
         const tr = document.createElement('tr');
         tr.className = entry.bedrag >= 0 ? 'positief' : 'negatief';
@@ -245,7 +247,8 @@
         tbody.appendChild(tr);
         totaal += entry.bedrag;
       });
-      totalNet.textContent = totaal.toFixed(2);
+      
+      document.getElementById('totalsDisplay').className = 'totals ' + (totaal >= 0 ? 'positief' : 'negatief');
       document.getElementById('totalsDisplay').className = 'totals ' + (totaal >= 0 ? 'positief' : 'negatief');
     }
 
@@ -263,18 +266,15 @@
       return `${day}/${m}/${y}`;
     }
 
-    function exportToPDF() {
-      // Maak een PDF-export aan van alle items van de huidige maand
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const thisMonth = new Date().toISOString().slice(0, 7);
-      const monthEntries = log.filter(e => e.datum.startsWith(thisMonth));
-      const total = log.reduce((sum, e) => sum + e.bedrag, 0);
+    
+      const start = parseFloat(localStorage.getItem('startAmount')) || 0;
+      const totalWithStart = total + start;
       const monthTotal = monthEntries.reduce((sum, e) => sum + e.bedrag, 0);
 
       doc.text(`Overuren Tracker - ${thisMonth}`, 10, 10);
-      doc.text(`Totaal (alle tijd): €${total.toFixed(2)}`, 10, 20);
-      doc.text(`Totaal deze maand: €${monthTotal.toFixed(2)}`, 10, 30);
+      doc.text(`Startbedrag: €${start.toFixed(2)}`, 10, 20);
+      doc.text(`Totaal (alle tijd): €${totalWithStart.toFixed(2)}`, 10, 30);
+      
 
       let y = 40;
       monthEntries.forEach(entry => {
