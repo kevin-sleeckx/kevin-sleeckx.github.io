@@ -56,6 +56,7 @@
   <div class="top-buttons">
     <button onclick="exportToPDF()">Exporteer PDF</button>
   </div>
+    
     <label>Startbedrag (€): <input type="number" id="startAmount" step="0.01" placeholder="vb. 100.00"></label>
   <div id="warningBox" style="display:none; background-color:#fff3cd; border:1px solid #ffeeba; padding:10px; margin-bottom:1em; color:#856404; border-radius:4px; position:relative;">
     <strong><i class='fas fa-exclamation-triangle'></i> Waarschuwing</strong>
@@ -228,7 +229,7 @@
     function renderTable() {
       // Herteken de tabel met alle ingevoerde gegevens en kleurcodeer volgens positief of negatief bedrag
       tbody.innerHTML = '';
-      
+      
       let start = parseFloat(localStorage.getItem('startAmount')) || 0;
       totaal += start;
       log.forEach(entry => {
@@ -246,7 +247,7 @@
         tbody.appendChild(tr);
         totaal += entry.bedrag;
       });
-      
+      
       document.getElementById('totalsDisplay').className = 'totals ' + (totaal >= 0 ? 'positief' : 'negatief');
       document.getElementById('totalsDisplay').className = 'totals ' + (totaal >= 0 ? 'positief' : 'negatief');
     }
@@ -265,7 +266,7 @@
       return `${day}/${m}/${y}`;
     }
 
-    
+    
       const start = parseFloat(localStorage.getItem('startAmount')) || 0;
       const totalWithStart = total + start;
       const monthTotal = monthEntries.reduce((sum, e) => sum + e.bedrag, 0);
@@ -273,7 +274,7 @@
       doc.text(`Overuren Tracker - ${thisMonth}`, 10, 10);
       doc.text(`Startbedrag: €${start.toFixed(2)}`, 10, 20);
       doc.text(`Totaal (alle tijd): €${totalWithStart.toFixed(2)}`, 10, 30);
-      
+      
 
       let y = 40;
       monthEntries.forEach(entry => {
