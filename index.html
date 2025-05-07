@@ -56,7 +56,6 @@
 
   <div class="top-buttons">
     <button onclick="exportToPDF()">Exporteer PDF</button>
-    <button onclick="deleteAll()">Verwijder alles (test)</button>
   </div>
 
   <form id="entryForm">
@@ -200,14 +199,6 @@
       log.splice(index, 1);
       localStorage.setItem('overurenLog', JSON.stringify(log));
       renderTable();
-    }
-
-    function deleteAll() {
-      if (confirm("Weet je zeker dat je alles wil wissen?")) {
-        localStorage.removeItem('overurenLog');
-        log = [];
-        renderTable();
-      }
     }
 
     function formatDate(d) {
