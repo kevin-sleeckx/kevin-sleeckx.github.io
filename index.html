@@ -131,7 +131,6 @@
     const shiftBonuses = { dag: 0.5, vroeg: 0.55, laat: 0.65, nacht: 1.0 }; // Bonuspercentages voor Recup+ per shift
     const oppakBonuses = { dag: 0.0, vroeg: 0.05, laat: 0.10, nacht: 0.5 }; // Bonuspercentages voor Recup- per shift
     let log = JSON.parse(localStorage.getItem('overurenLog') || '[]');
-    
     let startAmount = parseFloat(localStorage.getItem('startAmount')) || 0;
 
     const form = document.getElementById('entryForm');
@@ -196,8 +195,6 @@
       const uren = hours + (minutes / 60); // omzetting van minuten naar fractie van uur
       const dagloon = parseFloat(wageInput.value);
       const custom = parseFloat(document.getElementById('customAmount').value) || 0;
-
-      
       const sa = parseFloat(document.getElementById('startAmount').value);
       if (!isNaN(sa)) localStorage.setItem('startAmount', sa);
 
@@ -229,7 +226,6 @@
     function renderTable() {
       // Herteken de tabel met alle ingevoerde gegevens en kleurcodeer volgens positief of negatief bedrag
       tbody.innerHTML = '';
-      
       let start = parseFloat(localStorage.getItem('startAmount')) || 0;
       totaal += start;
       log.forEach(entry => {
@@ -247,7 +243,6 @@
         tbody.appendChild(tr);
         totaal += entry.bedrag;
       });
-      
       document.getElementById('totalsDisplay').className = 'totals ' + (totaal >= 0 ? 'positief' : 'negatief');
       document.getElementById('totalsDisplay').className = 'totals ' + (totaal >= 0 ? 'positief' : 'negatief');
     }
@@ -265,8 +260,6 @@
       const [y, m, day] = d.split("-");
       return `${day}/${m}/${y}`;
     }
-
-    
       const start = parseFloat(localStorage.getItem('startAmount')) || 0;
       const totalWithStart = total + start;
       const monthTotal = monthEntries.reduce((sum, e) => sum + e.bedrag, 0);
@@ -274,7 +267,6 @@
       doc.text(`Overuren Tracker - ${thisMonth}`, 10, 10);
       doc.text(`Startbedrag: €${start.toFixed(2)}`, 10, 20);
       doc.text(`Totaal (alle tijd): €${totalWithStart.toFixed(2)}`, 10, 30);
-      
 
       let y = 40;
       monthEntries.forEach(entry => {
