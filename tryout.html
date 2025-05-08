@@ -159,7 +159,7 @@ td { vertical-align: middle; }
   </table>
 
   
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.5.2</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.5.3</p>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
@@ -339,6 +339,17 @@ td { vertical-align: middle; }
       return `${day}/${m}/${y}`;
     }
     function exportToPDF() {
+      // Controleer of er deze week al een export is gebeurd
+      const exported = localStorage.getItem('exportedMonth') || '';
+      const today = new Date();
+      const currentWeek = `${today.getFullYear()}-W${String(getWeekNumber(today)).padStart(2, '0')}`;
+      const lastExport = localStorage.getItem('lastExportWeek') || '';
+      if (lastExport === currentWeek) {
+        alert('Er is deze week al een PDF-export gebeurd.');
+      } else {
+        alert('Er is deze week nog geen PDF-export gebeurd. Vergeet dit niet!');
+      }
+      localStorage.setItem('lastExportWeek', currentWeek);
       // Maak een PDF-export aan van alle items van de huidige maand
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
@@ -361,6 +372,14 @@ td { vertical-align: middle; }
 
       localStorage.setItem('exportedMonth', thisMonth);
       doc.save(`overuren_${thisMonth}.pdf`);
+    }
+
+    function getWeekNumber(d) {
+      d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const dayNum = d.getUTCDay() || 7;
+      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
     }
 
     function toggleInfoBox() {
