@@ -115,9 +115,10 @@
   </table>
 
   
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.2.8</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.2.9</p>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
     // Knop voor aanpassen startbedrag
     function editStartAmount() {
       const current = parseFloat(localStorage.getItem('startAmount')) || 0;
@@ -168,7 +169,7 @@
       // Initieer datum en dagloon bij laden van de pagina
       dateInput.value = new Date().toISOString().split('T')[0];
                   renderTable();
-      totalNet.textContent = totaal.toFixed(2);
+      
     };
 
     typeInput.addEventListener('change', () => {
@@ -246,7 +247,7 @@
       document.getElementById('customAmount').value = 0;
       typeInput.value = type;
       shiftInput.value = shift;
-      if (!isNaN(dagloon)) wageInput.value = dagloon;
+      
       typeInput.dispatchEvent(new Event('change'));
     });
 
