@@ -161,7 +161,7 @@ td { vertical-align: middle; }
   </table>
 
   
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.5.6</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.5.8</p>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -345,50 +345,79 @@ td { vertical-align: middle; }
     }
     function exportToPDF() {
       checkExportStatus();
-      // Controleer of er deze week al een export is gebeurd
-      const exported = localStorage.getItem('exportedMonth') || '';
-      const today = new Date();
-      const currentWeek = `${today.getFullYear()}-W${String(getWeekNumber(today)).padStart(2, '0')}`;
-      const lastExport = localStorage.getItem('lastExportWeek') || '';
-      const statusBox = document.getElementById('exportStatus');
-      statusBox.style.display = 'block';
-      if (lastExport === currentWeek) {
-        statusBox.textContent = '✅ Deze week is al een PDF geëxporteerd.';
-        statusBox.style.backgroundColor = '#d4edda';
-        statusBox.style.color = '#155724';
-        statusBox.style.border = '1px solid #c3e6cb';
-      } else {
-        statusBox.textContent = '⚠️ Vergeet deze week je PDF-export niet!';
-        statusBox.style.backgroundColor = '#fff3cd';
-        statusBox.style.color = '#856404';
-        statusBox.style.border = '1px solid #ffeeba';
-      }
-      localStorage.setItem('lastExportWeek', currentWeek);
-      // Maak een PDF-export aan van alle items van de huidige maand
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-      const thisMonth = new Date().toISOString().slice(0, 7);
-      const monthEntries = log.filter(e => e.datum.startsWith(thisMonth));
-      const total = log.reduce((sum, e) => sum + e.bedrag, 0);
+      const grouped = {};
+
+      log.forEach(entry => {
+        const [year, month] = entry.datum.split('-');
+        const key = `${year}-${month}`;
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(entry);
+      });
+
+      let y = 10;
+      let totaal = 0;
+
       const start = parseFloat(localStorage.getItem('startAmount')) || 0;
-      const totalWithStart = total + start;
+      doc.text(`Startbedrag: €${start.toFixed(2)}`, 10, y);
+      y += 10;
 
-      doc.text(`Overuren Tracker - ${thisMonth}`, 10, 10);
-      doc.text(`Startbedrag: €${start.toFixed(2)}`, 10, 20);
-      doc.text(`Totaal (alle tijd): €${totalWithStart.toFixed(2)}`, 10, 30);
+      Object.keys(grouped).sort().forEach(monthKey => {
+        const entries = grouped[monthKey];
+        const maandTotaal = entries.reduce((sum, e) => sum + e.bedrag, 0);
+        totaal += maandTotaal;
 
-      const tableBody = monthEntries.map(entry => [
-        formatDate(entry.datum),
-        entry.type === 'bestelling' ? 'Bestelling' : entry.shift,
-        entry.uren?.toFixed(2) || '',
-        `€${entry.bedrag.toFixed(2)}`
-      ]);
+        doc.text(`Maand: ${monthKey}  (Totaal: €${maandTotaal.toFixed(2)})`, 10, y);
+        y += 6;
+
+        const body = entries.map(e => [
+          formatDate(e.datum),
+          e.type === 'bestelling' ? 'Bestelling' : e.shift,
+          e.uren?.toFixed(2) || '',
+          `€${e.bedrag.toFixed(2)}`
+        ]);
+
+        doc.autoTable({
+          head: [['Datum', 'Type/Shift', 'Uren', 'Bedrag (€)']],
+          body,
+          startY: y,
+          styles: { fontSize: 10 },
+          bodyStyles: (row, data) => {
+            const value = parseFloat(data.row.raw[3].replace('€', ''));
+            if (value < 0) {
+              return { fillColor: [255, 230, 230] };
+            } else {
+              return { fillColor: [230, 255, 230] };
+            }
+          },
+          margin: { top: y, left: 10, right: 10 },
+          didDrawPage: (d) => { y = d.cursor.y + 10; }
+        });
+      });
+
+      doc.text(`Totaal alle maanden (incl. startbedrag): €${(totaal + start).toFixed(2)}`, 10, y);
+
+      const today = new Date();
+      const currentWeek = `${today.getFullYear()}-W${String(getWeekNumber(today)).padStart(2, '0')}`;
+      localStorage.setItem('lastExportWeek', currentWeek);
+
+      doc.save(`overuren_per_maand.pdf`);
+    }
 
       doc.autoTable({
         head: [['Datum', 'Type/Shift', 'Uren', 'Bedrag (€)']],
         body: tableBody,
         startY: 40,
-        styles: { fontSize: 10 }
+        styles: { fontSize: 10 },
+        bodyStyles: (row, data) => {
+          const value = parseFloat(data.row.raw[3].replace('€', ''));
+          if (value < 0) {
+            return { fillColor: [255, 230, 230] }; // zacht rood
+          } else {
+            return { fillColor: [230, 255, 230] }; // zacht groen
+          }
+        }
       });
 
       localStorage.setItem('exportedMonth', thisMonth);
