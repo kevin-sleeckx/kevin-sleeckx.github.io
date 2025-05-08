@@ -12,7 +12,7 @@
     .totals.positief { background: #28a745; }
     .totals.negatief { background: #dc3545; }
 
-    form, table { width: 100%; background: #fff; padding: 1em; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 2em; }
+    form, table { width: 100%; background: #fff; padding: 1em; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 1.5em; }
     label { display: block; margin-bottom: 0.6em; width: 100%; }
     input, select, button { padding: 0.5em; max-width: 100%; box-sizing: border-box; margin-top: 0.3em; font-size: 1em; border: 1px solid #ccc; border-radius: 4px; }
     .inline-inputs { display: flex; gap: 8px; align-items: center; margin-bottom: 1em; }
@@ -72,7 +72,7 @@ td { vertical-align: middle; }
   </div>
   <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span> €</div>
 
-  <form id="entryForm">
+  <form id="entryForm" style="display: flex; flex-direction: column; align-items: center; gap: 1em;">
     <div style="display: flex; gap: 1em; align-items: flex-end; justify-content: center;">
       <div>
         <button type="button" onclick="editStartAmount()">Startbedrag aanpassen</button>
@@ -153,7 +153,7 @@ td { vertical-align: middle; }
   </table>
 
   
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.4.7</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.4.8</p>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
