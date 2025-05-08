@@ -56,41 +56,6 @@ td { vertical-align: middle; }
       filter: none;
     }
     @media screen and (max-width: 600px) {
-      html, body {
-        padding: 1em;
-        margin: 0;
-        width: 100%;
-        box-sizing: border-box;
-      }
-      table, form, .totals, .top-buttons {
-        width: 100%;
-      }
-      form#entryForm {
-        padding: 0.5em;
-        align-items: stretch;
-      }
-      form#entryForm > div,
-      form#entryForm label,
-      .top-buttons,
-      .inline-inputs {
-        flex-direction: column;
-        align-items: stretch;
-        width: 100%;
-      }
-      form#entryForm {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-      }
-      form#entryForm > div {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .inline-inputs {
-        flex-direction: column;
-        align-items: flex-start;
-      }
       body { padding: 1em; }
       .inline-inputs { flex-direction: column; align-items: flex-start; }
       .top-buttons { flex-direction: column; align-items: stretch; }
@@ -105,7 +70,7 @@ td { vertical-align: middle; }
   <div class="top-buttons">
     <button onclick="exportToPDF()">Exporteer naar PDF</button>
   </div>
-  <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span></div> €</div>
+  <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span> €</div>
 
   <form id="entryForm" style="display: flex; flex-direction: column; align-items: center; gap: 1em;">
     <div style="display: flex; gap: 1em; align-items: flex-end; justify-content: center;">
@@ -122,22 +87,25 @@ td { vertical-align: middle; }
     <strong><i class='fas fa-exclamation-triangle'></i> Waarschuwing</strong>
     <button onclick="this.parentElement.style.display='none'" style="position:absolute; top:5px; right:10px; background:none; border:none; font-size:16px; cursor:pointer; color:#856404;">&times;</button>
   </div>
- <div style="display: flex; justify-content: center; width: 100%;"><label style="width: 100%; max-width: 300px;">Datum:
+ <label>Datum:
   <input type="date" id="date" required>
-</label></div>
-    <div style="display: flex; justify-content: center; width: 100%;"><label style="width: 100%; max-width: 300px;">Type:
+</label>
+    <label>Type:
       <select id="entryType">
         <option value="recupPlus">Recup+</option>
         <option value="recupMin">Recup-</option>
         <option value="bestelling">Bestelling</option>
-      </select></label></div>
-    <div style="display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; max-width: 300px;"><label id="shiftLabel" style="flex: 1;">Shift:
+      </select>
+    </label>
+    <label id="shiftLabel">Shift:
       <select id="shift">
         <option value="dag">Dag</option>
         <option value="vroeg">Vroege</option>
         <option value="laat">Late</option>
         <option value="nacht">Nacht</option>
-      </select></label><span class="question-icon" style="margin-top: 2em;" onclick="toggleInfoBox()">?</span>
+      </select>
+    </label>
+    <span class="question-icon" onclick="toggleInfoBox()">?</span>
     <div id="infoBox" class="info-box">
       <strong>Berekening Recup:</strong>
       <ul>
@@ -170,7 +138,7 @@ td { vertical-align: middle; }
   <button type="submit">Toevoegen</button>
     </form>
 
-  <!-- Overzichtstabel buiten het formulier geplaatst -->
+  
   <table id="logTable" class="styled-table">
     <thead>
       <tr>
@@ -185,7 +153,7 @@ td { vertical-align: middle; }
   </table>
 
   
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.5.2</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.4.8</p>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
