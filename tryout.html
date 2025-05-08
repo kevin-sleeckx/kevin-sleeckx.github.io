@@ -161,7 +161,7 @@ td { vertical-align: middle; }
   </table>
 
   
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.5.9</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.6.0</p>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -376,6 +376,33 @@ td { vertical-align: middle; }
           e.uren?.toFixed(2) || '',
           `€${e.bedrag.toFixed(2)}`
         ]);
+
+        doc.autoTable({
+          head: [['Datum', 'Type/Shift', 'Uren', 'Bedrag (€)']],
+          body,
+          startY: y,
+          styles: { fontSize: 10 },
+          bodyStyles: (row, data) => {
+            const value = parseFloat(data.row.raw[3].replace('€', ''));
+            if (value < 0) {
+              return { fillColor: [255, 230, 230] };
+            } else {
+              return { fillColor: [230, 255, 230] };
+            }
+          },
+          margin: { top: y, left: 10, right: 10 },
+          didDrawPage: (d) => { y = d.cursor.y + 10; }
+        });
+      });
+
+      doc.text(`Totaal alle maanden (incl. startbedrag): €${(totaal + start).toFixed(2)}`, 10, y);
+
+      const today = new Date();
+      const currentWeek = `${today.getFullYear()}-W${String(getWeekNumber(today)).padStart(2, '0')}`;
+      localStorage.setItem('lastExportWeek', currentWeek);
+
+      doc.save(`overuren_per_maand.pdf`);
+    }
 
         
       doc.save(`overuren_${thisMonth}.pdf`);
