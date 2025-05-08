@@ -56,6 +56,27 @@ td { vertical-align: middle; }
       filter: none;
     }
     @media screen and (max-width: 600px) {
+      html, body {
+        padding: 1em;
+        margin: 0;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      table, form, .totals, .top-buttons {
+        width: 100%;
+      }
+      form#entryForm {
+        padding: 0.5em;
+        align-items: stretch;
+      }
+      form#entryForm > div,
+      form#entryForm label,
+      .top-buttons,
+      .inline-inputs {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+      }
       form#entryForm {
         display: flex;
         flex-direction: column;
@@ -149,7 +170,7 @@ td { vertical-align: middle; }
   <button type="submit">Toevoegen</button>
     </form>
 
-  
+  <!-- Overzichtstabel buiten het formulier geplaatst -->
   <table id="logTable" class="styled-table">
     <thead>
       <tr>
@@ -164,7 +185,7 @@ td { vertical-align: middle; }
   </table>
 
   
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.5.0</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.5.2</p>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
