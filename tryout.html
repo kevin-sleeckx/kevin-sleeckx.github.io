@@ -46,21 +46,29 @@
       color: blue;
       font-weight: bold;
     }
-  </style>
+      .blur-toggle {
+      filter: blur(6px);
+      cursor: pointer;
+      transition: filter 0.3s ease;
+    }
+    .blur-toggle.reveal {
+      filter: none;
+    }
+</style>
 </head>
 <body>
 
   <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span> €</div>
 
   <form id="entryForm">
-    <div style="display: flex; gap: 1em; align-items: flex-end;">
+    <div style="display: flex; gap: 1em; align-items: flex-end; justify-content: center;">
       <div>
         <button type="button" onclick="editStartAmount()">Startbedrag aanpassen</button>
-        <p id="startDisplay" style="text-align: center; margin-top: 0.5em;">Startbedrag: €<span id="startAmountDisplay">0.00</span></p>
+        <p id="startDisplay" style="text-align: center; margin-top: 0.5em;">Startbedrag: €<span id="startAmountDisplay" class="blur-toggle">0.00</span></p>
       </div>
       <div>
         <button type="button" onclick="editWage()">Dagloon aanpassen</button>
-        <p id="wageDisplay" style="text-align: center; margin-top: 0.5em;">Dagloon: €<span id="wageAmountDisplay">0.00</span></p>
+        <p id="wageDisplay" style="text-align: center; margin-top: 0.5em;">Dagloon: €<span id="wageAmountDisplay" class="blur-toggle">0.00</span></p>
       </div>
     </div>
   <div id="warningBox" style="display:none; background-color:#fff3cd; border:1px solid #ffeeba; padding:10px; margin-bottom:1em; color:#856404; border-radius:4px; position:relative;">
@@ -122,7 +130,7 @@
   </table>
 
   
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.3.0</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.3.2</p>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
@@ -149,6 +157,11 @@
 
     // Toon huidige bedragen bij laden
     window.addEventListener('load', () => {
+      document.querySelectorAll('.blur-toggle').forEach(el => {
+        el.addEventListener('click', () => {
+          el.classList.toggle('reveal');
+        });
+      });
       const start = parseFloat(localStorage.getItem('startAmount')) || 0;
       const wage = parseFloat(localStorage.getItem('defaultDailyWage')) || 0;
       document.getElementById('startAmountDisplay').textContent = start.toFixed(2);
