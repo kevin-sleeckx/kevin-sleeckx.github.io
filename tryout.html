@@ -196,7 +196,7 @@
       }
 
       if (type !== 'bestelling') {
-        const dagloonCheck = document.getElementById('dailyWage').value;
+        const dagloonCheck = localStorage.getItem('defaultDailyWage') || '';
         if (dagloonCheck === '' || isNaN(parseFloat(dagloonCheck)) || parseFloat(dagloonCheck) === 0) {
           warnings.push('Vul een geldig dagloon in.');
         }
