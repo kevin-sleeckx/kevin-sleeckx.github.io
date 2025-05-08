@@ -13,19 +13,20 @@
     .totals.negatief { background: #dc3545; }
 
     form, table { width: 100%; background: #fff; padding: 1em; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 2em; }
-    label { display: block; margin-bottom: 0.6em; }
-    input, select, button { width: 100%; padding: 0.5em; margin-top: 0.3em; font-size: 1em; border: 1px solid #ccc; border-radius: 4px; }
+    label { display: block; margin-bottom: 0.6em; width: 100%; }
+    input, select, button { padding: 0.5em; max-width: 100%; box-sizing: border-box; margin-top: 0.3em; font-size: 1em; border: 1px solid #ccc; border-radius: 4px; }
     .inline-inputs { display: flex; gap: 8px; align-items: center; margin-bottom: 1em; }
-    .inline-inputs input { width: 4ch; }
+    .inline-inputs input { width: 5ch; flex: 0 0 auto; }
 
     button { background-color: #007bff; color: white; font-weight: bold; cursor: pointer; border: none; }
     button:hover { background-color: #0056b3; }
     .hide { display: none; }
 
-    table { border-collapse: collapse; font-size: 0.95em; }
-    th, td { border: 1px solid #ddd; padding: 0.5em; text-align: center; }
+    table { border-collapse: collapse; font-size: 0.95em; width: 100%; border-radius: 8px; overflow: hidden; }
+    th, td { border: 1px solid #ddd; padding: 0.75em; text-align: center; }
     th { background-color: #007bff; color: white; }
     tr.positief { background-color: #e6ffe6; }
+td { vertical-align: middle; }
     tr.negatief { background-color: #ffe6e6; }
 
     .actions i { cursor: pointer; margin: 0 5px; }
@@ -46,40 +47,73 @@
       color: blue;
       font-weight: bold;
     }
-  </style>
+      .blur-toggle {
+      filter: blur(6px);
+      cursor: pointer;
+      transition: filter 0.3s ease;
+    }
+    .blur-toggle.reveal {
+      filter: none;
+    }
+    @media screen and (max-width: 600px) {
+      #hoursDiv.inline-inputs {
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      #hoursDiv.inline-inputs input {
+        width: 4ch;
+      }
+      body { padding: 1em; }
+      .inline-inputs { flex-direction: column; align-items: flex-start; }
+      .top-buttons { flex-direction: column; align-items: stretch; }
+      form, table { padding: 0.5em; }
+      label, input, select, button { font-size: 1em; width: 100%; }
+      .info-box { width: 100%; }
+    }
+</style>
 </head>
 <body>
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.2.7</p>
 
+  
   <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span> €</div>
-
   <div class="top-buttons">
-    <button onclick="exportToPDF()">Exporteer PDF</button>
+  <div id="exportStatus" style="display:none; padding: 10px; border-radius: 4px; margin-top: 10px; font-weight: bold;"></div>
+    <button onclick="exportToPDF()">Exporteer naar PDF</button>
   </div>
 
   <form id="entryForm">
-    <label>Startbedrag (€): <input type="number" id="startAmount" step="0.01" placeholder="vb. 100.00"></label>
+    <div style="display: flex; gap: 1em; align-items: flex-end; justify-content: center;">
+      <div>
+        <button type="button" onclick="editStartAmount()">Startbedrag aanpassen</button>
+        <p id="startDisplay" style="text-align: center; margin-top: 0.5em;">Startbedrag: €<span id="startAmountDisplay" class="blur-toggle">0.00</span></p>
+      </div>
+      <div>
+        <button type="button" onclick="editWage()">Dagloon aanpassen</button>
+        <p id="wageDisplay" style="text-align: center; margin-top: 0.5em;">Dagloon: €<span id="wageAmountDisplay" class="blur-toggle">0.00</span></p>
+      </div>
+    </div>
   <div id="warningBox" style="display:none; background-color:#fff3cd; border:1px solid #ffeeba; padding:10px; margin-bottom:1em; color:#856404; border-radius:4px; position:relative;">
     <strong><i class='fas fa-exclamation-triangle'></i> Waarschuwing</strong>
     <button onclick="this.parentElement.style.display='none'" style="position:absolute; top:5px; right:10px; background:none; border:none; font-size:16px; cursor:pointer; color:#856404;">&times;</button>
   </div>
- <label>Datum: <input type="date" id="date" required></label>
-    <label>Type:
-      <select id="entryType">
+ <div style="text-align: center;"><label>Datum:
+  <input type="date" id="date" required>
+</label></div>
+    <div style="text-align: center;"><label>Type:<select id="entryType">
         <option value="recupPlus">Recup+</option>
         <option value="recupMin">Recup-</option>
         <option value="bestelling">Bestelling</option>
       </select>
     </label>
-    <label id="shiftLabel">Shift:
+    <div style="text-align: center;"><label id="shiftLabel">Shift:
       <select id="shift">
         <option value="dag">Dag</option>
         <option value="vroeg">Vroege</option>
         <option value="laat">Late</option>
         <option value="nacht">Nacht</option>
       </select>
-    </label>
-    <span class="question-icon" onclick="toggleInfoBox()">?</span>
+    </label></div><div style="text-align: center;"><span class="question-icon" onclick="toggleInfoBox()"><i class="fas fa-question-circle"></i></span>
     <div id="infoBox" class="info-box">
       <strong>Berekening Recup:</strong>
       <ul>
@@ -101,56 +135,97 @@
         </li>
       </ul>
     </div>
-    <div id="hoursDiv" class="inline-inputs">
+    <div id="hoursDiv" class="inline-inputs" style="justify-content: center;">
   <input type="number" id="hours" min="0" max="24" placeholder="0">
   <span>uren en</span>
   <input type="number" id="minutes" min="0" max="59" placeholder="0">
   <span>minuten</span> <!-- minuten worden omgerekend naar decimale uren -->
 </div>
-    <label id="wageLabel">Dagloon (€): <input type="number" id="dailyWage" step="0.01" placeholder="vb. 148.65"></label>
-    <label id="customLabel" class="hide">Bedrag (enkel voor bestellingen): <input type="number" id="customAmount" step="0.01" value="0"></label>
-  <button type="submit">Toevoegen</button>
+    
+    <div style="text-align: center;"><label id="customLabel" class="hide">Bedrag (enkel voor bestellingen): <input type="number" id="customAmount" step="0.01" value="0"></label></div>
+    <div style="text-align: center; margin-bottom: 2em;"><button type="submit">Toevoegen</button></div>
     </form>
 
-  <table id="logTable">
-    <thead><tr><th>Datum</th><th>Shift</th><th>Uren</th><th>Bedrag (€)</th><th>Acties</th></tr></thead>
+  
+  <table id="logTable" class="styled-table">
+    <thead>
+      <tr>
+        <th>Datum</th>
+        <th>Type/Shift</th>
+        <th>Uren</th>
+        <th>Bedrag (€)</th>
+        <th>Actie</th>
+      </tr>
+    </thead>
     <tbody></tbody>
   </table>
 
+  
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.6.6</p>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+<script>
+    // Knop voor aanpassen startbedrag
+    function editStartAmount() {
+      const current = parseFloat(localStorage.getItem('startAmount')) || 0;
+      const nieuw = prompt('Nieuw startbedrag:', current);
+      if (nieuw !== null && !isNaN(parseFloat(nieuw))) {
+        localStorage.setItem('startAmount', parseFloat(nieuw));
+        document.getElementById('startAmountDisplay').textContent = parseFloat(nieuw).toFixed(2);
+        renderTable();
+      }
+    }
+
+    // Knop voor aanpassen dagloon
+    function editWage() {
+      const current = parseFloat(localStorage.getItem('defaultDailyWage')) || 0;
+      const nieuw = prompt('Nieuw dagloon:', current);
+      if (nieuw !== null && !isNaN(parseFloat(nieuw))) {
+        localStorage.setItem('defaultDailyWage', parseFloat(nieuw));
+        document.getElementById('wageAmountDisplay').textContent = parseFloat(nieuw).toFixed(2);
+      }
+    }
+
+    // Toon huidige bedragen bij laden
+    window.addEventListener('load', () => {
+      document.querySelectorAll('.blur-toggle').forEach(el => {
+        el.addEventListener('click', () => {
+          el.classList.toggle('reveal');
+        });
+      });
+      const start = parseFloat(localStorage.getItem('startAmount')) || 0;
+      const wage = parseFloat(localStorage.getItem('defaultDailyWage')) || 0;
+      document.getElementById('startAmountDisplay').textContent = start.toFixed(2);
+      document.getElementById('wageAmountDisplay').textContent = wage.toFixed(2);
+    });
+  </script>
   <script>
     // ==== CONFIGURATIE EN INITIATIE ====
     const STANDARD_HOURS = 7.25; // Aantal standaard werkuren per dag
     const shiftBonuses = { dag: 0.5, vroeg: 0.55, laat: 0.65, nacht: 1.0 }; // Bonuspercentages voor Recup+ per shift
     const oppakBonuses = { dag: 0.0, vroeg: 0.05, laat: 0.10, nacht: 0.5 }; // Bonuspercentages voor Recup- per shift
-    let log = JSON.parse(localStorage.getItem('overurenLog') || '[]');
-    
-    let storedWage = parseFloat(localStorage.getItem('defaultDailyWage')) || null;
-    let startAmount = parseFloat(localStorage.getItem('startAmount')) || 0;
+    let log = JSON.parse(localStorage.getItem('overurenLog') || '[]');    let startAmount = parseFloat(localStorage.getItem('startAmount')) || 0;
 
     const form = document.querySelector('form'); // Aangepast zodat het formulier correct wordt gevonden
     const tbody = document.querySelector('#logTable tbody');
     const totalNet = document.getElementById('totalNet');
     const dateInput = document.getElementById('date');
     const shiftInput = document.getElementById('shift');
-    const wageInput = document.getElementById('dailyWage');
-    const typeInput = document.getElementById('entryType');
+        const typeInput = document.getElementById('entryType');
    
       window.onload = () => {
       // Initieer datum en dagloon bij laden van de pagina
       dateInput.value = new Date().toISOString().split('T')[0];
-      if (storedWage) wageInput.value = storedWage;
-      if (!isNaN(startAmount)) document.getElementById('startAmount').value = startAmount;
-      renderTable();
-      totalNet.textContent = totaal.toFixed(2);
+                  renderTable();
+      
     };
 
     typeInput.addEventListener('change', () => {
       const isBestelling = typeInput.value === 'bestelling';
       document.getElementById('shiftLabel').classList.toggle('hide', isBestelling);
       document.getElementById('hoursDiv').classList.toggle('hide', isBestelling);
-      document.getElementById('wageLabel').classList.toggle('hide', isBestelling);
-      document.getElementById('customLabel').classList.toggle('hide', !isBestelling);
+            document.getElementById('customLabel').classList.toggle('hide', !isBestelling);
     });
 
     form.addEventListener('submit', e => {
@@ -170,7 +245,7 @@
       }
 
       if (type !== 'bestelling') {
-        const dagloonCheck = document.getElementById('dailyWage').value;
+        const dagloonCheck = localStorage.getItem('defaultDailyWage') || '';
         if (dagloonCheck === '' || isNaN(parseFloat(dagloonCheck)) || parseFloat(dagloonCheck) === 0) {
           warnings.push('Vul een geldig dagloon in.');
         }
@@ -194,12 +269,11 @@
       const hours = parseFloat(document.getElementById('hours').value) || 0;
       const minutes = parseFloat(document.getElementById('minutes').value) || 0;
       const uren = hours + (minutes / 60); // omzetting van minuten naar fractie van uur
-      const dagloon = parseFloat(wageInput.value);
+      const dagloon = parseFloat(localStorage.getItem('defaultDailyWage')) || 0;
       const custom = parseFloat(document.getElementById('customAmount').value) || 0;
 
       
-      const sa = parseFloat(document.getElementById('startAmount').value);
-      if (!isNaN(sa)) localStorage.setItem('startAmount', sa);
+      
 
       let bedrag = 0;
       if (type === 'recupPlus') {
@@ -222,18 +296,19 @@
       document.getElementById('customAmount').value = 0;
       typeInput.value = type;
       shiftInput.value = shift;
-      if (!isNaN(dagloon)) wageInput.value = dagloon;
+      
       typeInput.dispatchEvent(new Event('change'));
     });
 
     function renderTable() {
-      // Herteken de tabel met alle ingevoerde gegevens en kleurcodeer volgens positief of negatief bedrag
       tbody.innerHTML = '';
-      
       let totaal = 0;
       let start = parseFloat(localStorage.getItem('startAmount')) || 0;
       totaal += start;
-      log.forEach(entry => {
+
+      const sorted = [...log].sort((a, b) => b.datum.localeCompare(a.datum));
+
+      sorted.forEach(entry => {
         const tr = document.createElement('tr');
         tr.className = entry.bedrag >= 0 ? 'positief' : 'negatief';
         tr.innerHTML = `
@@ -247,11 +322,9 @@
         `;
         tbody.appendChild(tr);
         totaal += entry.bedrag;
-        totalNet.textContent = totaal.toFixed(2);
-
       });
-      
-      document.getElementById('totalsDisplay').className = 'totals ' + (totaal >= 0 ? 'positief' : 'negatief');
+
+      totalNet.textContent = totaal.toFixed(2);
       document.getElementById('totalsDisplay').className = 'totals ' + (totaal >= 0 ? 'positief' : 'negatief');
     }
 
@@ -269,28 +342,100 @@
       return `${day}/${m}/${y}`;
     }
     function exportToPDF() {
-      // Maak een PDF-export aan van alle items van de huidige maand
+      checkExportStatus();
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-      const thisMonth = new Date().toISOString().slice(0, 7);
-      const monthEntries = log.filter(e => e.datum.startsWith(thisMonth));
-      const total = log.reduce((sum, e) => sum + e.bedrag, 0);
-      const start = parseFloat(localStorage.getItem('startAmount')) || 0;
-      const totalWithStart = total + start;
+      const grouped = {};
 
-      doc.text(`Overuren Tracker - ${thisMonth}`, 10, 10);
-      doc.text(`Startbedrag: €${start.toFixed(2)}`, 10, 20);
-      doc.text(`Totaal (alle tijd): €${totalWithStart.toFixed(2)}`, 10, 30);
-
-      let y = 40;
-      monthEntries.forEach(entry => {
-        const lijn = `${formatDate(entry.datum)} - ${entry.type === 'bestelling' ? 'Bestelling' : entry.shift} - ${entry.uren?.toFixed(2) || ''}u - €${entry.bedrag.toFixed(2)}`;
-        doc.text(lijn, 10, y);
-        y += 8;
+      log.forEach(entry => {
+        const [year, month] = entry.datum.split('-');
+        const key = `${year}-${month}`;
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(entry);
       });
 
-      localStorage.setItem('exportedMonth', thisMonth);
-      doc.save(`overuren_${thisMonth}.pdf`);
+      let y = 10;
+      let totaal = 0;
+
+      const start = parseFloat(localStorage.getItem('startAmount')) || 0;
+            y += 10;
+      doc.text(`Startbedrag: €${start.toFixed(2)}`, 10, y);
+      y += 10;
+
+      Object.keys(grouped).sort().reverse().forEach(monthKey => {
+        const entries = grouped[monthKey].sort((a, b) => b.datum.localeCompare(a.datum));
+        const maandTotaal = entries.reduce((sum, e) => sum + e.bedrag, 0);
+        totaal += maandTotaal;
+
+        doc.text(`Maand: ${monthKey}  (Totaal: €${maandTotaal.toFixed(2)})`, 10, y);
+        y += 6;
+
+        const body = entries.map(e => [
+          formatDate(e.datum),
+          e.type === 'bestelling' ? 'Bestelling' : e.shift,
+          e.uren?.toFixed(2) || '',
+          `€${e.bedrag.toFixed(2)}`
+        ]);
+
+        doc.autoTable({
+          head: [['Datum', 'Type/Shift', 'Uren', 'Bedrag (€)']],
+          body,
+          startY: y,
+          styles: { fontSize: 10 },
+          didParseCell: function(data) {
+            if (data.section === 'body' && data.column.index === 3) {
+              const value = parseFloat(data.cell.raw.replace('€', ''));
+              if (!isNaN(value)) {
+                if (value < 0) {
+                  data.cell.styles.fillColor = [255, 230, 230];
+                  data.cell.styles.textColor = 80;
+                } else {
+                  data.cell.styles.fillColor = [230, 255, 230];
+                  data.cell.styles.textColor = 20;
+                }
+              }
+            }
+          },
+          
+          margin: { top: y, left: 10, right: 10 },
+          didDrawPage: (d) => { y = d.cursor.y + 10; }
+        });
+      });
+
+      doc.text(`Totaal alle maanden (incl. startbedrag): €${(totaal + start).toFixed(2)}`, 10, y);
+
+      const today = new Date();
+      const currentWeek = `${today.getFullYear()}-W${String(getWeekNumber(today)).padStart(2, '0')}`;
+      localStorage.setItem('lastExportWeek', currentWeek);
+
+      doc.save(`overuren_per_maand.pdf`);
+    }
+
+    function getWeekNumber(d) {
+      d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+      const dayNum = d.getUTCDay() || 7;
+      d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+      const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+      return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+
+    function checkExportStatus() {
+      const today = new Date();
+      const currentWeek = `${today.getFullYear()}-W${String(getWeekNumber(today)).padStart(2, '0')}`;
+      const lastExport = localStorage.getItem('lastExportWeek') || '';
+      const statusBox = document.getElementById('exportStatus');
+      statusBox.style.display = 'block';
+      if (lastExport === currentWeek) {
+        statusBox.textContent = '✅ Deze week is al een PDF geëxporteerd.';
+        statusBox.style.backgroundColor = '#d4edda';
+        statusBox.style.color = '#155724';
+        statusBox.style.border = '1px solid #c3e6cb';
+      } else {
+        statusBox.textContent = '⚠️ Vergeet deze week je PDF-export niet!';
+        statusBox.style.backgroundColor = '#fff3cd';
+        statusBox.style.color = '#856404';
+        statusBox.style.border = '1px solid #ffeeba';
+      }
     }
 
     function toggleInfoBox() {
@@ -299,6 +444,7 @@
       infoBox.style.display = infoBox.style.display === 'block' ? 'none' : 'block';
     }
 
+    checkExportStatus();
     document.addEventListener('click', function(event) {
       // Sluit de uitlegbox als je buiten het icoontje of de box klikt
       const infoBox = document.getElementById('infoBox');
