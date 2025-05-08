@@ -188,6 +188,7 @@ td { vertical-align: middle; }
 
     // Toon huidige bedragen bij laden
     window.addEventListener('load', () => {
+      checkExportStatus();
       document.querySelectorAll('.blur-toggle').forEach(el => {
         el.addEventListener('click', () => {
           el.classList.toggle('reveal');
@@ -341,6 +342,7 @@ td { vertical-align: middle; }
       return `${day}/${m}/${y}`;
     }
     function exportToPDF() {
+      checkExportStatus();
       // Controleer of er deze week al een export is gebeurd
       const exported = localStorage.getItem('exportedMonth') || '';
       const today = new Date();
@@ -390,6 +392,25 @@ td { vertical-align: middle; }
       d.setUTCDate(d.getUTCDate() + 4 - dayNum);
       const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
       return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+    }
+
+    function checkExportStatus() {
+      const today = new Date();
+      const currentWeek = `${today.getFullYear()}-W${String(getWeekNumber(today)).padStart(2, '0')}`;
+      const lastExport = localStorage.getItem('lastExportWeek') || '';
+      const statusBox = document.getElementById('exportStatus');
+      statusBox.style.display = 'block';
+      if (lastExport === currentWeek) {
+        statusBox.textContent = '✅ Deze week is al een PDF geëxporteerd.';
+        statusBox.style.backgroundColor = '#d4edda';
+        statusBox.style.color = '#155724';
+        statusBox.style.border = '1px solid #c3e6cb';
+      } else {
+        statusBox.textContent = '⚠️ Vergeet deze week je PDF-export niet!';
+        statusBox.style.backgroundColor = '#fff3cd';
+        statusBox.style.color = '#856404';
+        statusBox.style.border = '1px solid #ffeeba';
+      }
     }
 
     function toggleInfoBox() {
