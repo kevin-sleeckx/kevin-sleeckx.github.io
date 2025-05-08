@@ -140,7 +140,7 @@ td { vertical-align: middle; }
   </table>
 
   
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.4.0</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.4.1</p>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
     function updatePagination(currentPage) {
@@ -315,8 +315,7 @@ td { vertical-align: middle; }
       tbody.innerHTML = '';
 
       // Sorteer log op datum (nieuwste eerst)
-      log.sort((a, b) => b.datum.localeCompare(a.datum));
-
+      
       let totaal = 0;
       let start = parseFloat(localStorage.getItem('startAmount')) || 0;
       totaal += start;
