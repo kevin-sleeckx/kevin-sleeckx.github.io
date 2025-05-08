@@ -75,10 +75,12 @@ td { vertical-align: middle; }
 </head>
 <body>
 
+  
+  <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span> €</div>
   <div class="top-buttons">
+  <div id="exportStatus" style="display:none; padding: 10px; border-radius: 4px; margin-top: 10px; font-weight: bold;"></div>
     <button onclick="exportToPDF()">Exporteer naar PDF</button>
   </div>
-  <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span> €</div>
 
   <form id="entryForm">
     <div style="display: flex; gap: 1em; align-items: flex-end; justify-content: center;">
@@ -344,10 +346,18 @@ td { vertical-align: middle; }
       const today = new Date();
       const currentWeek = `${today.getFullYear()}-W${String(getWeekNumber(today)).padStart(2, '0')}`;
       const lastExport = localStorage.getItem('lastExportWeek') || '';
+      const statusBox = document.getElementById('exportStatus');
+      statusBox.style.display = 'block';
       if (lastExport === currentWeek) {
-        alert('Er is deze week al een PDF-export gebeurd.');
+        statusBox.textContent = '✅ Deze week is al een PDF geëxporteerd.';
+        statusBox.style.backgroundColor = '#d4edda';
+        statusBox.style.color = '#155724';
+        statusBox.style.border = '1px solid #c3e6cb';
       } else {
-        alert('Er is deze week nog geen PDF-export gebeurd. Vergeet dit niet!');
+        statusBox.textContent = '⚠️ Vergeet deze week je PDF-export niet!';
+        statusBox.style.backgroundColor = '#fff3cd';
+        statusBox.style.color = '#856404';
+        statusBox.style.border = '1px solid #ffeeba';
       }
       localStorage.setItem('lastExportWeek', currentWeek);
       // Maak een PDF-export aan van alle items van de huidige maand
