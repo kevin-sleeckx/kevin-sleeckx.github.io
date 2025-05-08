@@ -161,7 +161,7 @@ td { vertical-align: middle; }
   </table>
 
   
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.6.3</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.6.4</p>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -358,8 +358,7 @@ td { vertical-align: middle; }
       let totaal = 0;
 
       const start = parseFloat(localStorage.getItem('startAmount')) || 0;
-      doc.text(`Totaal alle maanden (incl. startbedrag): €${(totaal + start).toFixed(2)}`, 10, y);
-      y += 10;
+            y += 10;
       doc.text(`Startbedrag: €${start.toFixed(2)}`, 10, y);
       y += 10;
 
@@ -383,6 +382,20 @@ td { vertical-align: middle; }
           body,
           startY: y,
           styles: { fontSize: 10 },
+          didParseCell: function(data) {
+            if (data.section === 'body') {
+              const value = parseFloat(data.cell.raw.replace('€', ''));
+              if (!isNaN(value)) {
+                if (value < 0) {
+                  data.cell.styles.fillColor = [255, 230, 230];
+                  data.cell.styles.textColor = 80;
+                } else {
+                  data.cell.styles.fillColor = [230, 255, 230];
+                  data.cell.styles.textColor = 20;
+                }
+              }
+            }
+          },
           bodyStyles: (row, data) => {
             const value = parseFloat(data.row.raw[3].replace('€', ''));
             if (value < 0) {
