@@ -161,7 +161,7 @@ td { vertical-align: middle; }
   </table>
 
   
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.6.6</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.6.7</p>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -345,6 +345,13 @@ td { vertical-align: middle; }
       checkExportStatus();
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
+      // Bereken totaal van alle overuren inclusief startbedrag
+      const start = parseFloat(localStorage.getItem('startAmount')) || 0;
+      const totalSum = start + log.reduce((sum, e) => sum + e.bedrag, 0);
+      // Toon totaal bovenaan
+      let y = 10;
+      doc.text(`Totaal (incl. startbedrag): €${totalSum.toFixed(2)}`, 10, y);
+      y += 10;
       const grouped = {};
 
       log.forEach(entry => {
@@ -401,9 +408,6 @@ td { vertical-align: middle; }
           didDrawPage: (d) => { y = d.cursor.y + 10; }
         });
       });
-
-      doc.text(`Totaal alle maanden (incl. startbedrag): €${(totaal + start).toFixed(2)}`, 10, y);
-
       const today = new Date();
       const currentWeek = `${today.getFullYear()}-W${String(getWeekNumber(today)).padStart(2, '0')}`;
       localStorage.setItem('lastExportWeek', currentWeek);
