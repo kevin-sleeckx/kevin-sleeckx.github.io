@@ -161,9 +161,10 @@ td { vertical-align: middle; }
   </table>
 
   
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.5.3</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.5.5</p>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+
 <script>
     // Knop voor aanpassen startbedrag
     function editStartAmount() {
@@ -375,11 +376,18 @@ td { vertical-align: middle; }
       doc.text(`Startbedrag: €${start.toFixed(2)}`, 10, 20);
       doc.text(`Totaal (alle tijd): €${totalWithStart.toFixed(2)}`, 10, 30);
 
-      let y = 40;
-      monthEntries.forEach(entry => {
-        const lijn = `${formatDate(entry.datum)} - ${entry.type === 'bestelling' ? 'Bestelling' : entry.shift} - ${entry.uren?.toFixed(2) || ''}u - €${entry.bedrag.toFixed(2)}`;
-        doc.text(lijn, 10, y);
-        y += 8;
+      const tableBody = monthEntries.map(entry => [
+        formatDate(entry.datum),
+        entry.type === 'bestelling' ? 'Bestelling' : entry.shift,
+        entry.uren?.toFixed(2) || '',
+        `€${entry.bedrag.toFixed(2)}`
+      ]);
+
+      doc.autoTable({
+        head: [['Datum', 'Type/Shift', 'Uren', 'Bedrag (€)']],
+        body: tableBody,
+        startY: 40,
+        styles: { fontSize: 10 }
       });
 
       localStorage.setItem('exportedMonth', thisMonth);
