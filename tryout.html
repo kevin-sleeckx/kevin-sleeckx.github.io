@@ -107,8 +107,8 @@ td { vertical-align: middle; }
   </div>
   <div id="totalsDisplay" class="totals">Totaal waarde overuren: <span id="totalNet">0.00</span></div> €</div>
 
-  <form id="entryForm" style="display: flex; flex-direction: column; align-items: center; gap: 1em; max-width: 500px; margin: 0 auto;">
-    <div style="display: flex; gap: 1em; align-items: flex-end; justify-content: center;">
+  <form id="entryForm">
+    <div>
       <div>
         <button type="button" onclick="editStartAmount()">Startbedrag aanpassen</button>
         <p id="startDisplay" style="text-align: center; margin-top: 0.5em;">Startbedrag: €<span id="startAmountDisplay" class="blur-toggle">0.00</span></p>
@@ -122,22 +122,22 @@ td { vertical-align: middle; }
     <strong><i class='fas fa-exclamation-triangle'></i> Waarschuwing</strong>
     <button onclick="this.parentElement.style.display='none'" style="position:absolute; top:5px; right:10px; background:none; border:none; font-size:16px; cursor:pointer; color:#856404;">&times;</button>
   </div>
- <div style="display: flex; justify-content: center; width: 100%;"><label style="width: 100%; max-width: 300px;">Datum:
+ <div style="display: flex; justify-content: center; width: 100%;"><label>
   <input type="date" id="date" required>
 </label></div>
-    <div style="display: flex; justify-content: center; width: 100%;"><label style="width: 100%; max-width: 300px;">Type:
+    <div style="display: flex; justify-content: center; width: 100%;"><label>Type:
       <select id="entryType">
         <option value="recupPlus">Recup+</option>
         <option value="recupMin">Recup-</option>
         <option value="bestelling">Bestelling</option>
       </select></label></div>
-    <div style="display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; max-width: 300px;"><label id="shiftLabel" style="flex: 1;">Shift:
+    <div><label id="shiftLabel" style="flex: 1;">Shift:
       <select id="shift">
         <option value="dag">Dag</option>
         <option value="vroeg">Vroege</option>
         <option value="laat">Late</option>
         <option value="nacht">Nacht</option>
-      </select></label><span class="question-icon" style="margin-top: 2em;" onclick="toggleInfoBox()">?</span>
+      </select></label><span class="question-icon" onclick="toggleInfoBox()">?</span>
     <div id="infoBox" class="info-box">
       <strong>Berekening Recup:</strong>
       <ul>
@@ -185,7 +185,7 @@ td { vertical-align: middle; }
   </table>
 
   
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.5.3</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.5.4</p>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
