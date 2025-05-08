@@ -161,7 +161,7 @@ td { vertical-align: middle; }
   </table>
 
   
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.6.0</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.6.2</p>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -189,7 +189,6 @@ td { vertical-align: middle; }
 
     // Toon huidige bedragen bij laden
     window.addEventListener('load', () => {
-      checkExportStatus();
       document.querySelectorAll('.blur-toggle').forEach(el => {
         el.addEventListener('click', () => {
           el.classList.toggle('reveal');
@@ -404,10 +403,6 @@ td { vertical-align: middle; }
       doc.save(`overuren_per_maand.pdf`);
     }
 
-        
-      doc.save(`overuren_${thisMonth}.pdf`);
-    }
-
     function getWeekNumber(d) {
       d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
       const dayNum = d.getUTCDay() || 7;
@@ -441,6 +436,7 @@ td { vertical-align: middle; }
       infoBox.style.display = infoBox.style.display === 'block' ? 'none' : 'block';
     }
 
+    checkExportStatus();
     document.addEventListener('click', function(event) {
       // Sluit de uitlegbox als je buiten het icoontje of de box klikt
       const infoBox = document.getElementById('infoBox');
