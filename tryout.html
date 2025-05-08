@@ -125,7 +125,7 @@ td { vertical-align: middle; }
   <button type="submit">Toevoegen</button>
     </form>
 
-  <div id="paginationControls" style="text-align:center; margin-bottom:1em;"></div>
+  
   <table id="logTable" class="styled-table">
     <thead>
       <tr>
@@ -140,32 +140,9 @@ td { vertical-align: middle; }
   </table>
 
   
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.4.1</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.4.3</p>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
-    function updatePagination(currentPage) {
-      const itemsPerPage = 10;
-      const totalPages = Math.ceil(log.length / itemsPerPage);
-      const container = document.getElementById('paginationControls');
-      container.innerHTML = '';
-
-      if (totalPages <= 1) return;
-
-      for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement('button');
-        btn.textContent = i;
-        btn.style.margin = '0 5px';
-        btn.style.padding = '0.4em 0.8em';
-        btn.style.borderRadius = '4px';
-        btn.style.border = '1px solid #007bff';
-        btn.style.backgroundColor = i === currentPage ? '#007bff' : 'white';
-        btn.style.color = i === currentPage ? 'white' : '#007bff';
-        btn.style.cursor = 'pointer';
-        btn.onclick = () => renderTable(i);
-        container.appendChild(btn);
-      }
-    }
-  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
     // Knop voor aanpassen startbedrag
     function editStartAmount() {
@@ -206,10 +183,7 @@ td { vertical-align: middle; }
     const STANDARD_HOURS = 7.25; // Aantal standaard werkuren per dag
     const shiftBonuses = { dag: 0.5, vroeg: 0.55, laat: 0.65, nacht: 1.0 }; // Bonuspercentages voor Recup+ per shift
     const oppakBonuses = { dag: 0.0, vroeg: 0.05, laat: 0.10, nacht: 0.5 }; // Bonuspercentages voor Recup- per shift
-    let log = JSON.parse(localStorage.getItem('overurenLog') || '[]');
-    
-    // let storedWage = parseFloat(localStorage.getItem('defaultDailyWage')) || null;
-    let startAmount = parseFloat(localStorage.getItem('startAmount')) || 0;
+    let log = JSON.parse(localStorage.getItem('overurenLog') || '[]');    let startAmount = parseFloat(localStorage.getItem('startAmount')) || 0;
 
     const form = document.querySelector('form'); // Aangepast zodat het formulier correct wordt gevonden
     const tbody = document.querySelector('#logTable tbody');
@@ -304,23 +278,15 @@ td { vertical-align: middle; }
       typeInput.dispatchEvent(new Event('change'));
     });
 
-    function renderTable(page = 1) {
-      const itemsPerPage = 10;
-      const startIdx = (page - 1) * itemsPerPage;
-      const endIdx = startIdx + itemsPerPage;
-
-      // Sorteer log op datum (nieuwste eerst)
-      const sorted = [...log].sort((a, b) => b.datum.localeCompare(a.datum));
-      const paginated = sorted.slice(startIdx, endIdx);
+    function renderTable() {
       tbody.innerHTML = '';
-
-      // Sorteer log op datum (nieuwste eerst)
-      
       let totaal = 0;
       let start = parseFloat(localStorage.getItem('startAmount')) || 0;
       totaal += start;
 
-      paginated.forEach(entry => {
+      const sorted = [...log].sort((a, b) => b.datum.localeCompare(a.datum));
+
+      sorted.forEach(entry => {
         const tr = document.createElement('tr');
         tr.className = entry.bedrag >= 0 ? 'positief' : 'negatief';
         tr.innerHTML = `
@@ -334,12 +300,9 @@ td { vertical-align: middle; }
         `;
         tbody.appendChild(tr);
         totaal += entry.bedrag;
-        totalNet.textContent = totaal.toFixed(2);
-
       });
-      
-      document.getElementById('totalsDisplay').className = 'totals ' + (totaal >= 0 ? 'positief' : 'negatief');
-      updatePagination(page);
+
+      totalNet.textContent = totaal.toFixed(2);
       document.getElementById('totalsDisplay').className = 'totals ' + (totaal >= 0 ? 'positief' : 'negatief');
     }
 
