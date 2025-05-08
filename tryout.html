@@ -115,7 +115,7 @@
   </table>
 
   
-  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.2.7</p>
+  <p style="text-align: center; color: #666; margin-top: -1em;">Versie 1.2.8</p>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
     // Knop voor aanpassen startbedrag
@@ -154,7 +154,7 @@
     const oppakBonuses = { dag: 0.0, vroeg: 0.05, laat: 0.10, nacht: 0.5 }; // Bonuspercentages voor Recup- per shift
     let log = JSON.parse(localStorage.getItem('overurenLog') || '[]');
     
-    let storedWage = parseFloat(localStorage.getItem('defaultDailyWage')) || null;
+    // let storedWage = parseFloat(localStorage.getItem('defaultDailyWage')) || null;
     let startAmount = parseFloat(localStorage.getItem('startAmount')) || 0;
 
     const form = document.querySelector('form'); // Aangepast zodat het formulier correct wordt gevonden
@@ -162,15 +162,12 @@
     const totalNet = document.getElementById('totalNet');
     const dateInput = document.getElementById('date');
     const shiftInput = document.getElementById('shift');
-    const wageInput = document.getElementById('dailyWage');
-    const typeInput = document.getElementById('entryType');
+        const typeInput = document.getElementById('entryType');
    
       window.onload = () => {
       // Initieer datum en dagloon bij laden van de pagina
       dateInput.value = new Date().toISOString().split('T')[0];
-      if (storedWage) wageInput.value = storedWage;
-      if (!isNaN(startAmount)) document.getElementById('startAmount').value = startAmount;
-      renderTable();
+                  renderTable();
       totalNet.textContent = totaal.toFixed(2);
     };
 
@@ -178,8 +175,7 @@
       const isBestelling = typeInput.value === 'bestelling';
       document.getElementById('shiftLabel').classList.toggle('hide', isBestelling);
       document.getElementById('hoursDiv').classList.toggle('hide', isBestelling);
-      document.getElementById('wageLabel').classList.toggle('hide', isBestelling);
-      document.getElementById('customLabel').classList.toggle('hide', !isBestelling);
+            document.getElementById('customLabel').classList.toggle('hide', !isBestelling);
     });
 
     form.addEventListener('submit', e => {
@@ -223,12 +219,11 @@
       const hours = parseFloat(document.getElementById('hours').value) || 0;
       const minutes = parseFloat(document.getElementById('minutes').value) || 0;
       const uren = hours + (minutes / 60); // omzetting van minuten naar fractie van uur
-      const dagloon = parseFloat(wageInput.value);
+      const dagloon = parseFloat(localStorage.getItem('defaultDailyWage')) || 0;
       const custom = parseFloat(document.getElementById('customAmount').value) || 0;
 
       
-      const sa = parseFloat(document.getElementById('startAmount').value);
-      if (!isNaN(sa)) localStorage.setItem('startAmount', sa);
+      
 
       let bedrag = 0;
       if (type === 'recupPlus') {
