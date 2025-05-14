@@ -39,29 +39,24 @@
     }
     .calendar-day-header { font-weight: bold; color: #555; }
     .calendar-day {
-      padding: 0.5em;
+      padding: 1em 0.5em; /* Increased padding for bigger cells */
       border: 1px solid #eee;
       border-radius: 4px;
       cursor: pointer;
       position: relative;
+      min-height: 50px; /* Ensure a minimum height */
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between; /* Push date to top, amount to bottom */
+      align-items: center;
     }
     .calendar-day.current-month { background-color: #e9e9e9; }
-    .calendar-day.has-entry {
-      border-color: #007bff;
-      font-weight: bold;
-    }
     .calendar-day.today { background-color: #007bff; color: white; }
-    .entry-indicator {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      position: absolute;
-      bottom: 3px;
-      left: 3px;
-    }
-    .entry-indicator.recupPlus { background-color: #28a745; }
-    .entry-indicator.recupMin { background-color: #dc3545; }
-    .entry-indicator.bestelling { background-color: #ffc107; }
+
+    /* New classes for full cell background color */
+    .calendar-day.day-positief { background-color: #e6ffe6; }
+    .calendar-day.day-negatief { background-color: #ffe6e6; }
+
     .entry-details {
       margin-top: 1em;
       padding: 1em;
@@ -81,6 +76,10 @@
     .entry-details li.negatief { background-color: #ffe6e6; }
     .amount-positief { color: #28a745; font-weight: bold; }
     .amount-negatief { color: #dc3545; font-weight: bold; }
+
+    .day-number { font-size: 1.2em; font-weight: bold; }
+    .day-amount { font-size: 0.9em; }
+
   </style>
 </head>
 <body>
@@ -146,25 +145,30 @@
       for (let day = 1; day <= daysInMonth; day++) {
         const dayElement = document.createElement('div');
         dayElement.classList.add('calendar-day');
-        dayElement.textContent = day;
 
         const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+        // Display day number
+        const dayNumberSpan = document.createElement('span');
+        dayNumberSpan.classList.add('day-number');
+        dayNumberSpan.textContent = day;
+        dayElement.appendChild(dayNumberSpan);
 
         // Check for entries on this date
         const entriesOnThisDate = log.filter(entry => entry.datum === dateString);
 
         if (entriesOnThisDate.length > 0) {
-          dayElement.classList.add('has-entry');
-          // Add indicators for different entry types
-          const entryTypes = new Set(entriesOnThisDate.map(entry => entry.type));
-          let indicatorOffset = 0;
-          entryTypes.forEach(type => {
-            const indicator = document.createElement('div');
-            indicator.classList.add('entry-indicator', type);
-            indicator.style.left = `${3 + indicatorOffset}px`;
-            dayElement.appendChild(indicator);
-            indicatorOffset += 10;
-          });
+          // Calculate total amount for the day
+          const dailyTotal = entriesOnThisDate.reduce((sum, entry) => sum + entry.bedrag, 0);
+
+          // Add class for background color based on total amount
+          dayElement.classList.add(dailyTotal >= 0 ? 'day-positief' : 'day-negatief');
+
+          // Display total amount in the cell
+          const amountSpan = document.createElement('span');
+          amountSpan.classList.add('day-amount');
+          amountSpan.textContent = `€${dailyTotal.toFixed(2)}`;
+          dayElement.appendChild(amountSpan);
 
           dayElement.addEventListener('click', () => {
             displayEntryDetails(entriesOnThisDate);
@@ -191,7 +195,6 @@
         if (entry.type !== 'bestelling') {
           details += `${entry.uren.toFixed(2)} uren, `;
         }
-        // Add the amount with color styling
         details += `<span class="amount-${entry.bedrag >= 0 ? 'positief' : 'negatief'}">€${entry.bedrag.toFixed(2)}</span>`;
         li.innerHTML = details;
         ul.appendChild(li);
@@ -220,5 +223,7 @@
     // Initial render
     renderCalendar();
   </script>
+  <!-- Add version number -->
+  <p class="footer-text">Versie 1.0.0</p>
 </body>
 </html>
