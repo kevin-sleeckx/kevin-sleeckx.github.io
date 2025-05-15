@@ -112,6 +112,79 @@
       label, input, select, button { font-size: 1em; width: 100%; }
       .info-box { width: 100%; }
     }
+
+    .calendar-container {
+      background: #fff;
+      padding: 1em;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 2em;
+    }
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1em;
+    }
+    .calendar-header button {
+      background-color: #007bff;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      padding: 0.5em 1em;
+      border-radius: 4px;
+    }
+    .calendar-header button:hover { background-color: #0056b3; }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      text-align: center;
+    }
+    .calendar-day-header { font-weight: bold; color: #555; }
+    .calendar-day {
+      padding: 1em 0.5em; /* Increased padding for bigger cells */
+      border: 1px solid #eee;
+      border-radius: 4px;
+      cursor: pointer;
+      position: relative;
+      min-height: 50px; /* Ensure a minimum height */
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between; /* Push date to top, amount to bottom */
+      align-items: center;
+    }
+    .calendar-day.current-month { background-color: #e9e9e9; }
+    .calendar-day.today { background-color: #007bff; color: white; }
+
+    /* New classes for full cell background color */
+    .calendar-day.day-positief { background-color: #e6ffe6; }
+    .calendar-day.day-negatief { background-color: #ffe6e6; }
+
+    .entry-details {
+      margin-top: 1em;
+      padding: 1em;
+      background-color: #f1f1f1;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      display: none;
+    }
+    .entry-details h3 { margin-top: 0; }
+    .entry-details ul { list-style: none; padding: 0; }
+    .entry-details li {
+      margin-bottom: 0.5em;
+      padding: 0.3em;
+      border-radius: 4px;
+    }
+    .entry-details li.positief { background-color: #e6ffe6; }
+    .entry-details li.negatief { background-color: #ffe6e6; }
+    .amount-positief { color: #28a745; font-weight: bold; }
+    .amount-negatief { color: #dc3545; font-weight: bold; }
+
+    .day-number { font-size: 1.2em; font-weight: bold; }
+    .day-amount { font-size: 0.9em; }
+
   </style>
 </head>
 <body>
@@ -196,6 +269,23 @@
     </thead>
     <tbody></tbody>
   </table>
+  <div class="calendar-container">
+    <div class="calendar-header">
+      <button id="prevMonth">Vorige Maand</button>
+      <h2 id="currentMonthYear"></h2>
+      <button id="nextMonth">Volgende Maand</button>
+    </div>
+    <div class="calendar-grid" id="calendarGrid">
+      <div class="calendar-day-header">Zo</div>
+      <div class="calendar-day-header">Ma</div>
+      <div class="calendar-day-header">Di</div>
+      <div class="calendar-day-header">Wo</div>
+      <div class="calendar-day-header">Do</div>
+      <div class="calendar-day-header">Vr</div>
+      <div class="calendar-day-header">Za</div>
+    </div>
+    <div id="entryDetails" class="entry-details"></div>
+  </div>
   <p class="footer-text">Versie 1.6.6</p>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -488,6 +578,125 @@
           });
       });
     }
+
+    const calendarGrid = document.getElementById('calendarGrid');
+    const currentMonthYearHeader = document.getElementById('currentMonthYear');
+    const prevMonthButton = document.getElementById('prevMonth');
+    const nextMonthButton = document.getElementById('nextMonth');
+    const entryDetailsDiv = document.getElementById('entryDetails');
+
+    let currentDate = new Date();
+
+    function renderCalendar() {
+      calendarGrid.innerHTML = ''; // Clear previous calendar
+
+      // Add day headers
+      const dayNames = ['Zo', 'Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za'];
+      dayNames.forEach(day => {
+        const dayHeader = document.createElement('div');
+        dayHeader.classList.add('calendar-day-header');
+        dayHeader.textContent = day;
+        calendarGrid.appendChild(dayHeader);
+      });
+
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      currentMonthYearHeader.textContent = `${currentDate.toLocaleString('nl-NL', { month: 'long' })} ${year}`;
+
+      const firstDayOfMonth = new Date(year, month, 1);
+      const lastDayOfMonth = new Date(year, month + 1, 0);
+      const daysInMonth = lastDayOfMonth.getDate();
+      const firstDayOfWeek = firstDayOfMonth.getDay(); // 0 for Sunday, 1 for Monday, etc.
+
+      // Add empty divs for days before the first day of the month
+      for (let i = 0; i < firstDayOfWeek; i++) {
+        calendarGrid.appendChild(document.createElement('div'));
+      }
+
+      // Get log data from localStorage
+      const log = JSON.parse(localStorage.getItem('overurenLog') || '[]');
+
+      // Add days of the month
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = document.createElement('div');
+        dayElement.classList.add('calendar-day');
+
+        const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+        // Display day number
+        const dayNumberSpan = document.createElement('span');
+        dayNumberSpan.classList.add('day-number');
+        dayNumberSpan.textContent = day;
+        dayElement.appendChild(dayNumberSpan);
+
+        // Check for entries on this date
+        const entriesOnThisDate = log.filter(entry => entry.datum === dateString);
+
+        if (entriesOnThisDate.length > 0) {
+          // Calculate total amount for the day
+          const dailyTotal = entriesOnThisDate.reduce((sum, entry) => sum + entry.bedrag, 0);
+
+          // Add class for background color based on total amount
+          dayElement.classList.add(dailyTotal >= 0 ? 'day-positief' : 'day-negatief');
+
+          // Display total amount in the cell
+          const amountSpan = document.createElement('span');
+          amountSpan.classList.add('day-amount');
+          amountSpan.textContent = `€${dailyTotal.toFixed(2)}`;
+          dayElement.appendChild(amountSpan);
+
+          dayElement.addEventListener('click', () => {
+            displayEntryDetails(entriesOnThisDate);
+          });
+        }
+
+        // Highlight today's date
+        const today = new Date();
+        if (year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
+          dayElement.classList.add('today');
+        }
+
+        calendarGrid.appendChild(dayElement);
+      }
+    }
+
+    function displayEntryDetails(entries) {
+      entryDetailsDiv.innerHTML = '<h3>Details:</h3>';
+      const ul = document.createElement('ul');
+      entries.forEach(entry => {
+        const li = document.createElement('li');
+        li.classList.add(entry.bedrag >= 0 ? 'positief' : 'negatief');
+        let details = `${formatDate(entry.datum)} - ${entry.type === 'bestelling' ? 'Bestelling' : entry.shift}: `;
+        if (entry.type !== 'bestelling') {
+          details += `${entry.uren.toFixed(2)} uren, `;
+        }
+        details += `<span class="amount-${entry.bedrag >= 0 ? 'positief' : 'negatief'}">€${entry.bedrag.toFixed(2)}</span>`;
+        li.innerHTML = details;
+        ul.appendChild(li);
+      });
+      entryDetailsDiv.appendChild(ul);
+      entryDetailsDiv.style.display = 'block';
+    }
+
+    function formatDate(d) {
+      const [y, m, day] = d.split("-");
+      return `${day}/${m}/${y}`;
+    }
+
+    prevMonthButton.addEventListener('click', () => {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      renderCalendar();
+      entryDetailsDiv.style.display = 'none'; // Hide details when changing month
+    });
+
+    nextMonthButton.addEventListener('click', () => {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      renderCalendar();
+      entryDetailsDiv.style.display = 'none'; // Hide details when changing month
+    });
+
+    // Initial render
+    renderCalendar();
   </script>
 </body>
 </html>
