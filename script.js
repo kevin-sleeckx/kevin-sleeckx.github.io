@@ -6,6 +6,7 @@ function editStartAmount() {
     localStorage.setItem('startAmount', parseFloat(nieuw));
     document.getElementById('startAmountDisplay').textContent = parseFloat(nieuw).toFixed(2);
     renderTable();
+    renderCalendar(); // Update calendar after changing start amount
   }
 }
 
@@ -49,6 +50,7 @@ const typeInput = document.getElementById('entryType');
 window.onload = () => {
   dateInput.value = new Date().toISOString().split('T')[0];
   renderTable();
+  renderCalendar(); // Initial render of the calendar
 };
 
 typeInput.addEventListener('change', () => {
@@ -112,6 +114,7 @@ form.addEventListener('submit', e => {
   log.push({ datum, type, shift, uren, bedrag });
   localStorage.setItem('overurenLog', JSON.stringify(log));
   renderTable();
+  renderCalendar(); // Add this line to update the calendar
 
   form.reset();
   dateInput.value = new Date().toISOString().split('T')[0];
@@ -157,6 +160,7 @@ function deleteEntry(index) {
   log.splice(index, 1);
   localStorage.setItem('overurenLog', JSON.stringify(log));
   renderTable();
+  renderCalendar(); // Add this line to update the calendar
 }
 
 function formatDate(d) {
@@ -286,3 +290,129 @@ if ('serviceWorker' in navigator) {
       });
   });
 }
+
+const calendarGrid = document.getElementById('calendarGrid');
+const currentMonthYearHeader = document.getElementById('currentMonthYear');
+const prevMonthButton = document.getElementById('prevMonth');
+const nextMonthButton = document.getElementById('nextMonth');
+const entryDetailsDiv = document.getElementById('entryDetails');
+
+let currentDate = new Date();
+
+function renderCalendar() {
+  calendarGrid.innerHTML = ''; // Clear previous calendar
+
+  // Add day headers (Monday to Sunday)
+  const dayNames = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
+  dayNames.forEach(day => {
+    const dayHeader = document.createElement('div');
+    dayHeader.classList.add('calendar-day-header');
+    dayHeader.textContent = day;
+    calendarGrid.appendChild(dayHeader);
+  });
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  currentMonthYearHeader.textContent = `${currentDate.toLocaleString('nl-NL', { month: 'long' })} ${year}`;
+
+  const firstDayOfMonth = new Date(year, month, 1);
+  const lastDayOfMonth = new Date(year, month + 1, 0);
+  const daysInMonth = lastDayOfMonth.getDate();
+
+  // Calculate the day of the week for the first day (0 for Monday, 1 for Tuesday, ... 6 for Sunday)
+  const firstDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
+
+  // Add empty divs for days before the first day of the month
+  for (let i = 0; i < firstDayOfWeek; i++) {
+    const emptyDay = document.createElement('div');
+    emptyDay.classList.add('calendar-day', 'other-month'); // Add classes for styling
+    calendarGrid.appendChild(emptyDay);
+  }
+
+  // Get log data from localStorage (re-fetch to ensure it's up-to-date)
+  const log = JSON.parse(localStorage.getItem('overurenLog') || '[]');
+
+  // Add days of the month
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dayElement = document.createElement('div');
+    dayElement.classList.add('calendar-day', 'current-month'); // Add current-month class
+
+    const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+    // Display day number
+    const dayNumberSpan = document.createElement('span');
+    dayNumberSpan.classList.add('day-number');
+    dayNumberSpan.textContent = day;
+    dayElement.appendChild(dayNumberSpan);
+
+    // Check for entries on this date
+    const entriesOnThisDate = log.filter(entry => entry.datum === dateString);
+
+    if (entriesOnThisDate.length > 0) {
+      // Calculate total amount for the day
+      const dailyTotal = entriesOnThisDate.reduce((sum, entry) => sum + entry.bedrag, 0);
+
+      // Add class for background color based on total amount
+      dayElement.classList.add(dailyTotal >= 0 ? 'day-positief' : 'day-negatief');
+
+      // Display total amount in the cell
+      const amountSpan = document.createElement('span');
+      amountSpan.classList.add('day-amount');
+      amountSpan.textContent = `€${dailyTotal.toFixed(2)}`;
+      dayElement.appendChild(amountSpan);
+
+      dayElement.addEventListener('click', () => {
+        displayEntryDetails(entriesOnThisDate);
+      });
+    }
+
+    // Highlight today's date
+    const today = new Date();
+    if (year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
+      dayElement.classList.add('today');
+    }
+
+    calendarGrid.appendChild(dayElement);
+  }
+
+  // Add empty divs for days after the last day of the month to fill the grid
+  const totalDaysDisplayed = firstDayOfWeek + daysInMonth;
+  const remainingDays = (totalDaysDisplayed % 7 === 0) ? 0 : 7 - (totalDaysDisplayed % 7);
+
+  for (let i = 0; i < remainingDays; i++) {
+    const emptyDay = document.createElement('div');
+    emptyDay.classList.add('calendar-day', 'other-month'); // Add classes for styling
+    calendarGrid.appendChild(emptyDay);
+  }
+}
+
+function displayEntryDetails(entries) {
+  entryDetailsDiv.innerHTML = ''; // Clear previous details
+
+  entries.forEach(entry => {
+    const entryDiv = document.createElement('div');
+    entryDiv.classList.add('entry-detail');
+    entryDiv.innerHTML = `
+      <p>Datum: ${formatDate(entry.datum)}</p>
+      <p>Type: ${entry.type === 'bestelling' ? 'Bestelling' : entry.shift}</p>
+      <p>Uren: ${entry.uren?.toFixed(2) || ''}</p>
+      <p>Bedrag: €${entry.bedrag.toFixed(2)}</p>
+    `;
+    entryDetailsDiv.appendChild(entryDiv);
+  });
+
+  entryDetailsDiv.style.display = 'block';
+}
+
+prevMonthButton.addEventListener('click', () => {
+  currentDate.setMonth(currentDate.getMonth() - 1);
+  renderCalendar();
+});
+
+nextMonthButton.addEventListener('click', () => {
+  currentDate.setMonth(currentDate.getMonth() + 1);
+  renderCalendar();
+});
+
+// Initial render
+renderCalendar();
