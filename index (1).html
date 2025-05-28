@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overtime Logger</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#7dd3fc">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Overtime Logger">
+    <meta name="description" content="Professional overtime tracking with calendar view and PDF export">
+    
+    <!-- PWA Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9InVybCgjZ3JhZGllbnQwXzFfMikiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Im0xMiAyIDcgN3Y5YTIgMiAwIDAgMS0yIDJINWEyIDIgMCAwIDEtMi0yVjloN2wtN3oiLz4KPHA+PHBhdGggZD0iTTkgMTBoMXYxSDBhMSAxIDAgMCAwLS43Ny0uOTdoLjAxbC40LS4xYy4zOC0uMDkuNzctLjEzIDEuMTctLjE1aDFhNCA0IDAgMCAxIDQtNGgxIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIGZpbGw9Im5vbmUiLz4KPC9zdmc+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MF8xXzIiIHgxPSIwIiB5MT0iMCIgeDI9IjE5MiIgeTI9IjE5MiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjN2RkM2ZjIi8+CjxzdG9wIG9mZnNldD0iMC41IiBzdG9wLWNvbG9yPSIjYTc4YmZhIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2ZiNzE4NSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMjQiIGZpbGw9InVybCgjZ3JhZGllbnQwXzFfMikiLz4KPHN2ZyB4PSI0OCIgeT0iNDgiIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJ3aGl0ZSI+CjxwYXRoIGQ9Im0xMiAyIDcgN3Y5YTIgMiAwIDAgMS0yIDJINWEyIDIgMCAwIDEtMi0yVjloN2wtN3oiLz4KPHA+PHBhdGggZD0iTTkgMTBoMXYxSDBhMSAxIDAgMCAwLS43Ny0uOTdoLjAxbC40LS4xYy4zOC0uMDkuNzctLjEzIDEuMTctLjE1aDFhNCA0IDAgMCAxIDQtNGgxIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIGZpbGw9Im5vbmUiLz4KPC9zdmc+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50MF8xXzIiIHgxPSIwIiB5MT0iMCIgeDI9IjE5MiIgeTI9IjE5MiIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgo8c3RvcCBzdG9wLWNvbG9yPSIjN2RkM2ZjIi8+CjxzdG9wIG9mZnNldD0iMC41IiBzdG9wLWNvbG9yPSIjYTc4YmZhIi8+CjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI2ZiNzE4NSIvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+Cjwvc3ZnPgo=">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIk92ZXJ0aW1lIExvZ2dlciIsCiAgInNob3J0X25hbWUiOiAiT3ZlcnRpbWUiLAogICJkZXNjcmlwdGlvbiI6ICJQcm9mZXNzaW9uYWwgb3ZlcnRpbWUgdHJhY2tpbmcgd2l0aCBjYWxlbmRhciB2aWV3IGFuZCBQREYgZXhwb3J0IiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmMGY5ZmYiLAogICJ0aGVtZV9jb2xvciI6ICIjN2RkM2ZjIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sO2Jhc2U2NCxQSE4yWnlCM2FXUjBhRDBpTVRreUlpQm9aV2xuYUhROUlqRTVNaUlpSUhacFpYZENiM2c5SWpBZ01DQXhPVElnTVRreUlpQm1hV3hzUFNKdWIyNWxJaUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lQZ3B5WldOMElIZHBaSFJvUFNJeE9USWlJR2hsYVdkb2REMGlNVGt5SWlCeWVEMGlNalFpSUdacGJHdzlJblZ5YkNnamNtZGhaSEpsYm5Rd1h6RmZNaWtpTHo0S2NITjJaeUI0UFNJME9DSWdlVDBpTkRnaUlIZHBaSFJvUFNJNU5pSWdhR1ZwWjJoMFBTSTVOaUlpSUhacFpYZENiM2c5SWpBZ01DQXlOQ0F5TkNJZ1ptbHNiRDBpZDJocGRHVWlQZ283VUdGMGFDQmtQU0p0TVRJZ01pQTNJRGQyT1dFeUlESXRNajBnTVMwNUlETkVOVUUzVVRJeUlERXRNaTB5VGpaV09XZzNiQzEzZWlJdk1pNHdJRUE4VTFaNVVITnVMeThrSWpJMElDWnNkRHNnUXpadExYQkRhR1UyS3pFdklqSTBJaTR6YzBoeE16ZE5NU2dOTVRZYU16RTJLMTFPZWs5aVltOCtSUzloYXppOENJbGJTY3ZQMGczZGpCUzRCbHhEMWZYQUQ5RGQzUUx6L3NMMEVYTVZsNnBWSDFnTnZsZnFCUlBhL3NCd3JZeXhWSWVSZU5oZ3hBNEtMQTJhRHQxUW9tNkVnZGhFaHYzS0x6SmZ3RGVJTjlnZnhiSW5kODl6VlBhK3Q5R2VCeERiQVJLUT05dGFDS05zYUlOQWtUeGNjbWJva0FyUWFJcmFEQWJJYVVyVFJIMGJIR2tXUFZnTmlnQUFtZlFvTzBSZTM5NE1JZFp6RCt1Y1RTbk9TWUZDeUR3SUl5REVGT2lPQ0tmRFU9IiwKICAgICAgInNpemVzIjogIjE5MngxOTIiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQ==">
+    
+    <!-- PDF Libraries -->
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/jspdf-autotable@latest/dist/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f1f5f9 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #7dd3fc 0%, #a78bfa 50%, #fb7185 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .total-display {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            color: #1e293b;
+            padding: 25px;
+            text-align: center;
+            font-size: 2rem;
+            font-weight: bold;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .backup-reminder {
+            background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+            color: #92400e;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #fbbf24;
+            display: none;
+        }
+
+        .backup-reminder.show {
+            display: block;
+        }
+
+        .section {
+            padding: 30px;
+            border-bottom: 1px solid #f1f5f9;
+            background: rgba(248, 250, 252, 0.5);
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section h2 {
+            color: #334155;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-left: 4px solid #7dd3fc;
+            padding-left: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #7dd3fc;
+            box-shadow: 0 0 0 4px rgba(125, 211, 252, 0.1);
+            background: white;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #7dd3fc 0%, #a78bfa 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(125, 211, 252, 0.3);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(125, 211, 252, 0.4);
+        }
+
+        .button.danger {
+            background: linear-gradient(135deg, #fca5a5 0%, #f87171 100%);
+            box-shadow: 0 4px 12px rgba(248, 113, 113, 0.3);
+        }
+
+        .button.danger:hover {
+            box-shadow: 0 8px 20px rgba(248, 113, 113, 0.4);
+        }
+
+        .button.success {
+            background: linear-gradient(135deg, #86efac 0%, #4ade80 100%);
+            box-shadow: 0 4px 12px rgba(74, 222, 128, 0.3);
+        }
+
+        .button.success:hover {
+            box-shadow: 0 8px 20px rgba(74, 222, 128, 0.4);
+        }
+
+        /* Calendar Styles */
+        .calendar-container {
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+
+        .calendar-nav {
+            background: linear-gradient(135deg, #ddd6fe 0%, #c7d2fe 100%);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            color: #5b21b6;
+            transition: all 0.3s ease;
+        }
+
+        .calendar-nav:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .calendar-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #334155;
+            text-align: center;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 12px 8px;
+            color: #64748b;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            background: rgba(255, 255, 255, 0.6);
+            border: 2px solid transparent;
+        }
+
+        .calendar-day:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .calendar-day.other-month {
+            color: #cbd5e1;
+            background: rgba(248, 250, 252, 0.3);
+        }
+
+        .calendar-day.today {
+            border-color: #7dd3fc;
+            font-weight: 700;
+        }
+
+        .calendar-day.positive {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            border-color: #10b981;
+        }
+
+        .calendar-day.negative {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+            border-color: #ef4444;
+        }
+
+        .calendar-day.positive:hover {
+            background: linear-gradient(135deg, #a7f3d0 0%, #86efac 100%);
+        }
+
+        .calendar-day.negative:hover {
+            background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #7dd3fc 0%, #a78bfa 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .close {
+            color: white;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .close:hover {
+            opacity: 1;
+        }
+
+        .daily-transaction {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            border-left: 4px solid;
+        }
+
+        .daily-transaction.positive {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-left-color: #10b981;
+        }
+
+        .daily-transaction.negative {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            border-left-color: #ef4444;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .section {
+                padding: 20px;
+            }
+
+            .calendar-grid {
+                gap: 4px;
+            }
+
+            .calendar-day {
+                font-size: 14px;
+            }
+        }
+
+        .wage-display {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 10px;
+            border-left: 4px solid #10b981;
+        }
+
+        .calculation-preview {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .calculation-preview h4 {
+            color: #475569;
+            margin-bottom: 10px;
+        }
+
+        .calculation-steps {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .export-section {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .shift-badges {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .shift-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .shift-badge.day { background: #fef3c7; color: #92400e; }
+        .shift-badge.early { background: #dbeafe; color: #1e40af; }
+        .shift-badge.late { background: #fce7f3; color: #be185d; }
+        .shift-badge.night { background: #f3f4f6; color: #374151; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⏰ Overtime Logger</h1>
+            <p>Track your overtime earnings with beautiful calendar view</p>
+        </div>
+
+        <div class="backup-reminder" id="backupReminder">
+            <strong>⚠️ Weekly Backup Reminder:</strong> Don't forget to export your data to PDF this week! 
+            <button class="button" onclick="exportToPDF()" style="margin-left: 15px; padding: 8px 16px; font-size: 14px;">Export Now</button>
+        </div>
+
+        <div class="total-display">
+            <div>Total Balance: €<span id="totalAmount">0.00</span></div>
+        </div>
+
+        <!-- Configuration -->
+        <div class="section">
+            <h2>💰 Configuration</h2>
+            
+            <!-- Starting Amount -->
+            <div class="form-group">
+                <label for="startingAmount">Starting Amount (€)</label>
+                <input type="number" id="startingAmount" step="0.01" placeholder="Enter your starting overtime balance">
+                <small style="color: #64748b; margin-top: 5px; display: block;">
+                    The amount you had before you started using this app
+                </small>
+            </div>
+            <button class="button" onclick="saveStartingAmount()">Save Starting Amount</button>
+            <div id="startingDisplay" class="wage-display" style="display: none;">
+                <strong>Starting Amount: €<span id="currentStarting">0.00</span></strong>
+            </div>
+
+            <!-- Daily Wage (Hidden by default) -->
+            <div style="margin-top: 25px;">
+                <button class="button" onclick="toggleDailyWage()" id="toggleWageBtn">⚙️ Configure Daily Wage</button>
+                <div id="dailyWageSection" style="display: none; margin-top: 15px;">
+                    <div class="form-group">
+                        <label for="dailyWage">Daily Wage (€)</label>
+                        <input type="number" id="dailyWage" step="0.01" placeholder="Enter your daily wage">
+                        <small style="color: #64748b; margin-top: 5px; display: block;">
+                            Private - only used for calculations, not shared in exports
+                        </small>
+                    </div>
+                    <button class="button" onclick="saveDailyWage()">Save Daily Wage</button>
+                    <div id="wageDisplay" class="wage-display" style="display: none;">
+                        <strong>Current Daily Wage: €<span id="currentWage">0.00</span></strong>
+                        <div style="margin-top: 5px; color: #6b7280;">
+                            Hourly Rate: €<span id="hourlyRate">0.00</span> (based on 7.25 hours)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Overtime -->
+        <div class="section">
+            <h2>➕ Add Overtime (Earn)</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="overtimeDate">Date</label>
+                    <input type="date" id="overtimeDate">
+                </div>
+                <div class="form-group">
+                    <label for="shiftType">Shift Type</label>
+                    <select id="shiftType" onchange="updateEarnPreview()">
+                        <option value="day">Day Shift (+50%)</option>
+                        <option value="early">Early Shift (+55%)</option>
+                        <option value="late">Late Shift (+65%)</option>
+                        <option value="night">Night Shift (+100%)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="overtimeHours">Overtime Hours</label>
+                <select id="overtimeHours" onchange="updateEarnPreview()">
+                    <option value="0">Select overtime hours</option>
+                    <option value="0.25">15 minutes</option>
+                    <option value="0.5">30 minutes</option>
+                    <option value="0.75">45 minutes</option>
+                    <option value="1">1 hour</option>
+                    <option value="1.25">1 hour 15 minutes</option>
+                    <option value="1.5">1 hour 30 minutes</option>
+                    <option value="1.75">1 hour 45 minutes</option>
+                    <option value="2">2 hours</option>
+                    <option value="2.25">2 hours 15 minutes</option>
+                    <option value="2.5">2 hours 30 minutes</option>
+                    <option value="2.75">2 hours 45 minutes</option>
+                    <option value="3">3 hours</option>
+                    <option value="3.25">3 hours 15 minutes</option>
+                    <option value="3.5">3 hours 30 minutes</option>
+                    <option value="3.75">3 hours 45 minutes</option>
+                    <option value="4">4 hours</option>
+                </select>
+            </div>
+            <div id="earnPreview" class="calculation-preview" style="display: none;">
+                <h4>💡 Calculation Preview</h4>
+                <div class="calculation-steps" id="earnCalculation"></div>
+            </div>
+            <button class="button" onclick="addOvertime()">Add Overtime</button>
+        </div>
+
+        <!-- Take Overtime -->
+        <div class="section">
+            <h2>➖ Take Overtime (Deduct)</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="takeDate">Date</label>
+                    <input type="date" id="takeDate">
+                </div>
+                <div class="form-group">
+                    <label for="takeShiftType">Shift Type</label>
+                    <select id="takeShiftType" onchange="updateTakePreview()">
+                        <option value="day">Day Shift (Base Rate)</option>
+                        <option value="early">Early Shift (+5% deduction)</option>
+                        <option value="late">Late Shift (+15% deduction)</option>
+                        <option value="night">Night Shift (+50% deduction)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="takeHours">Hours to Take</label>
+                <select id="takeHours" onchange="updateTakePreview()">
+                    <option value="0">Select hours to take</option>
+                    <option value="0.25">15 minutes</option>
+                    <option value="0.5">30 minutes</option>
+                    <option value="0.75">45 minutes</option>
+                    <option value="1">1 hour</option>
+                    <option value="1.25">1 hour 15 minutes</option>
+                    <option value="1.5">1 hour 30 minutes</option>
+                    <option value="1.75">1 hour 45 minutes</option>
+                    <option value="2">2 hours</option>
+                    <option value="2.25">2 hours 15 minutes</option>
+                    <option value="2.5">2 hours 30 minutes</option>
+                    <option value="2.75">2 hours 45 minutes</option>
+                    <option value="3">3 hours</option>
+                    <option value="3.25">3 hours 15 minutes</option>
+                    <option value="3.5">3 hours 30 minutes</option>
+                    <option value="3.75">3 hours 45 minutes</option>
+                    <option value="4">4 hours</option>
+                </select>
+            </div>
+            <div id="takePreview" class="calculation-preview" style="display: none;">
+                <h4>💡 Calculation Preview</h4>
+                <div class="calculation-steps" id="takeCalculation"></div>
+            </div>
+            <button class="button danger" onclick="takeOvertime()">Take Overtime</button>
+        </div>
+
+        <!-- Orders -->
+        <div class="section">
+            <h2>🛒 Orders (Deductions)</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="orderDate">Date</label>
+                    <input type="date" id="orderDate">
+                </div>
+                <div class="form-group">
+                    <label for="orderAmount">Amount (€)</label>
+                    <input type="number" id="orderAmount" step="0.01" placeholder="Enter amount">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="orderDescription">Description (Optional)</label>
+                <input type="text" id="orderDescription" placeholder="What did you order?">
+            </div>
+            <button class="button danger" onclick="addOrder()">Add Order</button>
+        </div>
+
+        <!-- Export Section -->
+        <div class="section">
+            <h2>📄 Export & Backup</h2>
+            <div class="export-section">
+                <button class="button success" onclick="exportToPDF()">📄 Export to PDF</button>
+                <button class="button" onclick="exportToText()">📝 Export to Text</button>
+                <button class="button danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+            </div>
+            <p style="margin-top: 15px; color: #64748b; font-size: 14px;">
+                💡 <strong>Tip:</strong> Export your data weekly to prevent loss and create professional reports for HR. If PDF export doesn't work, use the text export option.
+            </p>
+        </div>
+
+        <!-- Calendar View (At Bottom) -->
+        <div class="section">
+            <h2>📅 Monthly Calendar Overview</h2>
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button class="calendar-nav" onclick="changeMonth(-1)">‹</button>
+                    <h3 class="calendar-title" id="calendarTitle"></h3>
+                    <button class="calendar-nav" onclick="changeMonth(1)">›</button>
+                </div>
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+            <p style="margin-top: 15px; color: #64748b; font-size: 14px;">
+                💡 <strong>Green days</strong> = earnings, <strong>Red days</strong> = deductions. Click any day to view details.
+            </p>
+        </div>
+    </div>
+
+    <!-- Daily Detail Modal -->
+    <div id="dailyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close" onclick="closeDailyModal()">&times;</span>
+                <h2 id="modalDate">Daily Transactions</h2>
+            </div>
+            <div class="modal-body">
+                <div id="dailyTransactions">
+                    <p style="text-align: center; color: #64748b;">No transactions for this day.</p>
+                </div>
+                <div style="margin-top: 20px; text-align: center;">
+                    <strong>Day Total: €<span id="dayTotal">0.00</span></strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Transaction Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="close" onclick="closeEditModal()">&times;</span>
+                <h2>Edit Transaction</h2>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editTransactionId">
+                <div class="form-group">
+                    <label for="editDate">Date</label>
+                    <input type="date" id="editDate">
+                </div>
+                <div class="form-group">
+                    <label for="editDescription">Description</label>
+                    <input type="text" id="editDescription">
+                </div>
+                <div id="editOvertimeFields" style="display: none;">
+                    <div class="form-group">
+                        <label for="editHours">Hours</label>
+                        <select id="editHours">
+                            <option value="0.25">15 minutes</option>
+                            <option value="0.5">30 minutes</option>
+                            <option value="0.75">45 minutes</option>
+                            <option value="1">1 hour</option>
+                            <option value="1.25">1 hour 15 minutes</option>
+                            <option value="1.5">1 hour 30 minutes</option>
+                            <option value="1.75">1 hour 45 minutes</option>
+                            <option value="2">2 hours</option>
+                            <option value="2.25">2 hours 15 minutes</option>
+                            <option value="2.5">2 hours 30 minutes</option>
+                            <option value="2.75">2 hours 45 minutes</option>
+                            <option value="3">3 hours</option>
+                            <option value="3.25">3 hours 15 minutes</option>
+                            <option value="3.5">3 hours 30 minutes</option>
+                            <option value="3.75">3 hours 45 minutes</option>
+                            <option value="4">4 hours</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editShift">Shift Type</label>
+                        <select id="editShift">
+                            <option value="day">Day Shift</option>
+                            <option value="early">Early Shift</option>
+                            <option value="late">Late Shift</option>
+                            <option value="night">Night Shift</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="editOrderFields" style="display: none;">
+                    <div class="form-group">
+                        <label for="editAmount">Amount (€)</label>
+                        <input type="number" id="editAmount" step="0.01">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="button" onclick="saveEdit()">Save Changes</button>
+                    <button class="button danger" onclick="closeEditModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Core data management
+        let dailyWage = parseFloat(localStorage.getItem('dailyWage')) || 0;
+        let startingAmount = parseFloat(localStorage.getItem('startingAmount')) || 0;
+        let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+        let currentDate = new Date();
+
+        // Shift multipliers for earning overtime
+        const earnMultipliers = {
+            day: 1.5,    // +50%
+            early: 1.55, // +55%
+            late: 1.65,  // +65%
+            night: 2.0   // +100%
+        };
+
+        // Additional deduction multipliers for taking overtime
+        const takeMultipliers = {
+            day: 1.0,    // Base rate (0% additional)
+            early: 1.05, // +5% additional deduction
+            late: 1.15,  // +15% additional deduction
+            night: 1.5   // +50% additional deduction
+        };
+
+        // Initialize app
+        function init() {
+            updateTotalDisplay();
+            updateWageDisplay();
+            updateStartingDisplay();
+            setDefaultDates();
+            renderCalendar();
+            checkBackupReminder();
+            registerServiceWorker();
+        }
+
+        // PWA Service Worker Registration
+        function registerServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                const swCode = `
+                    const CACHE_NAME = 'overtime-logger-v1';
+                    const urlsToCache = ['/'];
+                    
+                    self.addEventListener('install', event => {
+                        event.waitUntil(
+                            caches.open(CACHE_NAME)
+                                .then(cache => cache.addAll(urlsToCache))
+                        );
+                    });
+                    
+                    self.addEventListener('fetch', event => {
+                        event.respondWith(
+                            caches.match(event.request)
+                                .then(response => response || fetch(event.request))
+                        );
+                    });
+                `;
+                
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                
+                navigator.serviceWorker.register(swUrl).catch(() => {
+                    // Service worker registration failed, but app still works
+                });
+            }
+        }
+
+        function setDefaultDates() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('overtimeDate').value = today;
+            document.getElementById('takeDate').value = today;
+            document.getElementById('orderDate').value = today;
+        }
+
+        // Starting Amount Management
+        function saveStartingAmount() {
+            const amount = parseFloat(document.getElementById('startingAmount').value);
+            if (isNaN(amount)) {
+                alert('Please enter a valid starting amount');
+                return;
+            }
+            startingAmount = amount;
+            localStorage.setItem('startingAmount', startingAmount.toString());
+            updateStartingDisplay();
+            updateTotalDisplay();
+            alert('Starting amount saved successfully!');
+        }
+
+        function updateStartingDisplay() {
+            document.getElementById('currentStarting').textContent = startingAmount.toFixed(2);
+            document.getElementById('startingAmount').value = startingAmount;
+            if (startingAmount !== 0) {
+                document.getElementById('startingDisplay').style.display = 'block';
+            }
+        }
+
+        // Daily Wage Management (Hidden by default)
+        function toggleDailyWage() {
+            const section = document.getElementById('dailyWageSection');
+            const btn = document.getElementById('toggleWageBtn');
+            
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                btn.textContent = '🔒 Hide Daily Wage';
+            } else {
+                section.style.display = 'none';
+                btn.textContent = '⚙️ Configure Daily Wage';
+            }
+        }
+
+        function saveDailyWage() {
+            const wage = parseFloat(document.getElementById('dailyWage').value);
+            if (wage <= 0) {
+                alert('Please enter a valid daily wage');
+                return;
+            }
+            dailyWage = wage;
+            localStorage.setItem('dailyWage', dailyWage.toString());
+            updateWageDisplay();
+            updateEarnPreview();
+            updateTakePreview();
+            alert('Daily wage saved successfully!');
+        }
+
+        function updateWageDisplay() {
+            if (dailyWage > 0) {
+                document.getElementById('currentWage').textContent = dailyWage.toFixed(2);
+                document.getElementById('hourlyRate').textContent = (dailyWage / 7.25).toFixed(2);
+                document.getElementById('wageDisplay').style.display = 'block';
+                document.getElementById('dailyWage').value = dailyWage;
+            }
+        }
+
+        // Calendar Functions
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            
+            // Update title
+            document.getElementById('calendarTitle').textContent = 
+                currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const today = new Date();
+            
+            // Monday is first day of week (1), so adjust
+            const firstDayOfWeek = (firstDay.getDay() + 6) % 7;
+            
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            
+            // Day headers (Monday first)
+            const dayHeaders = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            dayHeaders.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'calendar-day-header';
+                header.textContent = day;
+                grid.appendChild(header);
+            });
+            
+            // Empty cells for days before month starts
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day other-month';
+                const prevMonth = new Date(year, month, 0);
+                const prevDay = prevMonth.getDate() - firstDayOfWeek + i + 1;
+                emptyDay.textContent = prevDay;
+                grid.appendChild(emptyDay);
+            }
+            
+            // Days of current month
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                dayElement.textContent = day;
+                
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayTransactions = getDayTransactions(dateStr);
+                const dayTotal = dayTransactions.reduce((sum, t) => sum + t.amount, 0);
+                
+                // Add classes based on day total
+                if (dayTotal > 0) {
+                    dayElement.classList.add('positive');
+                } else if (dayTotal < 0) {
+                    dayElement.classList.add('negative');
+                }
+                
+                // Mark today
+                if (year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
+                    dayElement.classList.add('today');
+                }
+                
+                dayElement.addEventListener('click', () => showDayDetails(dateStr));
+                grid.appendChild(dayElement);
+            }
+            
+            // Fill remaining cells
+            const remainingCells = 42 - (firstDayOfWeek + lastDay.getDate());
+            for (let day = 1; day <= remainingCells; day++) {
+                const nextDay = document.createElement('div');
+                nextDay.className = 'calendar-day other-month';
+                nextDay.textContent = day;
+                grid.appendChild(nextDay);
+            }
+        }
+
+        function changeMonth(direction) {
+            currentDate.setMonth(currentDate.getMonth() + direction);
+            renderCalendar();
+        }
+
+        function getDayTransactions(dateStr) {
+            return transactions.filter(t => t.date === dateStr);
+        }
+
+        function showDayDetails(dateStr) {
+            const dayTransactions = getDayTransactions(dateStr);
+            const dayTotal = dayTransactions.reduce((sum, t) => sum + t.amount, 0);
+            
+            document.getElementById('modalDate').textContent = new Date(dateStr).toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            document.getElementById('dayTotal').textContent = dayTotal.toFixed(2);
+            
+            const container = document.getElementById('dailyTransactions');
+            if (dayTransactions.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #64748b;">No transactions for this day.</p>';
+            } else {
+                container.innerHTML = dayTransactions.map(transaction => {
+                    const isPositive = transaction.amount > 0;
+                    const shiftBadge = transaction.shiftType ? 
+                        `<span class="shift-badge ${transaction.shiftType}">${transaction.shiftType}</span>` : '';
+                    
+                    return `
+                        <div class="daily-transaction ${isPositive ? 'positive' : 'negative'}">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <strong>${transaction.description}</strong>
+                                    <div style="margin-top: 5px;">
+                                        ${shiftBadge}
+                                        <span style="margin-left: 10px; font-weight: bold; color: ${isPositive ? '#10b981' : '#ef4444'};">
+                                            ${isPositive ? '+' : ''}€${Math.abs(transaction.amount).toFixed(2)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button class="button" style="padding: 6px 12px; font-size: 12px;" onclick="editTransaction(${transaction.id})">✏️</button>
+                                    <button class="button danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteTransaction(${transaction.id})">🗑️</button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            document.getElementById('dailyModal').style.display = 'block';
+        }
+
+        // Edit and Delete Functions
+        function editTransaction(transactionId) {
+            const transaction = transactions.find(t => t.id === transactionId);
+            if (!transaction) return;
+            
+            document.getElementById('editTransactionId').value = transactionId;
+            document.getElementById('editDate').value = transaction.date;
+            document.getElementById('editDescription').value = transaction.description;
+            
+            // Show/hide relevant fields based on transaction type
+            if (transaction.type === 'order') {
+                document.getElementById('editOvertimeFields').style.display = 'none';
+                document.getElementById('editOrderFields').style.display = 'block';
+                document.getElementById('editAmount').value = Math.abs(transaction.amount);
+            } else {
+                document.getElementById('editOvertimeFields').style.display = 'block';
+                document.getElementById('editOrderFields').style.display = 'none';
+                document.getElementById('editHours').value = transaction.hours;
+                document.getElementById('editShift').value = transaction.shiftType;
+            }
+            
+            closeDailyModal();
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function deleteTransaction(transactionId) {
+            if (confirm('Are you sure you want to delete this transaction?')) {
+                transactions = transactions.filter(t => t.id !== transactionId);
+                saveTransactions();
+                updateTotalDisplay();
+                renderCalendar();
+                
+                // Refresh the daily modal if it's open
+                const modal = document.getElementById('dailyModal');
+                if (modal.style.display === 'block') {
+                    const dateElement = document.getElementById('modalDate');
+                    const dateStr = dateElement.textContent;
+                    // Convert display date back to YYYY-MM-DD format
+                    const date = new Date(dateStr);
+                    const formattedDate = date.getFullYear() + '-' + 
+                        String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+                        String(date.getDate()).padStart(2, '0');
+                    showDayDetails(formattedDate);
+                }
+                
+                alert('Transaction deleted successfully!');
+            }
+        }
+
+        function saveEdit() {
+            const transactionId = parseInt(document.getElementById('editTransactionId').value);
+            const transaction = transactions.find(t => t.id === transactionId);
+            if (!transaction) return;
+            
+            const newDate = document.getElementById('editDate').value;
+            const newDescription = document.getElementById('editDescription').value;
+            
+            transaction.date = newDate;
+            transaction.description = newDescription;
+            
+            if (transaction.type === 'order') {
+                const newAmount = parseFloat(document.getElementById('editAmount').value);
+                transaction.amount = -Math.abs(newAmount);
+            } else {
+                const newHours = parseFloat(document.getElementById('editHours').value);
+                const newShiftType = document.getElementById('editShift').value;
+                
+                transaction.hours = newHours;
+                transaction.shiftType = newShiftType;
+                
+                // Recalculate amount based on new values
+                if (transaction.type === 'overtime') {
+                    transaction.amount = calculateEarnings(newHours, newShiftType);
+                } else if (transaction.type === 'take') {
+                    transaction.amount = -calculateDeduction(newHours, newShiftType);
+                }
+            }
+            
+            saveTransactions();
+            updateTotalDisplay();
+            renderCalendar();
+            closeEditModal();
+            
+            alert('Transaction updated successfully!');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function closeDailyModal() {
+            document.getElementById('dailyModal').style.display = 'none';
+        }
+
+        // Backup reminder system
+        function checkBackupReminder() {
+            const lastBackup = localStorage.getItem('lastBackupWeek');
+            const currentWeek = getWeekNumber(new Date());
+            
+            if (!lastBackup || parseInt(lastBackup) !== currentWeek) {
+                document.getElementById('backupReminder').classList.add('show');
+            }
+        }
+
+        function getWeekNumber(date) {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
+        }
+
+        function markBackupDone() {
+            const currentWeek = getWeekNumber(new Date());
+            localStorage.setItem('lastBackupWeek', currentWeek.toString());
+            document.getElementById('backupReminder').classList.remove('show');
+        }
+
+        // Fixed PDF Export Function
+        function exportToPDF() {
+            try {
+                // Multiple ways to check for jsPDF
+                let jsPDF;
+                if (window.jsPDF) {
+                    jsPDF = window.jsPDF.jsPDF || window.jsPDF;
+                } else if (window.jspdf && window.jspdf.jsPDF) {
+                    jsPDF = window.jspdf.jsPDF;
+                } else {
+                    throw new Error('jsPDF library not found');
+                }
+
+                const doc = new jsPDF();
+                
+                const transactionTotal = transactions.reduce((sum, t) => sum + t.amount, 0);
+                const grandTotal = startingAmount + transactionTotal;
+                
+                // Header
+                doc.setFontSize(20);
+                doc.setTextColor(40, 40, 40);
+                doc.text('Overtime Report', 20, 30);
+                
+                doc.setFontSize(12);
+                doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, 45);
+                doc.text(`Starting Amount: €${startingAmount.toFixed(2)}`, 20, 55);
+                doc.text(`Earned/Deducted: €${transactionTotal.toFixed(2)}`, 20, 65);
+                doc.text(`Total Balance: €${grandTotal.toFixed(2)}`, 20, 75);
+                
+                if (transactions.length === 0) {
+                    doc.text('No transactions recorded.', 20, 95);
+                } else {
+                    // Group transactions by month
+                    const monthlyData = {};
+                    transactions.forEach(t => {
+                        const date = new Date(t.date);
+                        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                        const monthName = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+                        
+                        if (!monthlyData[monthKey]) {
+                            monthlyData[monthKey] = {
+                                name: monthName,
+                                transactions: [],
+                                total: 0
+                            };
+                        }
+                        monthlyData[monthKey].transactions.push(t);
+                        monthlyData[monthKey].total += t.amount;
+                    });
+                    
+                    // Sort months newest first
+                    const sortedMonths = Object.keys(monthlyData).sort().reverse();
+                    let yPosition = 90;
+                    
+                    sortedMonths.forEach((monthKey, index) => {
+                        const monthData = monthlyData[monthKey];
+                        
+                        // Check if we need a new page
+                        if (yPosition > 200) {
+                            doc.addPage();
+                            yPosition = 30;
+                        }
+                        
+                        // Month header
+                        doc.setFontSize(16);
+                        doc.setTextColor(60, 60, 60);
+                        doc.text(`${monthData.name} - Total: €${monthData.total.toFixed(2)}`, 20, yPosition);
+                        yPosition += 10;
+                        
+                        // Create table data
+                        const tableData = monthData.transactions.map(t => [
+                            new Date(t.date).toLocaleDateString(),
+                            t.description.substring(0, 30) + (t.description.length > 30 ? '...' : ''),
+                            t.shiftType || '-',
+                            `€${t.amount.toFixed(2)}`
+                        ]);
+                        
+                        // Use autoTable if available
+                        if (typeof doc.autoTable === 'function') {
+                            doc.autoTable({
+                                startY: yPosition,
+                                head: [['Date', 'Description', 'Shift', 'Amount']],
+                                body: tableData,
+                                theme: 'grid',
+                                styles: { fontSize: 9 },
+                                headStyles: { fillColor: [125, 211, 252] },
+                                margin: { left: 20, right: 20 }
+                            });
+                            yPosition = doc.lastAutoTable.finalY + 15;
+                        } else {
+                            // Fallback to simple text
+                            doc.setFontSize(10);
+                            doc.text('Date       Description              Shift  Amount', 20, yPosition);
+                            yPosition += 5;
+                            
+                            tableData.forEach(row => {
+                                const line = `${row[0].padEnd(12)} ${row[1].padEnd(25)} ${row[2].padEnd(6)} ${row[3]}`;
+                                doc.text(line, 20, yPosition);
+                                yPosition += 5;
+                                
+                                // Check for page break
+                                if (yPosition > 280) {
+                                    doc.addPage();
+                                    yPosition = 30;
+                                }
+                            });
+                            yPosition += 10;
+                        }
+                    });
+                }
+                
+                // Footer
+                const pageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setTextColor(128, 128, 128);
+                    doc.text(`Page ${i} of ${pageCount}`, 20, doc.internal.pageSize.height - 10);
+                    doc.text('Generated by Overtime Logger', doc.internal.pageSize.width - 60, doc.internal.pageSize.height - 10);
+                }
+                
+                // Save PDF
+                const fileName = `overtime-report-${new Date().toISOString().split('T')[0]}.pdf`;
+                doc.save(fileName);
+                
+                // Mark backup as done
+                markBackupDone();
+                alert('PDF exported successfully! Backup reminder cleared for this week.');
+                
+            } catch (error) {
+                console.error('PDF Export Error:', error);
+                
+                // Fallback to text export
+                if (confirm('PDF export failed. Would you like to download your data as a text file instead?')) {
+                    exportToText();
+                } else {
+                    alert('PDF export failed. Please refresh the page and try again. If the problem persists, use the text export option.');
+                }
+            }
+        }
+
+        // Fallback text export function
+        function exportToText() {
+            try {
+                const transactionTotal = transactions.reduce((sum, t) => sum + t.amount, 0);
+                const grandTotal = startingAmount + transactionTotal;
+                
+                let content = `OVERTIME REPORT\n`;
+                content += `Generated: ${new Date().toLocaleDateString()}\n\n`;
+                content += `SUMMARY:\n`;
+                content += `Starting Amount: €${startingAmount.toFixed(2)}\n`;
+                content += `Earned/Deducted: €${transactionTotal.toFixed(2)}\n`;
+                content += `Total Balance: €${grandTotal.toFixed(2)}\n\n`;
+                
+                if (transactions.length === 0) {
+                    content += 'No transactions recorded.\n';
+                } else {
+                    // Group by month
+                    const monthlyData = {};
+                    transactions.forEach(t => {
+                        const date = new Date(t.date);
+                        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                        const monthName = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+                        
+                        if (!monthlyData[monthKey]) {
+                            monthlyData[monthKey] = {
+                                name: monthName,
+                                transactions: [],
+                                total: 0
+                            };
+                        }
+                        monthlyData[monthKey].transactions.push(t);
+                        monthlyData[monthKey].total += t.amount;
+                    });
+                    
+                    const sortedMonths = Object.keys(monthlyData).sort().reverse();
+                    
+                    sortedMonths.forEach(monthKey => {
+                        const monthData = monthlyData[monthKey];
+                        content += `${monthData.name} - Total: €${monthData.total.toFixed(2)}\n`;
+                        content += `${'='.repeat(50)}\n`;
+                        
+                        monthData.transactions.forEach(t => {
+                            content += `${new Date(t.date).toLocaleDateString()} - ${t.description} - ${t.shiftType || '-'} - €${t.amount.toFixed(2)}\n`;
+                        });
+                        content += '\n';
+                    });
+                }
+                
+                // Create and download text file
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `overtime-report-${new Date().toISOString().split('T')[0]}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                markBackupDone();
+                alert('Text report exported successfully! Backup reminder cleared for this week.');
+                
+            } catch (error) {
+                alert('Export failed. Please try copying the data manually from the calendar view.');
+            }
+        }
+
+        // Calculation functions
+        function calculateEarnings(hours, shiftType) {
+            if (dailyWage <= 0) return 0;
+            const hourlyRate = dailyWage / 7.25;
+            const multiplier = earnMultipliers[shiftType];
+            return hourlyRate * hours * multiplier;
+        }
+
+        function calculateDeduction(hours, shiftType) {
+            if (dailyWage <= 0) return 0;
+            const hourlyRate = dailyWage / 7.25;
+            const multiplier = takeMultipliers[shiftType];
+            return hourlyRate * hours * multiplier;
+        }
+
+        function updateEarnPreview() {
+            const hours = parseFloat(document.getElementById('overtimeHours').value);
+            const shiftType = document.getElementById('shiftType').value;
+            
+            if (hours > 0 && dailyWage > 0) {
+                const earnings = calculateEarnings(hours, shiftType);
+                const hourlyRate = dailyWage / 7.25;
+                const multiplier = earnMultipliers[shiftType];
+                const percentage = ((multiplier - 1) * 100).toFixed(0);
+                
+                document.getElementById('earnCalculation').innerHTML = `
+                    <div>Daily Wage: €${dailyWage.toFixed(2)}</div>
+                    <div>Hourly Rate: €${dailyWage.toFixed(2)} ÷ 7.25 = €${hourlyRate.toFixed(2)}</div>
+                    <div>Overtime: ${hours} hours × €${hourlyRate.toFixed(2)} × ${multiplier} (+${percentage}%) = <strong>€${earnings.toFixed(2)}</strong></div>
+                `;
+                document.getElementById('earnPreview').style.display = 'block';
+            } else {
+                document.getElementById('earnPreview').style.display = 'none';
+            }
+        }
+
+        function updateTakePreview() {
+            const hours = parseFloat(document.getElementById('takeHours').value);
+            const shiftType = document.getElementById('takeShiftType').value;
+            
+            if (hours > 0 && dailyWage > 0) {
+                const deduction = calculateDeduction(hours, shiftType);
+                const hourlyRate = dailyWage / 7.25;
+                const multiplier = takeMultipliers[shiftType];
+                const percentage = ((multiplier - 1) * 100).toFixed(0);
+                
+                let calculationText = `
+                    <div>Daily Wage: €${dailyWage.toFixed(2)}</div>
+                    <div>Base Hourly Rate: €${dailyWage.toFixed(2)} ÷ 7.25 = €${hourlyRate.toFixed(2)}</div>
+                `;
+                
+                if (multiplier > 1) {
+                    calculationText += `<div>Taking Rate: €${hourlyRate.toFixed(2)} × ${multiplier} (+${percentage}% additional) = €${(hourlyRate * multiplier).toFixed(2)}</div>`;
+                }
+                
+                calculationText += `<div>Deduction: ${hours} hours × €${(hourlyRate * multiplier).toFixed(2)} = <strong>-€${deduction.toFixed(2)}</strong></div>`;
+                
+                document.getElementById('takeCalculation').innerHTML = calculationText;
+                document.getElementById('takePreview').style.display = 'block';
+            } else {
+                document.getElementById('takePreview').style.display = 'none';
+            }
+        }
+
+        // Transaction functions
+        function addOvertime() {
+            const date = document.getElementById('overtimeDate').value;
+            const hours = parseFloat(document.getElementById('overtimeHours').value);
+            const shiftType = document.getElementById('shiftType').value;
+            
+            if (!date || hours <= 0 || dailyWage <= 0) {
+                alert('Please fill in all fields and set a daily wage first');
+                return;
+            }
+            
+            const earnings = calculateEarnings(hours, shiftType);
+            
+            const transaction = {
+                id: Date.now(),
+                type: 'overtime',
+                date: date,
+                hours: hours,
+                shiftType: shiftType,
+                amount: earnings,
+                description: `${hours}h overtime (${shiftType} shift)`
+            };
+            
+            transactions.unshift(transaction);
+            saveTransactions();
+            updateTotalDisplay();
+            renderCalendar();
+            
+            // Reset form
+            document.getElementById('overtimeHours').value = '0';
+            document.getElementById('earnPreview').style.display = 'none';
+            
+            alert(`Added €${earnings.toFixed(2)} to your balance!`);
+        }
+
+        function takeOvertime() {
+            const date = document.getElementById('takeDate').value;
+            const hours = parseFloat(document.getElementById('takeHours').value);
+            const shiftType = document.getElementById('takeShiftType').value;
+            
+            if (!date || hours <= 0 || dailyWage <= 0) {
+                alert('Please fill in all fields and set a daily wage first');
+                return;
+            }
+            
+            const deduction = calculateDeduction(hours, shiftType);
+            
+            const transaction = {
+                id: Date.now(),
+                type: 'take',
+                date: date,
+                hours: hours,
+                shiftType: shiftType,
+                amount: -deduction,
+                description: `Took ${hours}h overtime (${shiftType} shift)`
+            };
+            
+            transactions.unshift(transaction);
+            saveTransactions();
+            updateTotalDisplay();
+            renderCalendar();
+            
+            // Reset form
+            document.getElementById('takeHours').value = '0';
+            document.getElementById('takePreview').style.display = 'none';
+            
+            alert(`Deducted €${deduction.toFixed(2)} from your balance!`);
+        }
+
+        function addOrder() {
+            const date = document.getElementById('orderDate').value;
+            const amount = parseFloat(document.getElementById('orderAmount').value);
+            const description = document.getElementById('orderDescription').value || 'Order';
+            
+            if (!date || amount <= 0) {
+                alert('Please fill in date and amount');
+                return;
+            }
+            
+            const transaction = {
+                id: Date.now(),
+                type: 'order',
+                date: date,
+                amount: -amount,
+                description: description
+            };
+            
+            transactions.unshift(transaction);
+            saveTransactions();
+            updateTotalDisplay();
+            renderCalendar();
+            
+            // Reset form
+            document.getElementById('orderAmount').value = '';
+            document.getElementById('orderDescription').value = '';
+            
+            alert(`Deducted €${amount.toFixed(2)} for: ${description}`);
+        }
+
+        function saveTransactions() {
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+        }
+
+        function updateTotalDisplay() {
+            const transactionTotal = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+            const grandTotal = startingAmount + transactionTotal;
+            document.getElementById('totalAmount').textContent = grandTotal.toFixed(2);
+            
+            // Color coding for total
+            const totalElement = document.getElementById('totalAmount');
+            if (grandTotal >= 0) {
+                totalElement.style.color = '#10b981';
+            } else {
+                totalElement.style.color = '#ef4444';
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+                localStorage.clear();
+                dailyWage = 0;
+                startingAmount = 0;
+                transactions = [];
+                init();
+                alert('All data cleared!');
+            }
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const dailyModal = document.getElementById('dailyModal');
+            const editModal = document.getElementById('editModal');
+            if (event.target === dailyModal) {
+                closeDailyModal();
+            }
+            if (event.target === editModal) {
+                closeEditModal();
+            }
+        }
+
+        // Initialize the app when page loads
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
