@@ -420,6 +420,9 @@
     </style>
 </head>
 <body>
+    <button id="installBtn" style="display: none; position: fixed; bottom: 20px; right: 20px; padding: 10px 20px; background-color: #7dd3fc; color: white; border: none; border-radius: 10px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+  📲 Installeer app
+</button>
     <div class="container">
         <div class="header">
             <h1>⏰ Overtime Logger</h1>
@@ -1684,6 +1687,34 @@
 
         // Initialize the app when page loads
         document.addEventListener('DOMContentLoaded', init);
+
     </script>
+
+    <script>
+  let deferredPrompt;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    // Voorkom dat de browser de standaard prompt toont
+    e.preventDefault();
+    deferredPrompt = e;
+
+    // Toon de knop
+    const installBtn = document.getElementById('installBtn');
+    installBtn.style.display = 'block';
+
+    installBtn.addEventListener('click', () => {
+      installBtn.style.display = 'none';
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('✅ App is geïnstalleerd!');
+        } else {
+          console.log('❌ Installatie geannuleerd');
+        }
+        deferredPrompt = null;
+      });
+    });
+  });
+</script>
 </body>
 </html>
