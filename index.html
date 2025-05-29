@@ -4,25 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Overuren Tool</title>
-    
+
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#7dd3fc">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Overuren Tool">
     <meta name="description" content="Overuren tool om deze bij te houden en te exporteren naar pdf">
-    
+
     <!-- PWA Icons -->
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192-pro.png">
     <link rel="apple-touch-icon" href="icon-512-pro.png">
-    
+
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
-    
+
     <!-- PDF Libraries -->
     <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/jspdf-autotable@latest/dist/jspdf.plugin.autotable.min.js"></script>
-    
+
     <style>
         * {
             margin: 0;
@@ -346,11 +346,11 @@
             .form-row {
                 grid-template-columns: 1fr;
             }
-            
+
             .header h1 {
                 font-size: 2rem;
             }
-            
+
             .section {
                 padding: 20px;
             }
@@ -439,7 +439,7 @@
         <!-- Configuration -->
         <div class="section">
             <h2>💰 Configuratie</h2>
-            
+
             <!-- Starting Amount -->
             <div class="form-group">
                 <label for="startingAmount">Startbedrag (€)</label>
@@ -478,8 +478,8 @@
         <!-- Add Overtime -->
         <div class="section">
             <h2>➕ Overuren toevoegen</h2>
-            <!-- <button class="button" onclick="toggleOvertimeSection()" id="toggleOvertimeBtn">📝 Voeg overuren toe</button> -->
-            <!-- <div id="overtimeSection" style="display: none; margin-top: 20px;"> -->
+            <button class="button" onclick="toggleOvertimeSection()" id="toggleOvertimeBtn">📝 Voeg overuren toe</button>
+            <div id="overtimeSection" style="display: none; margin-top: 20px;">
                 <div class="form-row">
                     <div class="form-group">
                         <label for="overtimeDate">Datum</label>
@@ -546,8 +546,8 @@
         <!-- Take Overtime -->
         <div class="section">
             <h2>➖ Overuren oppakken</h2>
-            <!-- <button class="button" onclick="toggleTakeSection()" id="toggleTakeBtn">📤 Pak overuren op</button>
-            <div id="takeSection" style="display: none; margin-top: 20px;"> -->
+            <button class="button" onclick="toggleTakeSection()" id="toggleTakeBtn">📤 Pak overuren op</button>
+            <div id="takeSection" style="display: none; margin-top: 20px;">
                 <div class="form-row">
                     <div class="form-group">
                         <label for="takeDate">Datum</label>
@@ -614,8 +614,8 @@
         <!-- Orders -->
         <div class="section">
             <h2>🛒 Bestellingen (uitgaven)</h2>
-            <!-- <button class="button" onclick="toggleOrderSection()" id="toggleOrderBtn">🛍️ Voeg bestelling toe</button>
-            <div id="orderSection" style="display: none; margin-top: 20px;"> -->
+            <button class="button" onclick="toggleOrderSection()" id="toggleOrderBtn">🛍️ Voeg bestelling toe</button>
+            <div id="orderSection" style="display: none; margin-top: 20px;">
                 <div class="form-row">
                     <div class="form-group">
                         <label for="orderDate">Datum</label>
@@ -682,7 +682,7 @@
                         <button class="button" onclick="copyToClipboard()">📋 Kopiëren naar Klembord</button>
                     </div>
                 </div>
-                
+
                 <div>
                     <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #475569;">
                         Gegevens importeren (gegevens plakken vanaf een ander apparaat):
@@ -693,7 +693,7 @@
                         <button class="button danger" onclick="importData()">📥 Gegevens importeren (Hiermee worden alle huidige gegevens vervangen)</button>
                     </div>
                 </div>
-                
+
                 <p style="margin-top: 15px; color: #64748b; font-size: 14px;">
                     💡 <strong>Hoe over te dragen:</strong> 1) Genereer exportgegevens. 2) Kopieer de tekst. 3) Plak de tekst op het nieuwe apparaat en importeer deze. 4) Al uw gegevens worden overgezet!
                 </p>
@@ -797,10 +797,10 @@
                         );
                     });
                 `;
-                
+
                 const blob = new Blob([swCode], { type: 'application/javascript' });
                 const swUrl = URL.createObjectURL(blob);
-                
+
                 navigator.serviceWorker.register(swUrl).catch(() => {
                     // Service worker registration failed, but app still works
                 });
@@ -840,7 +840,7 @@
         function toggleDailyWage() {
             const section = document.getElementById('dailyWageSection');
             const btn = document.getElementById('toggleWageBtn');
-            
+
             if (section.style.display === 'none') {
                 section.style.display = 'block';
                 btn.textContent = '🔒 Dagloon verbergen';
@@ -850,10 +850,50 @@
             }
         }
 
+        // Section Toggle Functions
+        function toggleOvertimeSection() {
+            const section = document.getElementById('overtimeSection');
+            const btn = document.getElementById('toggleOvertimeBtn');
+
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                btn.textContent = '🔼 Verberg';
+            } else {
+                section.style.display = 'none';
+                btn.textContent = '📝 Overuren toevoegen';
+            }
+        }
+
+        function toggleTakeSection() {
+            const section = document.getElementById('takeSection');
+            const btn = document.getElementById('toggleTakeBtn');
+
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                btn.textContent = '🔼 Verberg';
+            } else {
+                section.style.display = 'none';
+                btn.textContent = '📤 Overuren oppakken';
+            }
+        }
+
+        function toggleOrderSection() {
+            const section = document.getElementById('orderSection');
+            const btn = document.getElementById('toggleOrderBtn');
+
+            if (section.style.display === 'none') {
+                section.style.display = 'block';
+                btn.textContent = '🔼 Verberg';
+            } else {
+                section.style.display = 'none';
+                btn.textContent = '🛍️ Bestelling toevoegen';
+            }
+        }
+
         function toggleExportSection() {
             const section = document.getElementById('exportSection');
             const btn = document.getElementById('toggleExportBtn');
-            
+
             if (section.style.display === 'none') {
                 section.style.display = 'block';
                 btn.textContent = '🔼 Verberg';
@@ -866,7 +906,7 @@
         function toggleTransferSection() {
             const section = document.getElementById('transferSection');
             const btn = document.getElementById('toggleTransferBtn');
-            
+
             if (section.style.display === 'none') {
                 section.style.display = 'block';
                 btn.textContent = '🔼 Verberg';
@@ -903,21 +943,21 @@
         function renderCalendar() {
             const year = currentDate.getFullYear();
             const month = currentDate.getMonth();
-            
+
             // Update title
             document.getElementById('calendarTitle').textContent = 
                 currentDate.toLocaleDateString('nl-BE', { month: 'long', year: 'numeric' });
-            
+
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
             const today = new Date();
-            
+
             // Monday is first day of week (1), so adjust
             const firstDayOfWeek = (firstDay.getDay() + 6) % 7;
-            
+
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
-            
+
             // Day headers (Monday first)
             const dayHeaders = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
             dayHeaders.forEach(day => {
@@ -926,7 +966,7 @@
                 header.textContent = day;
                 grid.appendChild(header);
             });
-            
+
             // Empty cells for days before month starts
             for (let i = 0; i < firstDayOfWeek; i++) {
                 const emptyDay = document.createElement('div');
@@ -936,33 +976,33 @@
                 emptyDay.textContent = prevDay;
                 grid.appendChild(emptyDay);
             }
-            
+
             // Days of current month
             for (let day = 1; day <= lastDay.getDate(); day++) {
                 const dayElement = document.createElement('div');
                 dayElement.className = 'calendar-day';
                 dayElement.textContent = day;
-                
+
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const dayTransactions = getDayTransactions(dateStr);
                 const dayTotal = dayTransactions.reduce((sum, t) => sum + t.amount, 0);
-                
+
                 // Add classes based on day total
                 if (dayTotal > 0) {
                     dayElement.classList.add('positive');
                 } else if (dayTotal < 0) {
                     dayElement.classList.add('negative');
                 }
-                
+
                 // Mark today
                 if (year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
                     dayElement.classList.add('today');
                 }
-                
+
                 dayElement.addEventListener('click', () => showDayDetails(dateStr));
                 grid.appendChild(dayElement);
             }
-            
+
             // Fill remaining cells
             const remainingCells = 42 - (firstDayOfWeek + lastDay.getDate());
             for (let day = 1; day <= remainingCells; day++) {
@@ -985,16 +1025,16 @@
         function showDayDetails(dateStr) {
             const dayTransactions = getDayTransactions(dateStr);
             const dayTotal = dayTransactions.reduce((sum, t) => sum + t.amount, 0);
-            
+
             document.getElementById('modalDate').textContent = new Date(dateStr).toLocaleDateString('en-US', { 
                 weekday: 'long', 
                 year: 'numeric', 
                 month: 'long', 
                 day: 'numeric' 
             });
-            
+
             document.getElementById('dayTotal').textContent = dayTotal.toFixed(2);
-            
+
             const container = document.getElementById('dailyTransactions');
             if (dayTransactions.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: #64748b;">Er zijn vandaag geen transacties geweest.</p>';
@@ -1003,7 +1043,7 @@
                     const isPositive = transaction.amount > 0;
                     const shiftBadge = transaction.shiftType ? 
                         `<span class="shift-badge ${transaction.shiftType}">${transaction.shiftType}</span>` : '';
-                    
+
                     return `
                         <div class="daily-transaction ${isPositive ? 'positive' : 'negative'}">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1024,7 +1064,7 @@
                     `;
                 }).join('');
             }
-            
+
             document.getElementById('dailyModal').style.display = 'block';
         }
 
@@ -1035,7 +1075,7 @@
                 saveTransactions();
                 updateTotalDisplay();
                 renderCalendar();
-                
+
                 // Refresh the daily modal if it's open
                 const modal = document.getElementById('dailyModal');
                 if (modal.style.display === 'block') {
@@ -1048,7 +1088,7 @@
                         String(date.getDate()).padStart(2, '0');
                     showDayDetails(formattedDate);
                 }
-                
+
                 alert('Transactie succesvol verwijderd!');
             }
         }
@@ -1067,7 +1107,7 @@
                     exportDate: new Date().toISOString(),
                     version: '1.0'
                 };
-                
+
                 const compressed = btoa(JSON.stringify(exportData));
                 document.getElementById('exportDataText').value = compressed;
                 alert('Gegevens zijn gegenereerd! Kopieer de tekst om deze naar een ander apparaat over te zetten.');
@@ -1082,7 +1122,7 @@
                 alert('Genereer eerst exportgegevens!');
                 return;
             }
-            
+
             textarea.select();
             document.execCommand('copy');
             alert('Gegevens gekopieerd naar klembord! Je kunt ze nu op een ander apparaat plakken.');
@@ -1094,38 +1134,38 @@
                 alert('Plak eerst de exportgegevens!');
                 return;
             }
-            
+
             if (!confirm('Hiermee worden AL uw huidige gegevens vervangen. Weet u zeker dat u wilt doorgaan?')) {
                 return;
             }
-            
+
             try {
                 const decompressed = atob(importText);
                 const importData = JSON.parse(decompressed);
-                
+
                 // Validate import data
                 if (!importData.version || !Array.isArray(importData.transactions)) {
                     throw new Error('Ongeldige importgegevens');
                 }
-                
+
                 // Import data
                 dailyWage = parseFloat(importData.dailyWage) || 0;
                 startingAmount = parseFloat(importData.startingAmount) || 0;
                 transactions = importData.transactions || [];
-                
+
                 // Save to localStorage
                 localStorage.setItem('dailyWage', dailyWage.toString());
                 localStorage.setItem('startingAmount', startingAmount.toString());
                 localStorage.setItem('transactions', JSON.stringify(transactions));
-                
+
                 // Refresh UI
                 init();
-                
+
                 // Clear import field
                 document.getElementById('importDataText').value = '';
-                
+
                 alert(`Gegevens geïmporteerd! ${transactions.length} transacties geimporteerd van ${new Date(importData.exportDate).toLocaleDateString()}`);
-                
+
             } catch (error) {
                 alert('Fout bij het importeren van gegevens. Controleer de indeling en probeer het opnieuw. Fout: ' + error.message);
             }
@@ -1149,10 +1189,10 @@
                 alert('Voer uw naam in voor het PDF-rapport.');
                 return;
             }
-            
+
             // Save name for future use
             localStorage.setItem('employeeName', employeeName);
-            
+
             // Close modal and generate PDF
             closeNameModal();
             actualExportToPDF(employeeName);
@@ -1162,7 +1202,7 @@
         function checkBackupReminder() {
             const lastBackup = localStorage.getItem('lastBackupWeek');
             const currentWeek = getWeekNumber(new Date());
-            
+
             if (!lastBackup || parseInt(lastBackup) !== currentWeek) {
                 document.getElementById('backupReminder').classList.add('show');
             }
@@ -1200,26 +1240,26 @@
                 }
 
                 const doc = new jsPDF();
-                
+
                 const transactionTotal = transactions.reduce((sum, t) => sum + t.amount, 0);
                 const grandTotal = startingAmount + transactionTotal;
-                
+
                 // Header with employee name
                 doc.setFontSize(20);
                 doc.setTextColor(40, 40, 40);
                 doc.text('Overuren rapport', 20, 25);
-                
+
                 doc.setFontSize(16);
                 doc.setTextColor(60, 60, 60);
                 doc.text(`Werknemer: ${employeeName}`, 20, 35);
-                
+
                 doc.setFontSize(12);
                 doc.setTextColor(40, 40, 40);
                 doc.text(`Gegenereerd: ${new Date().toLocaleDateString()}`, 20, 50);
                 doc.text(`Startbedrag: €${startingAmount.toFixed(2)}`, 20, 60);
                 doc.text(`Verdiend/Afgetrokken: €${transactionTotal.toFixed(2)}`, 20, 70);
                 doc.text(`Totaal saldo: €${grandTotal.toFixed(2)}`, 20, 80);
-                
+
                 if (transactions.length === 0) {
                     doc.text('Geen transacties geregistreerd.', 20, 100);
                 } else {
@@ -1229,7 +1269,7 @@
                         const date = new Date(t.date);
                         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
                         const monthName = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
-                        
+
                         if (!monthlyData[monthKey]) {
                             monthlyData[monthKey] = {
                                 name: monthName,
@@ -1240,26 +1280,26 @@
                         monthlyData[monthKey].transactions.push(t);
                         monthlyData[monthKey].total += t.amount;
                     });
-                    
+
                     // Sort months newest first
                     const sortedMonths = Object.keys(monthlyData).sort().reverse();
                     let yPosition = 95;
-                    
+
                     sortedMonths.forEach((monthKey, index) => {
                         const monthData = monthlyData[monthKey];
-                        
+
                         // Check if we need a new page
                         if (yPosition > 200) {
                             doc.addPage();
                             yPosition = 30;
                         }
-                        
+
                         // Month header
                         doc.setFontSize(16);
                         doc.setTextColor(60, 60, 60);
                         doc.text(`${monthData.name} - Total: €${monthData.total.toFixed(2)}`, 20, yPosition);
                         yPosition += 10;
-                        
+
                         // Create table data
                         const tableData = monthData.transactions.map(t => [
                             new Date(t.date).toLocaleDateString(),
@@ -1267,7 +1307,7 @@
                             t.shiftType || '-',
                             `€${t.amount.toFixed(2)}`
                         ]);
-                        
+
                         // Use autoTable if available
                         if (typeof doc.autoTable === 'function') {
                             doc.autoTable({
@@ -1285,12 +1325,12 @@
                             doc.setFontSize(10);
                             doc.text('Datum       Beschrijving              Shift  Bedrag', 20, yPosition);
                             yPosition += 5;
-                            
+
                             tableData.forEach(row => {
                                 const line = `${row[0].padEnd(12)} ${row[1].padEnd(25)} ${row[2].padEnd(6)} ${row[3]}`;
                                 doc.text(line, 20, yPosition);
                                 yPosition += 5;
-                                
+
                                 // Check for page break
                                 if (yPosition > 280) {
                                     doc.addPage();
@@ -1301,7 +1341,7 @@
                         }
                     });
                 }
-                
+
                 // Footer
                 const pageCount = doc.internal.getNumberOfPages();
                 for (let i = 1; i <= pageCount; i++) {
@@ -1311,18 +1351,18 @@
                     doc.text(`Pagina ${i} of ${pageCount}`, 20, doc.internal.pageSize.height - 10);
                     doc.text('Gegenereerd door Overuren Tracker', doc.internal.pageSize.width - 60, doc.internal.pageSize.height - 10);
                 }
-                
+
                 // Save PDF
                 const fileName = `overuren-rapport-${employeeName.replace(/\s+/g, '_')}-${new Date().toISOString().split('T')[0]}.pdf`;
                 doc.save(fileName);
-                
+
                 // Mark backup as done
                 markBackupDone();
                 alert('PDF succesvol geëxporteerd! Back-upherinnering voor deze week gewist.');
-                
+
             } catch (error) {
                 console.error('PDF Export Error:', error);
-                
+
                 // Fallback to text export
                 if (confirm('PDF-export mislukt. Wilt u uw gegevens liever als tekstbestand downloaden?')) {
                     exportToText();
@@ -1337,14 +1377,14 @@
             try {
                 const transactionTotal = transactions.reduce((sum, t) => sum + t.amount, 0);
                 const grandTotal = startingAmount + transactionTotal;
-                
+
                 let content = `OVERUREN RAPPORT\n`;
                 content += `Gegenereerd: ${new Date().toLocaleDateString()}\n\n`;
                 content += `SAMENVATTING:\n`;
                 content += `Startbedrag: €${startingAmount.toFixed(2)}\n`;
                 content += `Verdiend/Afgetrokken: €${transactionTotal.toFixed(2)}\n`;
                 content += `Totaal saldo: €${grandTotal.toFixed(2)}\n\n`;
-                
+
                 if (transactions.length === 0) {
                     content += 'Geen transacties geregistreerd.\n';
                 } else {
@@ -1354,7 +1394,7 @@
                         const date = new Date(t.date);
                         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
                         const monthName = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
-                        
+
                         if (!monthlyData[monthKey]) {
                             monthlyData[monthKey] = {
                                 name: monthName,
@@ -1365,21 +1405,21 @@
                         monthlyData[monthKey].transactions.push(t);
                         monthlyData[monthKey].total += t.amount;
                     });
-                    
+
                     const sortedMonths = Object.keys(monthlyData).sort().reverse();
-                    
+
                     sortedMonths.forEach(monthKey => {
                         const monthData = monthlyData[monthKey];
                         content += `${monthData.name} - Total: €${monthData.total.toFixed(2)}\n`;
                         content += `${'='.repeat(50)}\n`;
-                        
+
                         monthData.transactions.forEach(t => {
                             content += `${new Date(t.date).toLocaleDateString()} - ${t.description} - ${t.shiftType || '-'} - €${t.amount.toFixed(2)}\n`;
                         });
                         content += '\n';
                     });
                 }
-                
+
                 // Create and download text file
                 const blob = new Blob([content], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
@@ -1390,10 +1430,10 @@
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                
+
                 markBackupDone();
                 alert('Tekstrapport succesvol geëxporteerd! Back-upherinnering voor deze week gewist.');
-                
+
             } catch (error) {
                 alert('Exporteren mislukt. Probeer de gegevens handmatig te kopiëren vanuit de kalenderweergave.');
             }
@@ -1419,7 +1459,7 @@
             const customInput = document.getElementById('customHoursInput');
             const customSection = document.getElementById('customOvertimeHours');
             const shiftType = document.getElementById('shiftType').value;
-            
+
             // Show/hide custom input based on selection
             if (hoursSelect.value === 'custom') {
                 customSection.style.display = 'block';
@@ -1428,13 +1468,13 @@
                 customSection.style.display = 'none';
                 var hours = parseFloat(hoursSelect.value) || 0;
             }
-            
+
             if (hours > 0 && dailyWage > 0) {
                 const earnings = calculateEarnings(hours, shiftType);
                 const hourlyRate = dailyWage / 7.25;
                 const multiplier = earnMultipliers[shiftType];
                 const percentage = ((multiplier - 1) * 100).toFixed(0);
-                
+
                 document.getElementById('earnCalculation').innerHTML = `
                     <div>Dagloon: €${dailyWage.toFixed(2)}</div>
                     <div>Uurloon: €${dailyWage.toFixed(2)} ÷ 7.25 = €${hourlyRate.toFixed(2)}</div>
@@ -1451,7 +1491,7 @@
             const customInput = document.getElementById('customTakeInput');
             const customSection = document.getElementById('customTakeHours');
             const shiftType = document.getElementById('takeShiftType').value;
-            
+
             // Show/hide custom input based on selection
             if (hoursSelect.value === 'custom') {
                 customSection.style.display = 'block';
@@ -1460,24 +1500,24 @@
                 customSection.style.display = 'none';
                 var hours = parseFloat(hoursSelect.value) || 0;
             }
-            
+
             if (hours > 0 && dailyWage > 0) {
                 const deduction = calculateDeduction(hours, shiftType);
                 const hourlyRate = dailyWage / 7.25;
                 const multiplier = takeMultipliers[shiftType];
                 const percentage = ((multiplier - 1) * 100).toFixed(0);
-                
+
                 let calculationText = `
                     <div>Dagloon: €${dailyWage.toFixed(2)}</div>
                     <div>Basis uurloon: €${dailyWage.toFixed(2)} ÷ 7.25 = €${hourlyRate.toFixed(2)}</div>
                 `;
-                
+
                 if (multiplier > 1) {
                     calculationText += `<div>Uurloon + shiftpremie: €${hourlyRate.toFixed(2)} × ${multiplier} (+${percentage}% additional) = €${(hourlyRate * multiplier).toFixed(2)}</div>`;
                 }
-                
+
                 calculationText += `<div>Aftrekken: ${hours} uur × €${(hourlyRate * multiplier).toFixed(2)} = <strong>-€${deduction.toFixed(2)}</strong></div>`;
-                
+
                 document.getElementById('takeCalculation').innerHTML = calculationText;
                 document.getElementById('takePreview').style.display = 'block';
             } else {
@@ -1491,7 +1531,7 @@
             const hoursSelect = document.getElementById('overtimeHours');
             const customInput = document.getElementById('customHoursInput');
             const shiftType = document.getElementById('shiftType').value;
-            
+
             // Get hours from either dropdown or custom input
             let hours;
             if (hoursSelect.value === 'custom') {
@@ -1499,14 +1539,14 @@
             } else {
                 hours = parseFloat(hoursSelect.value) || 0;
             }
-            
+
             if (!date || hours <= 0 || dailyWage <= 0) {
                 alert('Vul eerst alle velden in en stel een dagloon in');
                 return;
             }
-            
+
             const earnings = calculateEarnings(hours, shiftType);
-            
+
             const transaction = {
                 id: Date.now(),
                 type: 'toevoegen',
@@ -1516,18 +1556,18 @@
                 amount: earnings,
                 description: `${hours} overuren toegevoegd (${shiftType} shift)`
             };
-            
+
             transactions.unshift(transaction);
             saveTransactions();
             updateTotalDisplay();
             renderCalendar();
-            
+
             // Reset form
             document.getElementById('overtimeHours').value = '0';
             document.getElementById('customHoursInput').value = '';
             document.getElementById('customOvertimeHours').style.display = 'none';
             document.getElementById('earnPreview').style.display = 'none';
-            
+
             alert(`€${earnings.toFixed(2)} toegevoegd aan uw saldo!`);
         }
 
@@ -1536,7 +1576,7 @@
             const hoursSelect = document.getElementById('takeHours');
             const customInput = document.getElementById('customTakeInput');
             const shiftType = document.getElementById('takeShiftType').value;
-            
+
             // Get hours from either dropdown or custom input
             let hours;
             if (hoursSelect.value === 'custom') {
@@ -1544,14 +1584,14 @@
             } else {
                 hours = parseFloat(hoursSelect.value) || 0;
             }
-            
+
             if (!date || hours <= 0 || dailyWage <= 0) {
                 alert('Vul eerst alle velden in en stel een dagloon in');
                 return;
             }
-            
+
             const deduction = calculateDeduction(hours, shiftType);
-            
+
             const transaction = {
                 id: Date.now(),
                 type: 'oppakken',
@@ -1561,18 +1601,18 @@
                 amount: -deduction,
                 description: `${hours} overuren opgepakt (${shiftType} shift)`
             };
-            
+
             transactions.unshift(transaction);
             saveTransactions();
             updateTotalDisplay();
             renderCalendar();
-            
+
             // Reset form
             document.getElementById('takeHours').value = '0';
             document.getElementById('customTakeInput').value = '';
             document.getElementById('customTakeHours').style.display = 'none';
             document.getElementById('takePreview').style.display = 'none';
-            
+
             alert(`€${deduction.toFixed(2)} afgetrokken van uw saldo!`);
         }
 
@@ -1580,12 +1620,12 @@
             const date = document.getElementById('orderDate').value;
             const amount = parseFloat(document.getElementById('orderAmount').value);
             const description = document.getElementById('orderDescription').value || 'Order';
-            
+
             if (!date || amount <= 0) {
                 alert('Vul datum en bedrag in');
                 return;
             }
-            
+
             const transaction = {
                 id: Date.now(),
                 type: 'bestelling',
@@ -1593,16 +1633,16 @@
                 amount: -amount,
                 description: description
             };
-            
+
             transactions.unshift(transaction);
             saveTransactions();
             updateTotalDisplay();
             renderCalendar();
-            
+
             // Reset form
             document.getElementById('orderAmount').value = '';
             document.getElementById('orderDescription').value = '';
-            
+
             alert(`€${amount.toFixed(2)} afgetrokken voor: ${description}`);
         }
 
@@ -1614,7 +1654,7 @@
             const transactionTotal = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
             const grandTotal = startingAmount + transactionTotal;
             document.getElementById('totalAmount').textContent = grandTotal.toFixed(2);
-            
+
             // Color coding for total
             const totalElement = document.getElementById('totalAmount');
             if (grandTotal >= 0) {
@@ -1649,7 +1689,7 @@
 
         // Initialize the app when page loads
         document.addEventListener('DOMContentLoaded', init);
-        
+
         document.addEventListener('DOMContentLoaded', () => {
         const installBtn = document.getElementById('installBtn');
 
