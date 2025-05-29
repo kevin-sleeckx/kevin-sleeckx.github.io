@@ -143,7 +143,7 @@
         }
 
         .button:hover {
-            transform: translateY(-2px);
+            transform: transY(-2px);
             box-shadow: 0 8px 20px rgba(125, 211, 252, 0.4);
         }
 
@@ -413,10 +413,10 @@
             text-transform: uppercase;
         }
 
-        .shift-badge.day { background: #fef3c7; color: #92400e; }
-        .shift-badge.early { background: #dbeafe; color: #1e40af; }
+        .shift-badge.dag { background: #fef3c7; color: #92400e; }
+        .shift-badge.vroege { background: #dbeafe; color: #1e40af; }
         .shift-badge.late { background: #fce7f3; color: #be185d; }
-        .shift-badge.night { background: #f3f4f6; color: #374151; }
+        .shift-badge.nacht { background: #f3f4f6; color: #374151; }
     </style>
 </head>
 <body>
@@ -488,10 +488,10 @@
                     <div class="form-group">
                         <label for="shiftType">Shift</label>
                         <select id="shiftType" onchange="updateEarnPreview()">
-                            <option value="day">Dag (+50%)</option>
-                            <option value="early">Vroege (+55%)</option>
+                            <option value="dag">Dag (+50%)</option>
+                            <option value="vroege">Vroege (+55%)</option>
                             <option value="late">Late (+65%)</option>
-                            <option value="night">Nacht (+100%)</option>
+                            <option value="nacht">Nacht (+100%)</option>
                         </select>
                     </div>
                 </div>
@@ -556,10 +556,10 @@
                     <div class="form-group">
                         <label for="takeShiftType">Shift</label>
                         <select id="takeShiftType" onchange="updateTakePreview()">
-                            <option value="day">Dag (Basis bedrag)</option>
-                            <option value="early">Vroege (+5%)</option>
+                            <option value="dag">Dag (Basis bedrag)</option>
+                            <option value="vroege">Vroege (+5%)</option>
                             <option value="late">Late (+15%)</option>
-                            <option value="night">Nacht (+50%)</option>
+                            <option value="nacht">Nacht (+50%)</option>
                         </select>
                     </div>
                 </div>
@@ -751,18 +751,18 @@
 
         // Shift multipliers for earning overtime
         const earnMultipliers = {
-            day: 1.5,    // +50%
-            early: 1.55, // +55%
+            dag: 1.5,    // +50%
+            vroege: 1.55, // +55%
             late: 1.65,  // +65%
-            night: 2.0   // +100%
+            nacht: 2.0   // +100%
         };
 
         // Additional deduction multipliers for taking overtime
         const takeMultipliers = {
-            day: 1.0,    // Base rate (0% additional)
-            early: 1.05, // +5% additional deduction
+            dag: 1.0,    // Base rate (0% additional)
+            vroege: 1.05, // +5% additional deduction
             late: 1.15,  // +15% additional deduction
-            night: 1.5   // +50% additional deduction
+            nacht: 1.5   // +50% additional deduction
         };
 
         // Initialize app
