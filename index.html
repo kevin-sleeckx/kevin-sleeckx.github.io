@@ -1691,15 +1691,19 @@
     </script>
 
     <script>
+ document.addEventListener('DOMContentLoaded', () => {
+  const installBtn = document.getElementById('installBtn');
+
+  // Verberg knop als PWA al draait
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    installBtn.style.display = 'none';
+  }
+
   let deferredPrompt;
 
   window.addEventListener('beforeinstallprompt', (e) => {
-    // Voorkom dat de browser de standaard prompt toont
     e.preventDefault();
     deferredPrompt = e;
-
-    // Toon de knop
-    const installBtn = document.getElementById('installBtn');
     installBtn.style.display = 'block';
 
     installBtn.addEventListener('click', () => {
@@ -1707,14 +1711,19 @@
       deferredPrompt.prompt();
       deferredPrompt.userChoice.then((choiceResult) => {
         if (choiceResult.outcome === 'accepted') {
-          console.log('✅ App is geïnstalleerd!');
-        } else {
-          console.log('❌ Installatie geannuleerd');
+          console.log('✅ Installatie gestart');
         }
         deferredPrompt = null;
       });
     });
   });
+
+  window.addEventListener('appinstalled', () => {
+    console.log('✅ App is geïnstalleerd');
+    installBtn.style.display = 'none';
+  });
+});
+
 </script>
 </body>
 </html>
