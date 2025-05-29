@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overtime Logger</title>
+    <title>Overuren Tool</title>
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#7dd3fc">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Overtime Logger">
-    <meta name="description" content="Professional overtime tracking with calendar view and PDF export">
+    <meta name="apple-mobile-web-app-title" content="Overuren Tool">
+    <meta name="description" content="Overuren tool om deze bij te houden en te exporteren naar pdf">
     
     <!-- PWA Icons -->
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192-pro.png">
@@ -422,55 +422,53 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>⏰ Overtime Logger</h1>
-            <p>Track your overtime earnings with beautiful calendar view</p>
-             <button id="installBtn" class="button">
-  📲 Installeer app
-</button>
+            <h1>⏰ Overuren Tool</h1>
+            <p>Hou je overuren bij met deze tool</p>
+            <button id="installBtn" class="button" style="margin-left: 15px; padding: 8px 16px; font-size: 14px;">📲 Installeer app</button>
         </div>
 
         <div class="backup-reminder" id="backupReminder">
-            <strong>⚠️ Weekly Backup Reminder:</strong> Don't forget to export your data to PDF this week! 
-            <button class="button" onclick="exportToPDF()" style="margin-left: 15px; padding: 8px 16px; font-size: 14px;">Export Now</button>
+            <strong>⚠️ Weekelijkse reminder:</strong> Vergeet niet om deze week uw gegevens naar PDF te exporteren! 
+            <button class="button" onclick="exportToPDF()" style="margin-left: 15px; padding: 8px 16px; font-size: 14px;">Exporteer nu</button>
         </div>
 
         <div class="total-display">
-            <div>Total Balance: €<span id="totalAmount">0.00</span></div>
+            <div>Totaal Saldo: €<span id="totalAmount">0.00</span></div>
         </div>
 
         <!-- Configuration -->
         <div class="section">
-            <h2>💰 Configuration</h2>
+            <h2>💰 Configuratie</h2>
             
             <!-- Starting Amount -->
             <div class="form-group">
-                <label for="startingAmount">Starting Amount (€)</label>
-                <input type="number" id="startingAmount" step="0.01" placeholder="Enter your starting overtime balance">
+                <label for="startingAmount">Startbedrag (€)</label>
+                <input type="number" id="startingAmount" step="0.01" placeholder="Voer uw startbedrag in">
                 <small style="color: #64748b; margin-top: 5px; display: block;">
-                    The amount you had before you started using this app
+                    Het bedrag dat u had voordat u deze app begon te gebruiken
                 </small>
             </div>
-            <button class="button" onclick="saveStartingAmount()">Save Starting Amount</button>
+            <button class="button" onclick="saveStartingAmount()">Startbedrag opslaan</button>
             <div id="startingDisplay" class="wage-display" style="display: none;">
-                <strong>Starting Amount: €<span id="currentStarting">0.00</span></strong>
+                <strong>Startbedrag: €<span id="currentStarting">0.00</span></strong>
             </div>
 
             <!-- Daily Wage (Hidden by default) -->
             <div style="margin-top: 25px;">
-                <button class="button" onclick="toggleDailyWage()" id="toggleWageBtn">⚙️ Configure Daily Wage</button>
+                <button class="button" onclick="toggleDailyWage()" id="toggleWageBtn">⚙️ Configureer het dagloon</button>
                 <div id="dailyWageSection" style="display: none; margin-top: 15px;">
                     <div class="form-group">
-                        <label for="dailyWage">Daily Wage (€)</label>
-                        <input type="number" id="dailyWage" step="0.01" placeholder="Enter your daily wage">
+                        <label for="dailyWage">Dagloon (€)</label>
+                        <input type="number" id="dailyWage" step="0.01" placeholder="Voer uw dagloon in">
                         <small style="color: #64748b; margin-top: 5px; display: block;">
-                            Private - only used for calculations, not shared in exports
+                            Privé - alleen gebruikt voor berekeningen, niet gedeeld in exports
                         </small>
                     </div>
-                    <button class="button" onclick="saveDailyWage()">Save Daily Wage</button>
+                    <button class="button" onclick="saveDailyWage()">Dagloon opslaan</button>
                     <div id="wageDisplay" class="wage-display" style="display: none;">
-                        <strong>Current Daily Wage: €<span id="currentWage">0.00</span></strong>
+                        <strong>Huidig dagloon: €<span id="currentWage">0.00</span></strong>
                         <div style="margin-top: 5px; color: #6b7280;">
-                            Hourly Rate: €<span id="hourlyRate">0.00</span> (based on 7.25 hours)
+                            Uurloon: €<span id="hourlyRate">0.00</span> (gebaseerd op 7:25 uur)
                         </div>
                     </div>
                 </div>
@@ -479,154 +477,158 @@
 
         <!-- Add Overtime -->
         <div class="section">
-            <h2>➕ Add Overtime (Earn)</h2>
-            <button class="button" onclick="toggleOvertimeSection()" id="toggleOvertimeBtn">📝 Add Overtime Entry</button>
+            <h2>➕ Overuren toevoegen</h2>
+            <button class="button" onclick="toggleOvertimeSection()" id="toggleOvertimeBtn">📝 Voeg overuren toe</button>
             <div id="overtimeSection" style="display: none; margin-top: 20px;">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="overtimeDate">Date</label>
+                        <label for="overtimeDate">Datum</label>
                         <input type="date" id="overtimeDate">
                     </div>
                     <div class="form-group">
-                        <label for="shiftType">Shift Type</label>
+                        <label for="shiftType">Shift</label>
                         <select id="shiftType" onchange="updateEarnPreview()">
-                            <option value="day">Day Shift (+50%)</option>
-                            <option value="early">Early Shift (+55%)</option>
-                            <option value="late">Late Shift (+65%)</option>
-                            <option value="night">Night Shift (+100%)</option>
+                            <option value="day">Dag (+50%)</option>
+                            <option value="early">Vroege (+55%)</option>
+                            <option value="late">Late (+65%)</option>
+                            <option value="night">Nacht (+100%)</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="overtimeHours">Overtime Hours</label>
+                    <label for="overtimeHours">Hoeveel overuren?</label>
                     <select id="overtimeHours" onchange="updateEarnPreview()">
-                        <option value="0">Select overtime hours</option>
-                        <option value="0.25">15 minutes</option>
-                        <option value="0.5">30 minutes</option>
-                        <option value="0.75">45 minutes</option>
-                        <option value="1">1 hour</option>
-                        <option value="1.25">1 hour 15 minutes</option>
-                        <option value="1.5">1 hour 30 minutes</option>
-                        <option value="1.75">1 hour 45 minutes</option>
-                        <option value="2">2 hours</option>
-                        <option value="2.25">2 hours 15 minutes</option>
-                        <option value="2.5">2 hours 30 minutes</option>
-                        <option value="2.75">2 hours 45 minutes</option>
-                        <option value="3">3 hours</option>
-                        <option value="3.25">3 hours 15 minutes</option>
-                        <option value="3.5">3 hours 30 minutes</option>
-                        <option value="3.75">3 hours 45 minutes</option>
-                        <option value="4">4 hours</option>
-                        <option value="4.25">4 hours 15 minutes</option>
-                        <option value="4.5">4 hours 30 minutes</option>
-                        <option value="4.75">4 hours 45 minutes</option>
-                        <option value="5">5 hours</option>
-                        <option value="5.5">5 hours 30 minutes</option>
-                        <option value="6">6 hours</option>
-                        <option value="6.5">6 hours 30 minutes</option>
-                        <option value="7">7 hours</option>
-                        <option value="8">8 hours</option>
-                        <option value="9">9 hours</option>
-                        <option value="10">10 hours</option>
-                        <option value="custom">Custom (enter manually)</option>
+                        <option value="0">Selecteer overuren</option>
+                        <option value="0.25">15 minuten</option>
+                        <option value="0.5">30 minuten</option>
+                        <option value="0.75">45 minuten</option>
+                        <option value="1">1 uur</option>
+                        <option value="1.25">1 uur 15 minuten</option>
+                        <option value="1.5">1 uur 30 minuten</option>
+                        <option value="1.75">1 uur 45 minuten</option>
+                        <option value="2">2 uur</option>
+                        <option value="2.25">2 uur 15 minuten</option>
+                        <option value="2.5">2 uur 30 minuten</option>
+                        <option value="2.75">2 uur 45 minuten</option>
+                        <option value="3">3 uur</option>
+                        <option value="3.25">3 uur 15 minuten</option>
+                        <option value="3.5">3 uur 30 minuten</option>
+                        <option value="3.75">3 uur 45 minuten (halve dag)</option>
+                        <option value="4">4 uur</option>
+                        <option value="4.25">4 uur 15 minuten</option>
+                        <option value="4.5">4 uur 30 minuten</option>
+                        <option value="4.75">4 uur 45 minuten</option>
+                        <option value="5">5 uur</option>
+                        <option value="5.25">5 uur 15 minuten</option>
+                        <option value="5.5">5 uur 30 minuten</option>
+                        <option value="5.75">5 uur 45 minuten</option>
+                        <option value="6">6 uur</option>
+                        <option value="6.25">6 uur 15 minuten</option>
+                        <option value="6.5">6 uur 30 minuten</option>
+                        <option value="6.75">6 uur 45 minuten</option>
+                        <option value="7">7 uur</option>
+                        <option value="7.25">7 uur 15 minuten (volledige dag)</option>
+                        <option value="custom">Aangepast (handmatig invoeren)</option>
                     </select>
                 </div>
                 <div id="customOvertimeHours" class="form-group" style="display: none;">
-                    <label for="customHoursInput">Custom Hours (in decimal format, e.g., 2.5 for 2h 30min)</label>
+                    <label for="customHoursInput">Aangepast (in decimaal formaat, v.b., 2.5 voor 2u 30min, 1.25 voor 1u 15min)</label>
                     <input type="number" id="customHoursInput" step="0.25" min="0" max="24" placeholder="Enter hours" onchange="updateEarnPreview()">
                 </div>
                 <div id="earnPreview" class="calculation-preview" style="display: none;">
-                    <h4>💡 Calculation Preview</h4>
+                    <h4>💡 Berekeningsvoorbeeld</h4>
                     <div class="calculation-steps" id="earnCalculation"></div>
                 </div>
-                <button class="button" onclick="addOvertime()">Add Overtime</button>
+                <button class="button" onclick="addOvertime()">Toevoegen</button>
             </div>
         </div>
 
         <!-- Take Overtime -->
         <div class="section">
-            <h2>➖ Take Overtime (Deduct)</h2>
-            <button class="button" onclick="toggleTakeSection()" id="toggleTakeBtn">📤 Take Overtime Entry</button>
+            <h2>➖ Overuren oppakken</h2>
+            <button class="button" onclick="toggleTakeSection()" id="toggleTakeBtn">📤 Pak overuren op</button>
             <div id="takeSection" style="display: none; margin-top: 20px;">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="takeDate">Date</label>
+                        <label for="takeDate">Datum</label>
                         <input type="date" id="takeDate">
                     </div>
                     <div class="form-group">
-                        <label for="takeShiftType">Shift Type</label>
+                        <label for="takeShiftType">Shift</label>
                         <select id="takeShiftType" onchange="updateTakePreview()">
-                            <option value="day">Day Shift (Base Rate)</option>
-                            <option value="early">Early Shift (+5% deduction)</option>
-                            <option value="late">Late Shift (+15% deduction)</option>
-                            <option value="night">Night Shift (+50% deduction)</option>
+                            <option value="day">Dag (Basis bedrag)</option>
+                            <option value="early">Vroege (+5%)</option>
+                            <option value="late">Late (+15%)</option>
+                            <option value="night">Nacht (+50%)</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="takeHours">Hours to Take</label>
+                    <label for="takeHours">Op te pakken uren</label>
                     <select id="takeHours" onchange="updateTakePreview()">
-                        <option value="0">Select hours to take</option>
-                        <option value="0.25">15 minutes</option>
-                        <option value="0.5">30 minutes</option>
-                        <option value="0.75">45 minutes</option>
-                        <option value="1">1 hour</option>
-                        <option value="1.25">1 hour 15 minutes</option>
-                        <option value="1.5">1 hour 30 minutes</option>
-                        <option value="1.75">1 hour 45 minutes</option>
-                        <option value="2">2 hours</option>
-                        <option value="2.25">2 hours 15 minutes</option>
-                        <option value="2.5">2 hours 30 minutes</option>
-                        <option value="2.75">2 hours 45 minutes</option>
-                        <option value="3">3 hours</option>
-                        <option value="3.25">3 hours 15 minutes</option>
-                        <option value="3.5">3 hours 30 minutes</option>
-                        <option value="3.75">3 hours 45 minutes</option>
-                        <option value="4">4 hours</option>
-                        <option value="4.25">4 hours 15 minutes</option>
-                        <option value="4.5">4 hours 30 minutes</option>
-                        <option value="4.75">4 hours 45 minutes</option>
-                        <option value="5">5 hours</option>
-                        <option value="5.5">5 hours 30 minutes</option>
-                        <option value="6">6 hours</option>
-                        <option value="6.5">6 hours 30 minutes</option>
-                        <option value="7">7 hours</option>
-                        <option value="8">8 hours</option>
-                        <option value="9">9 hours</option>
-                        <option value="10">10 hours</option>
-                        <option value="custom">Custom (enter manually)</option>
+                        <option value="0">Selecteer overuren</option>
+                        <option value="0.25">15 minuten</option>
+                        <option value="0.5">30 minuten</option>
+                        <option value="0.75">45 minuten</option>
+                        <option value="1">1 uur</option>
+                        <option value="1.25">1 uur 15 minuten</option>
+                        <option value="1.5">1 uur 30 minuten</option>
+                        <option value="1.75">1 uur 45 minuten</option>
+                        <option value="2">2 uur</option>
+                        <option value="2.25">2 uur 15 minuten</option>
+                        <option value="2.5">2 uur 30 minuten</option>
+                        <option value="2.75">2 uur 45 minuten</option>
+                        <option value="3">3 uur</option>
+                        <option value="3.25">3 uur 15 minuten</option>
+                        <option value="3.5">3 uur 30 minuten</option>
+                        <option value="3.75">3 uur 45 minuten (halve dag)</option>
+                        <option value="4">4 uur</option>
+                        <option value="4.25">4 uur 15 minuten</option>
+                        <option value="4.5">4 uur 30 minuten</option>
+                        <option value="4.75">4 uur 45 minuten</option>
+                        <option value="5">5 uur</option>
+                        <option value="5.25">5 uur 15 minuten</option>
+                        <option value="5.5">5 uur 30 minuten</option>
+                        <option value="5.75">5 uur 45 minuten</option>
+                        <option value="6">6 uur</option>
+                        <option value="6.25">6 uur 15 minuten</option>
+                        <option value="6.5">6 uur 30 minuten</option>
+                        <option value="6.75">6 uur 45 minuten</option>
+                        <option value="7">7 uur</option>
+                        <option value="7.25">7 uur 15 minuten (volledige dag)</option>
+                        <option value="custom">Aangepast (handmatig invoeren)</option>
                     </select>
                 </div>
                 <div id="customTakeHours" class="form-group" style="display: none;">
-                    <label for="customTakeInput">Custom Hours (in decimal format, e.g., 2.5 for 2h 30min)</label>
+                    <label for="customTakeInput">Aangepast (in decimaal formaat, v.b., 2.5 voor 2u 30min, 1.25 voor 1u 15min)</label>
                     <input type="number" id="customTakeInput" step="0.25" min="0" max="24" placeholder="Enter hours" onchange="updateTakePreview()">
                 </div>
                 <div id="takePreview" class="calculation-preview" style="display: none;">
-                    <h4>💡 Calculation Preview</h4>
+                    <h4>💡 Berekeningsvoorbeeld</h4>
                     <div class="calculation-steps" id="takeCalculation"></div>
                 </div>
-                <button class="button danger" onclick="takeOvertime()">Take Overtime</button>
+                <button class="button danger" onclick="takeOvertime()">Oppakken</button>
             </div>
         </div>
 
         <!-- Orders -->
         <div class="section">
-            <h2>🛒 Orders (Deductions)</h2>
-            <button class="button" onclick="toggleOrderSection()" id="toggleOrderBtn">🛍️ Add Order Entry</button>
+            <h2>🛒 Bestellingen (Deductions)</h2>
+            <button class="button" onclick="toggleOrderSection()" id="toggleOrderBtn">🛍️ Voeg bestelling toe</button>
             <div id="orderSection" style="display: none; margin-top: 20px;">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="orderDate">Date</label>
+                        <label for="orderDate">Datum</label>
                         <input type="date" id="orderDate">
                     </div>
                     <div class="form-group">
-                        <label for="orderAmount">Amount (€)</label>
-                        <input type="number" id="orderAmount" step="0.01" placeholder="Enter amount">
+                        <label for="orderAmount">Bedrag (€)</label>
+                        <input type="number" id="orderAmount" step="0.01" placeholder="Voer bedrag in">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="orderDescription">Description (Optional)</label>
-                    <input type="text" id="orderDescription" placeholder="What did you order?">
+                    <label for="orderDescription">Oschrijving (optioneel)</label>
+                    <input type="text" id="orderDescription" placeholder="Wat heb je besteld?">
                 </div>
                 <button class="button danger" onclick="addOrder()">Add Order</button>
             </div>
@@ -634,7 +636,7 @@
 
         <!-- Calendar View (At Bottom) -->
         <div class="section">
-            <h2>📅 Monthly Calendar Overview</h2>
+            <h2>📅 Kalenderoverzicht</h2>
             <div class="calendar-container">
                 <div class="calendar-header">
                     <button class="calendar-nav" onclick="changeMonth(-1)">‹</button>
@@ -644,56 +646,56 @@
                 <div class="calendar-grid" id="calendarGrid"></div>
             </div>
             <p style="margin-top: 15px; color: #64748b; font-size: 14px;">
-                💡 <strong>Green days</strong> = earnings, <strong>Red days</strong> = deductions. Click any day to view details.
+                💡 <strong>Groene dagen</strong> = inkomsten, <strong>Rode dagen</strong> = uitgaven. Klik op een dag voor details.
             </p>
         </div>
 
         <!-- Export Section -->
         <div class="section">
-            <h2>📄 Export & Backup</h2>
-            <button class="button" onclick="toggleExportSection()" id="toggleExportBtn">📊 Export & Backup Options</button>
+            <h2>📄 Exporteren en backups</h2>
+            <button class="button" onclick="toggleExportSection()" id="toggleExportBtn">📊 Exporteren en backup opties</button>
             <div id="exportSection" style="display: none; margin-top: 20px;">
                 <div class="export-section">
-                    <button class="button success" onclick="exportToPDF()">📄 Export to PDF</button>
-                    <button class="button" onclick="exportToText()">📝 Export to Text</button>
-                    <button class="button danger" onclick="clearAllData()">🗑️ Clear All Data</button>
+                    <button class="button success" onclick="exportToPDF()">📄 Export naar PDF</button>
+                    <button class="button" onclick="exportToText()">📝 Export naar Text</button>
+                    <button class="button danger" onclick="clearAllData()">🗑️ Alles verwijderen</button>
                 </div>
                 <p style="margin-top: 15px; color: #64748b; font-size: 14px;">
-                    💡 <strong>Tip:</strong> Export your data weekly to prevent loss and create professional reports for HR. If PDF export doesn't work, use the text export option.
+                    💡 <strong>Tip:</strong> Exporteer uw gegevens wekelijks om verlies te voorkomen en rapporten te maken. Als PDF-export niet werkt, gebruik dan de optie voor tekstexport.
                 </p>
             </div>
         </div>
 
         <!-- Data Transfer Section -->
         <div class="section">
-            <h2>📱 Transfer Data Between Devices</h2>
-            <button class="button" onclick="toggleTransferSection()" id="toggleTransferBtn">🔄 Data Transfer Options</button>
+            <h2>📱 Gegevens overbrengen tussen apparaten</h2>
+            <button class="button" onclick="toggleTransferSection()" id="toggleTransferBtn">🔄 Opties voor gegevensoverdracht</button>
             <div id="transferSection" style="display: none; margin-top: 20px;">
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #475569;">
-                        Export Data (Copy this text to transfer to another device):
+                        Gegevens exporteren (kopieer deze tekst om over te zetten naar een ander apparaat):
                     </label>
                     <textarea id="exportDataText" readonly 
                         style="width: 100%; height: 120px; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; font-family: 'Courier New', monospace; font-size: 12px; background: #f8fafc; resize: vertical;"></textarea>
                     <div style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;">
-                        <button class="button" onclick="generateExportData()">🔄 Generate Export Data</button>
-                        <button class="button" onclick="copyToClipboard()">📋 Copy to Clipboard</button>
+                        <button class="button" onclick="generateExportData()">🔄 Exportgegevens genereren</button>
+                        <button class="button" onclick="copyToClipboard()">📋 Kopiëren naar Klembord</button>
                     </div>
                 </div>
                 
                 <div>
                     <label style="display: block; margin-bottom: 10px; font-weight: 600; color: #475569;">
-                        Import Data (Paste data from another device):
+                        Gegevens importeren (gegevens plakken vanaf een ander apparaat):
                     </label>
-                    <textarea id="importDataText" placeholder="Paste your exported data here..." 
+                    <textarea id="importDataText" placeholder="Plak hier uw geëxporteerde gegevens..." 
                         style="width: 100%; height: 80px; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; font-family: 'Courier New', monospace; font-size: 12px; resize: vertical;"></textarea>
                     <div style="margin-top: 10px;">
-                        <button class="button danger" onclick="importData()">📥 Import Data (This will replace all current data)</button>
+                        <button class="button danger" onclick="importData()">📥 Gegevens importeren (Hiermee worden alle huidige gegevens vervangen)</button>
                     </div>
                 </div>
                 
                 <p style="margin-top: 15px; color: #64748b; font-size: 14px;">
-                    💡 <strong>How to transfer:</strong> 1) Generate export data 2) Copy the text 3) On new device, paste text and import 4) All your data will be transferred!
+                    💡 <strong>Hoe over te dragen:</strong> 1) Genereer exportgegevens. 2) Kopieer de tekst. 3) Plak de tekst op het nieuwe apparaat en importeer deze. 4) Al uw gegevens worden overgezet!
                 </p>
             </div>
         </div>
@@ -704,14 +706,14 @@
         <div class="modal-content">
             <div class="modal-header">
                 <span class="close" onclick="closeDailyModal()">&times;</span>
-                <h2 id="modalDate">Daily Transactions</h2>
+                <h2 id="modalDate">Dagelijkse transacties</h2>
             </div>
             <div class="modal-body">
                 <div id="dailyTransactions">
-                    <p style="text-align: center; color: #64748b;">No transactions for this day.</p>
+                    <p style="text-align: center; color: #64748b;">Er zijn vandaag geen transacties geweest.</p>
                 </div>
                 <div style="margin-top: 20px; text-align: center;">
-                    <strong>Day Total: €<span id="dayTotal">0.00</span></strong>
+                    <strong>Dagtotaal: €<span id="dayTotal">0.00</span></strong>
                 </div>
             </div>
         </div>
@@ -722,19 +724,19 @@
         <div class="modal-content">
             <div class="modal-header">
                 <span class="close" onclick="closeNameModal()">&times;</span>
-                <h2>Enter Your Name for PDF Report</h2>
+                <h2>Voer uw naam in voor het PDF-rapport</h2>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="employeeName">Your Full Name</label>
-                    <input type="text" id="employeeName" placeholder="Enter your full name for the PDF report">
+                    <label for="employeeName">Volledige naam</label>
+                    <input type="text" id="employeeName" placeholder="Voer uw volledige naam in voor het PDF-rapport">
                     <small style="color: #64748b; margin-top: 5px; display: block;">
-                        This will appear at the top of the PDF report for HR identification
+                        Dit verschijnt bovenaan het PDF-rapport
                     </small>
                 </div>
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button class="button success" onclick="generatePDFWithName()">📄 Generate PDF</button>
-                    <button class="button danger" onclick="closeNameModal()">Cancel</button>
+                    <button class="button success" onclick="generatePDFWithName()">📄 Genereer PDF</button>
+                    <button class="button danger" onclick="closeNameModal()">Annuleren</button>
                 </div>
             </div>
         </div>
@@ -816,14 +818,14 @@
         function saveStartingAmount() {
             const amount = parseFloat(document.getElementById('startingAmount').value);
             if (isNaN(amount)) {
-                alert('Please enter a valid starting amount');
+                alert('Voer een geldig startbedrag in');
                 return;
             }
             startingAmount = amount;
             localStorage.setItem('startingAmount', startingAmount.toString());
             updateStartingDisplay();
             updateTotalDisplay();
-            alert('Starting amount saved successfully!');
+            alert('Startbedrag succesvol opgeslagen!');
         }
 
         function updateStartingDisplay() {
@@ -841,10 +843,10 @@
             
             if (section.style.display === 'none') {
                 section.style.display = 'block';
-                btn.textContent = '🔒 Hide Daily Wage';
+                btn.textContent = '🔒 Dagloon verbergen';
             } else {
                 section.style.display = 'none';
-                btn.textContent = '⚙️ Configure Daily Wage';
+                btn.textContent = '⚙️ Dagloon aanpassen';
             }
         }
 
@@ -855,10 +857,10 @@
             
             if (section.style.display === 'none') {
                 section.style.display = 'block';
-                btn.textContent = '🔼 Hide Overtime Entry';
+                btn.textContent = '🔼 Verberg';
             } else {
                 section.style.display = 'none';
-                btn.textContent = '📝 Add Overtime Entry';
+                btn.textContent = '📝 Overuren toevoegen';
             }
         }
 
@@ -868,10 +870,10 @@
             
             if (section.style.display === 'none') {
                 section.style.display = 'block';
-                btn.textContent = '🔼 Hide Take Overtime';
+                btn.textContent = '🔼 Verberg';
             } else {
                 section.style.display = 'none';
-                btn.textContent = '📤 Take Overtime Entry';
+                btn.textContent = '📤 Overuren oppakken';
             }
         }
 
@@ -881,10 +883,10 @@
             
             if (section.style.display === 'none') {
                 section.style.display = 'block';
-                btn.textContent = '🔼 Hide Order Entry';
+                btn.textContent = '🔼 Verberg';
             } else {
                 section.style.display = 'none';
-                btn.textContent = '🛍️ Add Order Entry';
+                btn.textContent = '🛍️ Bestelling toevoegen';
             }
         }
 
@@ -894,10 +896,10 @@
             
             if (section.style.display === 'none') {
                 section.style.display = 'block';
-                btn.textContent = '🔼 Hide Export Options';
+                btn.textContent = '🔼 Verberg';
             } else {
                 section.style.display = 'none';
-                btn.textContent = '📊 Export & Backup Options';
+                btn.textContent = '📊 Export & Backup';
             }
         }
 
@@ -907,17 +909,17 @@
             
             if (section.style.display === 'none') {
                 section.style.display = 'block';
-                btn.textContent = '🔼 Hide Transfer Options';
+                btn.textContent = '🔼 Verberg';
             } else {
                 section.style.display = 'none';
-                btn.textContent = '🔄 Data Transfer Options';
+                btn.textContent = '🔄 Gegevensoverdracht';
             }
         }
 
         function saveDailyWage() {
             const wage = parseFloat(document.getElementById('dailyWage').value);
             if (wage <= 0) {
-                alert('Please enter a valid daily wage');
+                alert('Voer een geldig dagloon in');
                 return;
             }
             dailyWage = wage;
@@ -925,7 +927,7 @@
             updateWageDisplay();
             updateEarnPreview();
             updateTakePreview();
-            alert('Daily wage saved successfully!');
+            alert('Dagloon succesvol opgeslagen!');
         }
 
         function updateWageDisplay() {
@@ -957,7 +959,7 @@
             grid.innerHTML = '';
             
             // Day headers (Monday first)
-            const dayHeaders = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const dayHeaders = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'];
             dayHeaders.forEach(day => {
                 const header = document.createElement('div');
                 header.className = 'calendar-day-header';
@@ -1035,7 +1037,7 @@
             
             const container = document.getElementById('dailyTransactions');
             if (dayTransactions.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #64748b;">No transactions for this day.</p>';
+                container.innerHTML = '<p style="text-align: center; color: #64748b;">Er zijn vandaag geen transacties geweest.</p>';
             } else {
                 container.innerHTML = dayTransactions.map(transaction => {
                     const isPositive = transaction.amount > 0;
@@ -1055,7 +1057,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <button class="button danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteTransaction(${transaction.id})">🗑️ Delete</button>
+                                    <button class="button danger" style="padding: 6px 12px; font-size: 12px;" onclick="deleteTransaction(${transaction.id})">🗑️ Verwijderen</button>
                                 </div>
                             </div>
                         </div>
@@ -1068,7 +1070,7 @@
 
         // Delete Function
         function deleteTransaction(transactionId) {
-            if (confirm('Are you sure you want to delete this transaction?')) {
+            if (confirm('Weet u zeker dat u deze transactie wilt verwijderen?')) {
                 transactions = transactions.filter(t => t.id !== transactionId);
                 saveTransactions();
                 updateTotalDisplay();
@@ -1087,7 +1089,7 @@
                     showDayDetails(formattedDate);
                 }
                 
-                alert('Transaction deleted successfully!');
+                alert('Transactie succesvol verwijderd!');
             }
         }
 
@@ -1108,32 +1110,32 @@
                 
                 const compressed = btoa(JSON.stringify(exportData));
                 document.getElementById('exportDataText').value = compressed;
-                alert('Export data generated! Copy the text to transfer to another device.');
+                alert('Gegevens zijn gegenereerd! Kopieer de tekst om deze naar een ander apparaat over te zetten.');
             } catch (error) {
-                alert('Error generating export data: ' + error.message);
+                alert('Fout bij het genereren van exportgegevens: ' + error.message);
             }
         }
 
         function copyToClipboard() {
             const textarea = document.getElementById('exportDataText');
             if (textarea.value === '') {
-                alert('Please generate export data first!');
+                alert('Genereer eerst exportgegevens!');
                 return;
             }
             
             textarea.select();
             document.execCommand('copy');
-            alert('Export data copied to clipboard! You can now paste it on another device.');
+            alert('Gegevens gekopieerd naar klembord! Je kunt ze nu op een ander apparaat plakken.');
         }
 
         function importData() {
             const importText = document.getElementById('importDataText').value.trim();
             if (!importText) {
-                alert('Please paste the export data first!');
+                alert('Plak eerst de exportgegevens!');
                 return;
             }
             
-            if (!confirm('This will replace ALL your current data. Are you sure you want to continue?')) {
+            if (!confirm('Hiermee worden AL uw huidige gegevens vervangen. Weet u zeker dat u wilt doorgaan?')) {
                 return;
             }
             
@@ -1143,7 +1145,7 @@
                 
                 // Validate import data
                 if (!importData.version || !Array.isArray(importData.transactions)) {
-                    throw new Error('Invalid import data format');
+                    throw new Error('Ongeldige importgegevens');
                 }
                 
                 // Import data
@@ -1162,10 +1164,10 @@
                 // Clear import field
                 document.getElementById('importDataText').value = '';
                 
-                alert(`Data imported successfully! Imported ${transactions.length} transactions from ${new Date(importData.exportDate).toLocaleDateString()}`);
+                alert(`Gegevens geïmporteerd! ${transactions.length} transacties geimporteerd van ${new Date(importData.exportDate).toLocaleDateString()}`);
                 
             } catch (error) {
-                alert('Error importing data. Please check the format and try again. Error: ' + error.message);
+                alert('Fout bij het importeren van gegevens. Controleer de indeling en probeer het opnieuw. Fout: ' + error.message);
             }
         }
 
@@ -1184,7 +1186,7 @@
         function generatePDFWithName() {
             const employeeName = document.getElementById('employeeName').value.trim();
             if (!employeeName) {
-                alert('Please enter your name for the PDF report.');
+                alert('Voer uw naam in voor het PDF-rapport.');
                 return;
             }
             
@@ -1245,21 +1247,21 @@
                 // Header with employee name
                 doc.setFontSize(20);
                 doc.setTextColor(40, 40, 40);
-                doc.text('Overtime Report', 20, 25);
+                doc.text('Overuren rapport', 20, 25);
                 
                 doc.setFontSize(16);
                 doc.setTextColor(60, 60, 60);
-                doc.text(`Employee: ${employeeName}`, 20, 35);
+                doc.text(`Werknemer: ${employeeName}`, 20, 35);
                 
                 doc.setFontSize(12);
                 doc.setTextColor(40, 40, 40);
-                doc.text(`Generated: ${new Date().toLocaleDateString()}`, 20, 50);
-                doc.text(`Starting Amount: €${startingAmount.toFixed(2)}`, 20, 60);
-                doc.text(`Earned/Deducted: €${transactionTotal.toFixed(2)}`, 20, 70);
-                doc.text(`Total Balance: €${grandTotal.toFixed(2)}`, 20, 80);
+                doc.text(`Gegenereerd: ${new Date().toLocaleDateString()}`, 20, 50);
+                doc.text(`Startbedrag: €${startingAmount.toFixed(2)}`, 20, 60);
+                doc.text(`Verdiend/Afgetrokken: €${transactionTotal.toFixed(2)}`, 20, 70);
+                doc.text(`Totaal saldo: €${grandTotal.toFixed(2)}`, 20, 80);
                 
                 if (transactions.length === 0) {
-                    doc.text('No transactions recorded.', 20, 100);
+                    doc.text('Geen transacties geregistreerd.', 20, 100);
                 } else {
                     // Group transactions by month
                     const monthlyData = {};
@@ -1310,7 +1312,7 @@
                         if (typeof doc.autoTable === 'function') {
                             doc.autoTable({
                                 startY: yPosition,
-                                head: [['Date', 'Description', 'Shift', 'Amount']],
+                                head: [['Datum', 'Beschrijving', 'Shift', 'Bedrag']],
                                 body: tableData,
                                 theme: 'grid',
                                 styles: { fontSize: 9 },
@@ -1321,7 +1323,7 @@
                         } else {
                             // Fallback to simple text
                             doc.setFontSize(10);
-                            doc.text('Date       Description              Shift  Amount', 20, yPosition);
+                            doc.text('Datum       Beschrijving              Shift  Bedrag', 20, yPosition);
                             yPosition += 5;
                             
                             tableData.forEach(row => {
@@ -1346,26 +1348,26 @@
                     doc.setPage(i);
                     doc.setFontSize(8);
                     doc.setTextColor(128, 128, 128);
-                    doc.text(`Page ${i} of ${pageCount}`, 20, doc.internal.pageSize.height - 10);
-                    doc.text('Generated by Overtime Logger', doc.internal.pageSize.width - 60, doc.internal.pageSize.height - 10);
+                    doc.text(`Pagina ${i} of ${pageCount}`, 20, doc.internal.pageSize.height - 10);
+                    doc.text('Gegenereerd door Overuren Tracker', doc.internal.pageSize.width - 60, doc.internal.pageSize.height - 10);
                 }
                 
                 // Save PDF
-                const fileName = `overtime-report-${employeeName.replace(/\s+/g, '_')}-${new Date().toISOString().split('T')[0]}.pdf`;
+                const fileName = `overuren-rapport-${employeeName.replace(/\s+/g, '_')}-${new Date().toISOString().split('T')[0]}.pdf`;
                 doc.save(fileName);
                 
                 // Mark backup as done
                 markBackupDone();
-                alert('PDF exported successfully! Backup reminder cleared for this week.');
+                alert('PDF succesvol geëxporteerd! Back-upherinnering voor deze week gewist.');
                 
             } catch (error) {
                 console.error('PDF Export Error:', error);
                 
                 // Fallback to text export
-                if (confirm('PDF export failed. Would you like to download your data as a text file instead?')) {
+                if (confirm('PDF-export mislukt. Wilt u uw gegevens liever als tekstbestand downloaden?')) {
                     exportToText();
                 } else {
-                    alert('PDF export failed. Please refresh the page and try again. If the problem persists, use the text export option.');
+                    alert('PDF-export mislukt. Vernieuw de pagina en probeer het opnieuw. Als het probleem aanhoudt, gebruik dan de optie voor tekstexport.');
                 }
             }
         }
@@ -1376,15 +1378,15 @@
                 const transactionTotal = transactions.reduce((sum, t) => sum + t.amount, 0);
                 const grandTotal = startingAmount + transactionTotal;
                 
-                let content = `OVERTIME REPORT\n`;
-                content += `Generated: ${new Date().toLocaleDateString()}\n\n`;
-                content += `SUMMARY:\n`;
-                content += `Starting Amount: €${startingAmount.toFixed(2)}\n`;
-                content += `Earned/Deducted: €${transactionTotal.toFixed(2)}\n`;
-                content += `Total Balance: €${grandTotal.toFixed(2)}\n\n`;
+                let content = `OVERUREN RAPPORT\n`;
+                content += `Gegenereerd: ${new Date().toLocaleDateString()}\n\n`;
+                content += `SAMENVATTING:\n`;
+                content += `Startbedrag: €${startingAmount.toFixed(2)}\n`;
+                content += `Verdiend/Afgetrokken: €${transactionTotal.toFixed(2)}\n`;
+                content += `Totaal saldo: €${grandTotal.toFixed(2)}\n\n`;
                 
                 if (transactions.length === 0) {
-                    content += 'No transactions recorded.\n';
+                    content += 'Geen transacties geregistreerd.\n';
                 } else {
                     // Group by month
                     const monthlyData = {};
@@ -1423,17 +1425,17 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `overtime-report-${new Date().toISOString().split('T')[0]}.txt`;
+                a.download = `overuren-rapport-${new Date().toISOString().split('T')[0]}.txt`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 
                 markBackupDone();
-                alert('Text report exported successfully! Backup reminder cleared for this week.');
+                alert('Tekstrapport succesvol geëxporteerd! Back-upherinnering voor deze week gewist.');
                 
             } catch (error) {
-                alert('Export failed. Please try copying the data manually from the calendar view.');
+                alert('Exporteren mislukt. Probeer de gegevens handmatig te kopiëren vanuit de kalenderweergave.');
             }
         }
 
@@ -1474,9 +1476,9 @@
                 const percentage = ((multiplier - 1) * 100).toFixed(0);
                 
                 document.getElementById('earnCalculation').innerHTML = `
-                    <div>Daily Wage: €${dailyWage.toFixed(2)}</div>
-                    <div>Hourly Rate: €${dailyWage.toFixed(2)} ÷ 7.25 = €${hourlyRate.toFixed(2)}</div>
-                    <div>Overtime: ${hours} hours × €${hourlyRate.toFixed(2)} × ${multiplier} (+${percentage}%) = <strong>€${earnings.toFixed(2)}</strong></div>
+                    <div>Dagloon: €${dailyWage.toFixed(2)}</div>
+                    <div>Uurloon: €${dailyWage.toFixed(2)} ÷ 7.25 = €${hourlyRate.toFixed(2)}</div>
+                    <div>Overuren: ${hours} uur × €${hourlyRate.toFixed(2)} × ${multiplier} (+${percentage}%) = <strong>€${earnings.toFixed(2)}</strong></div>
                 `;
                 document.getElementById('earnPreview').style.display = 'block';
             } else {
@@ -1506,15 +1508,15 @@
                 const percentage = ((multiplier - 1) * 100).toFixed(0);
                 
                 let calculationText = `
-                    <div>Daily Wage: €${dailyWage.toFixed(2)}</div>
-                    <div>Base Hourly Rate: €${dailyWage.toFixed(2)} ÷ 7.25 = €${hourlyRate.toFixed(2)}</div>
+                    <div>Dagloon: €${dailyWage.toFixed(2)}</div>
+                    <div>Basis uurloon: €${dailyWage.toFixed(2)} ÷ 7.25 = €${hourlyRate.toFixed(2)}</div>
                 `;
                 
                 if (multiplier > 1) {
-                    calculationText += `<div>Taking Rate: €${hourlyRate.toFixed(2)} × ${multiplier} (+${percentage}% additional) = €${(hourlyRate * multiplier).toFixed(2)}</div>`;
+                    calculationText += `<div>Uurloon + shiftpremie: €${hourlyRate.toFixed(2)} × ${multiplier} (+${percentage}% additional) = €${(hourlyRate * multiplier).toFixed(2)}</div>`;
                 }
                 
-                calculationText += `<div>Deduction: ${hours} hours × €${(hourlyRate * multiplier).toFixed(2)} = <strong>-€${deduction.toFixed(2)}</strong></div>`;
+                calculationText += `<div>Aftrekken: ${hours} uur × €${(hourlyRate * multiplier).toFixed(2)} = <strong>-€${deduction.toFixed(2)}</strong></div>`;
                 
                 document.getElementById('takeCalculation').innerHTML = calculationText;
                 document.getElementById('takePreview').style.display = 'block';
@@ -1539,7 +1541,7 @@
             }
             
             if (!date || hours <= 0 || dailyWage <= 0) {
-                alert('Please fill in all fields and set a daily wage first');
+                alert('Vul eerst alle velden in en stel een dagloon in');
                 return;
             }
             
@@ -1547,12 +1549,12 @@
             
             const transaction = {
                 id: Date.now(),
-                type: 'overtime',
+                type: 'toevoegen',
                 date: date,
                 hours: hours,
                 shiftType: shiftType,
                 amount: earnings,
-                description: `${hours}h overtime (${shiftType} shift)`
+                description: `${hours} overuren toegevoegd (${shiftType} shift)`
             };
             
             transactions.unshift(transaction);
@@ -1566,7 +1568,7 @@
             document.getElementById('customOvertimeHours').style.display = 'none';
             document.getElementById('earnPreview').style.display = 'none';
             
-            alert(`Added €${earnings.toFixed(2)} to your balance!`);
+            alert(`€${earnings.toFixed(2)} toegevoegd aan uw saldo!`);
         }
 
         function takeOvertime() {
@@ -1584,7 +1586,7 @@
             }
             
             if (!date || hours <= 0 || dailyWage <= 0) {
-                alert('Please fill in all fields and set a daily wage first');
+                alert('Vul eerst alle velden in en stel een dagloon in');
                 return;
             }
             
@@ -1592,12 +1594,12 @@
             
             const transaction = {
                 id: Date.now(),
-                type: 'take',
+                type: 'oppakken',
                 date: date,
                 hours: hours,
                 shiftType: shiftType,
                 amount: -deduction,
-                description: `Took ${hours}h overtime (${shiftType} shift)`
+                description: `${hours} overuren opgepakt (${shiftType} shift)`
             };
             
             transactions.unshift(transaction);
@@ -1611,7 +1613,7 @@
             document.getElementById('customTakeHours').style.display = 'none';
             document.getElementById('takePreview').style.display = 'none';
             
-            alert(`Deducted €${deduction.toFixed(2)} from your balance!`);
+            alert(`€${deduction.toFixed(2)} afgetrokken van uw saldo!`);
         }
 
         function addOrder() {
@@ -1620,13 +1622,13 @@
             const description = document.getElementById('orderDescription').value || 'Order';
             
             if (!date || amount <= 0) {
-                alert('Please fill in date and amount');
+                alert('Vul datum en bedrag in');
                 return;
             }
             
             const transaction = {
                 id: Date.now(),
-                type: 'order',
+                type: 'bestelling',
                 date: date,
                 amount: -amount,
                 description: description
@@ -1641,7 +1643,7 @@
             document.getElementById('orderAmount').value = '';
             document.getElementById('orderDescription').value = '';
             
-            alert(`Deducted €${amount.toFixed(2)} for: ${description}`);
+            alert(`€${amount.toFixed(2)} afgetrokken voor: ${description}`);
         }
 
         function saveTransactions() {
@@ -1663,13 +1665,13 @@
         }
 
         function clearAllData() {
-            if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+            if (confirm('Weet u zeker dat u alle gegevens wilt wissen? Dit kan niet ongedaan worden gemaakt.')) {
                 localStorage.clear();
                 dailyWage = 0;
                 startingAmount = 0;
                 transactions = [];
                 init();
-                alert('All data cleared!');
+                alert('Alle gegevens gewist!');
             }
         }
 
@@ -1687,34 +1689,31 @@
 
         // Initialize the app when page loads
         document.addEventListener('DOMContentLoaded', init);
+        
+        document.addEventListener('DOMContentLoaded', () => {
+        const installBtn = document.getElementById('installBtn');
 
-    </script>
+        // Verberg knop als PWA al draait
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            installBtn.style.display = 'none';
+        }
 
-    <script>
- document.addEventListener('DOMContentLoaded', () => {
-  const installBtn = document.getElementById('installBtn');
+        let deferredPrompt;
 
-  // Verberg knop als PWA al draait
-  if (window.matchMedia('(display-mode: standalone)').matches) {
-    installBtn.style.display = 'none';
-  }
+        window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.style.display = 'block';
 
-  let deferredPrompt;
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBtn.style.display = 'block';
-
-    installBtn.addEventListener('click', () => {
-      installBtn.style.display = 'none';
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('✅ Installatie gestart');
+        installBtn.addEventListener('click', () => {
+        installBtn.style.display = 'none';
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('✅ Installatie gestart');
         }
         deferredPrompt = null;
-      });
+        });
     });
   });
 
