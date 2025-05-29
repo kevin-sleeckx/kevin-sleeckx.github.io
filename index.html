@@ -545,9 +545,9 @@
 
         <!-- Take Overtime -->
         <div class="section">
-            <!-- <h2>➖ Overuren oppakken</h2> -->
-            <button class="button" onclick="toggleTakeSection()" id="toggleTakeBtn">📤 Pak overuren op</button>
-            <div id="takeSection" style="display: none; margin-top: 20px;">
+            <h2>➖ Overuren oppakken</h2>
+            <!-- <button class="button" onclick="toggleTakeSection()" id="toggleTakeBtn">📤 Pak overuren op</button>
+            <div id="takeSection" style="display: none; margin-top: 20px;"> -->
                 <div class="form-row">
                     <div class="form-group">
                         <label for="takeDate">Datum</label>
@@ -613,9 +613,9 @@
 
         <!-- Orders -->
         <div class="section">
-            <!-- <h2>🛒 Bestellingen (uitgaven)</h2> -->
-            <button class="button" onclick="toggleOrderSection()" id="toggleOrderBtn">🛍️ Voeg bestelling toe</button>
-            <div id="orderSection" style="display: none; margin-top: 20px;">
+            <h2>🛒 Bestellingen (uitgaven)</h2>
+            <!-- <button class="button" onclick="toggleOrderSection()" id="toggleOrderBtn">🛍️ Voeg bestelling toe</button>
+            <div id="orderSection" style="display: none; margin-top: 20px;"> -->
                 <div class="form-row">
                     <div class="form-group">
                         <label for="orderDate">Datum</label>
@@ -847,34 +847,6 @@
             } else {
                 section.style.display = 'none';
                 btn.textContent = '⚙️ Dagloon aanpassen';
-            }
-        }
-
-       
-
-        function toggleTakeSection() {
-            const section = document.getElementById('takeSection');
-            const btn = document.getElementById('toggleTakeBtn');
-            
-            if (section.style.display === 'none') {
-                section.style.display = 'block';
-                btn.textContent = '🔼 Verberg';
-            } else {
-                section.style.display = 'none';
-                btn.textContent = '📤 Overuren oppakken';
-            }
-        }
-
-        function toggleOrderSection() {
-            const section = document.getElementById('orderSection');
-            const btn = document.getElementById('toggleOrderBtn');
-            
-            if (section.style.display === 'none') {
-                section.style.display = 'block';
-                btn.textContent = '🔼 Verberg';
-            } else {
-                section.style.display = 'none';
-                btn.textContent = '🛍️ Bestelling toevoegen';
             }
         }
 
