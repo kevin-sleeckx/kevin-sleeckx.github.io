@@ -1,7 +1,7 @@
 {
-  "name": "Overtime Logger",
-  "short_name": "Overtime",
-  "description": "Professional overtime tracking with calendar view and PDF export",
+  "name": "Overuren Tracker",
+  "short_name": "Overuren",
+  "description": "Overuren Tracker om uw overuren bij te houden en te exporteren naar PDF",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f0f9ff",
