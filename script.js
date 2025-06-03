@@ -582,6 +582,7 @@ function closeNameModal() {
 }
 
 function generatePDFWithName() {
+    const exportOrdersOnly = localStorage.getItem('exportOrdersOnly') === 'true';
     const employeeName = document.getElementById('employeeName').value.trim();
     if (!employeeName) {
         alert('Voer uw naam in voor het PDF rapport');
@@ -591,147 +592,56 @@ function generatePDFWithName() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
-    const transactionTotal = transactions.reduce((sum, t) => sum + t.amount, 0);
-    const grandTotal = startingAmount + transactionTotal;
+    // Filter transactions if we're only exporting orders
+    const relevantTransactions = exportOrdersOnly 
+        ? transactions.filter(t => t.type === 'order')
+        : transactions;
+    
+    // Sort transactions by date (newest first)
+    const sortedTransactions = [...relevantTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
     
     // Header
     doc.setFontSize(20);
     doc.setTextColor(40, 40, 40);
-    doc.text('Overuren Rapport', 20, 30);
+    doc.text(exportOrdersOnly ? 'Bestellingen Rapport' : 'Overuren Rapport', 20, 30);
     
     doc.setFontSize(12);
     doc.text(`Naam: ${employeeName}`, 20, 45);
     doc.text(`Gegenereerd: ${new Date().toLocaleDateString('nl-NL')}`, 20, 55);
-    doc.text(`Start Bedrag: €${startingAmount.toFixed(2).replace('.', ',')}`, 20, 65);
-    doc.text(`Verdiend/Afgetrokken: €${transactionTotal.toFixed(2).replace('.', ',')}`, 20, 75);
-    doc.text(`Totaal Saldo: €${grandTotal.toFixed(2).replace('.', ',')}`, 20, 85);
     
-    let yPosition = 105;
-    
-    if (transactions.length === 0) {
-        doc.text('Geen transacties geregistreerd.', 20, yPosition);
+    if (exportOrdersOnly) {
+        const totalOrders = sortedTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+        doc.text(`Totaal Bestellingen: €${totalOrders.toFixed(2).replace('.', ',')}`, 20, 65);
     } else {
-        // Group transactions by month and week
-        const monthlyData = {};
+        doc.text(`Start Bedrag: €${startingAmount.toFixed(2).replace('.', ',')}`, 20, 65);
+        const transactionTotal = transactions.reduce((sum, t) => sum + t.amount, 0);
+        const grandTotal = startingAmount + transactionTotal;
+        doc.text(`Verdiend/Afgetrokken: €${transactionTotal.toFixed(2).replace('.', ',')}`, 20, 75);
+        doc.text(`Totaal Saldo: €${grandTotal.toFixed(2).replace('.', ',')}`, 20, 85);
+    }
+    
+    let yPosition = exportOrdersOnly ? 85 : 105;
+    
+    if (sortedTransactions.length === 0) {
+        doc.text(exportOrdersOnly ? 'Geen bestellingen geregistreerd.' : 'Geen transacties geregistreerd.', 20, yPosition);
+    } else {
+        const tableData = sortedTransactions.map(t => [
+            new Date(t.date).toLocaleDateString('nl-NL'),
+            t.description,
+            `€${Math.abs(t.amount).toFixed(2).replace('.', ',')}`
+        ]);
         
-        // Sort transactions by date descending (newest first)
-        const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
-        
-        sortedTransactions.forEach(t => {
-            const date = new Date(t.date);
-            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-            const weekNumber = getWeekNumber(date);
-            const weekKey = `${date.getFullYear()}-W${String(weekNumber).padStart(2, '0')}`;
-            const monthNames = [
-                'Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni',
-                'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December'
-            ];
-            const monthName = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
-            
-            if (!monthlyData[monthKey]) {
-                monthlyData[monthKey] = {
-                    name: monthName,
-                    weeks: {},
-                    total: 0
-                };
-            }
-            
-            if (!monthlyData[monthKey].weeks[weekKey]) {
-                monthlyData[monthKey].weeks[weekKey] = {
-                    weekNumber: weekNumber,
-                    year: date.getFullYear(),
-                    transactions: [],
-                    total: 0
-                };
-            }
-            
-            monthlyData[monthKey].weeks[weekKey].transactions.push(t);
-            monthlyData[monthKey].weeks[weekKey].total += t.amount;
-            monthlyData[monthKey].total += t.amount;
-        });
-        
-        // Sort months newest first
-        const sortedMonths = Object.keys(monthlyData).sort().reverse();
-        
-        sortedMonths.forEach(monthKey => {
-            const monthData = monthlyData[monthKey];
-            
-            // Check if we need a new page
-            if (yPosition > 250) {
-                doc.addPage();
-                yPosition = 30;
-            }
-            
-            // Month header
-            doc.setFontSize(16);
-            doc.setTextColor(60, 60, 60);
-            doc.text(`${monthData.name} - Totaal: €${monthData.total.toFixed(2).replace('.', ',')}`, 20, yPosition);
-            yPosition += 15;
-            
-            // Sort weeks newest first within the month
-            const sortedWeeks = Object.keys(monthData.weeks).sort().reverse();
-            
-            // Prepare table data with weekly summaries
-            const tableData = [];
-            
-            sortedWeeks.forEach(weekKey => {
-                const weekData = monthData.weeks[weekKey];
-                
-                // Add all transactions for this week (already sorted by date descending)
-                weekData.transactions.forEach(t => {
-                    tableData.push([
-                        new Date(t.date).toLocaleDateString('nl-NL'),
-                        t.description,
-                        t.shiftType || '-',
-                        `€${t.amount.toFixed(2).replace('.', ',')}`
-                    ]);
-                });
-                
-                // Add weekly summary row
-                const weekSummaryText = `Week ${weekData.weekNumber} (${weekData.year}) - Totaal`;
-                const weekTotalFormatted = `€${weekData.total.toFixed(2).replace('.', ',')}`;
-                
-                tableData.push([
-                    '',
-                    weekSummaryText,
-                    '',
-                    weekTotalFormatted
-                ]);
-            });
-            
-            doc.autoTable({
-                startY: yPosition,
-                head: [['Datum', 'Beschrijving', 'Dienst', 'Bedrag']],
-                body: tableData,
-                theme: 'grid',
-                styles: { fontSize: 9 },
-                headStyles: { fillColor: [108, 117, 125] }, // Gray header (#6c757d)
-                columnStyles: {
-                    3: { 
-                        textColor: function(data) {
-                            return parseFloat(data.cell.text[0].replace('€', '').replace(',', '.')) >= 0 ? [76, 175, 80] : [244, 67, 54]; // #4CAF50 and #F44336
-                        }
-                    }
-                },
-                didParseCell: function(data) {
-                    // Style weekly summary rows
-                    if (data.row.raw[1] && data.row.raw[1].includes('Week ') && data.row.raw[1].includes('Totaal')) {
-                        data.cell.styles.fillColor = [248, 249, 250]; // Light gray background (#f8f9fa)
-                        data.cell.styles.fontStyle = 'bold';
-                        data.cell.styles.fontSize = 10;
-                        
-                        // Special styling for the total amount column
-                        if (data.column.index === 3) {
-                            const amount = parseFloat(data.cell.text[0].replace('€', '').replace(',', '.'));
-                            data.cell.styles.textColor = amount >= 0 ? [76, 175, 80] : [244, 67, 54]; // #4CAF50 and #F44336
-                            data.cell.styles.fontStyle = 'bold';
-                        }
-                    }
-                },
-                margin: { left: 20, right: 20 }
-            });
-            
-            yPosition = doc.lastAutoTable.finalY + 20;
+        doc.autoTable({
+            startY: yPosition,
+            head: [['Datum', 'Beschrijving', 'Bedrag']],
+            body: tableData,
+            theme: 'grid',
+            styles: { fontSize: 9 },
+            headStyles: { fillColor: [108, 117, 125] },
+            columnStyles: {
+                2: { halign: 'right' }
+            },
+            margin: { left: 20, right: 20 }
         });
     }
     
@@ -745,24 +655,66 @@ function generatePDFWithName() {
         doc.text('Gegenereerd door Overuren Logger', doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 10);
     }
     
-    // Save PDF
-    doc.save(`overuren-rapport-${employeeName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`);
+    // Save PDF with appropriate name
+    const filename = exportOrdersOnly 
+        ? `bestellingen-rapport-${employeeName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`
+        : `overuren-rapport-${employeeName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
     
-    // Mark backup as done
-    markBackupDone();
+    doc.save(filename);
+    
+    // Clear the orders-only flag and close the modal
+    localStorage.removeItem('exportOrdersOnly');
     closeNameModal();
-    alert('PDF succesvol geëxporteerd! Backup herinnering gewist voor deze week.');
+    alert(exportOrdersOnly ? 'Bestellingen rapport geëxporteerd!' : 'PDF succesvol geëxporteerd! Backup herinnering gewist voor deze week.');
+    
+    // Only mark backup as done for full exports
+    if (!exportOrdersOnly) {
+        markBackupDone();
+    }
 }
 
-function clearAllData() {
-    if (confirm('Weet u zeker dat u alle gegevens wilt wissen? Dit kan niet ongedaan gemaakt worden.')) {
-        localStorage.clear();
-        dailyWage = 0;
-        startingAmount = 0;
-        transactions = [];
-        init();
-        alert('Alle gegevens gewist!');
+function exportOrdersToPDF() {
+    document.getElementById('nameModal').style.display = 'block';
+    // Set a flag to indicate we're exporting orders only
+    localStorage.setItem('exportOrdersOnly', 'true');
+}
+
+function exportOrdersToText() {
+    // Filter only order transactions and sort by date (newest first)
+    const orderTransactions = transactions
+        .filter(t => t.type === 'order')
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    let textReport = `BESTELLINGEN RAPPORT\n`;
+    textReport += `Gegenereerd: ${new Date().toLocaleDateString('nl-NL')}\n\n`;
+    
+    if (orderTransactions.length === 0) {
+        textReport += 'Geen bestellingen geregistreerd.\n';
+    } else {
+        textReport += 'BESTELLINGEN:\n';
+        textReport += '='.repeat(50) + '\n';
+        
+        orderTransactions.forEach(t => {
+            textReport += `${new Date(t.date).toLocaleDateString('nl-NL')} - ${t.description} - €${Math.abs(t.amount).toFixed(2).replace('.', ',')}\n`;
+        });
+        
+        const totalOrders = orderTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
+        textReport += '\n='.repeat(50) + '\n';
+        textReport += `Totaal Bestellingen: €${totalOrders.toFixed(2).replace('.', ',')}\n`;
     }
+    
+    // Create download
+    const blob = new Blob([textReport], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bestellingen-rapport-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    alert('Bestellingen rapport gedownload!');
 }
 
 // Close modals when clicking outside
