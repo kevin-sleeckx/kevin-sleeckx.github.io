@@ -20,6 +20,20 @@ const takeMultipliers = {
     nacht: 1.5   // +50% additional deduction
 };
 
+// Function to update the total display
+function updateTotalDisplay() {
+    const transactionTotal = transactions.reduce((sum, t) => sum + t.amount, 0);
+    const total = startingAmount + transactionTotal;
+    const totalElement = document.getElementById('totalAmount');
+    totalElement.textContent = total.toFixed(2).replace('.', ',');
+    totalElement.classList.remove('positive-amount', 'negative-amount');
+    if (total >= 0) {
+        totalElement.classList.add('positive-amount');
+    } else {
+        totalElement.classList.add('negative-amount');
+    }
+}
+
 // Tab switching function
 function switchTab(tabName) {
     // Remove active class from all tab buttons
