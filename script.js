@@ -56,33 +56,50 @@ function init() {
     registerServiceWorker();
 }
 
+// Variable to store the deferred prompt
+let deferredPrompt;
+
 // PWA Service Worker Registration
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js')
             .then(registration => {
                 console.log('Service Worker registered successfully:', registration);
-                
-                // Show install button if app is installable
-                window.addEventListener('beforeinstallprompt', (e) => {
-                    e.preventDefault();
-                    const installBtn = document.getElementById('installBtn');
-                    installBtn.style.display = 'block';
-                    installBtn.onclick = () => {
-                        e.prompt();
-                        e.userChoice.then((choiceResult) => {
-                            if (choiceResult.outcome === 'accepted') {
-                                installBtn.style.display = 'none';
-                            }
-                        });
-                    };
-                });
             })
             .catch(error => {
                 console.log('Service Worker registration failed:', error);
             });
     }
 }
+
+// Install button functionality
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent Chrome 67 and earlier from automatically showing the prompt
+    e.preventDefault();
+    // Stash the event so it can be triggered later
+    deferredPrompt = e;
+    // Update UI to notify the user they can add to home screen
+    const installBtn = document.getElementById('installBtn');
+    installBtn.style.display = 'block';
+    
+    installBtn.addEventListener('click', async () => {
+        // Hide our user interface that shows our install button
+        installBtn.style.display = 'none';
+        // Show the prompt
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        // We've used the prompt, and can't use it again, clear it
+        deferredPrompt = null;
+    });
+});
+
+// Hide the install button when the PWA is already installed
+window.addEventListener('appinstalled', () => {
+    document.getElementById('installBtn').style.display = 'none';
+    console.log('PWA was installed');
+});
 
 function setDefaultDates() {
     const today = new Date().toISOString().split('T')[0];
