@@ -1,6 +1,6 @@
 {
-  "name": "Overuren Logger",
-  "short_name": "Overuren",
+  "name": "Overtime Logger",
+  "short_name": "Overtime",
   "description": "Professionele overuren bijhouden met kalender weergave en PDF export",
   "start_url": "/index.html",
   "display": "standalone",
@@ -48,22 +48,6 @@
           "sizes": "192x192"
         }
       ]
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "screenshot-wide.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Overtime Logger Calendar View"
-    },
-    {
-      "src": "screenshot-narrow.png",
-      "sizes": "720x1280", 
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Overtime Logger Mobile View"
     }
   ]
 }
