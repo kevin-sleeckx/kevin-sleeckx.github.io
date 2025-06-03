@@ -1,0 +1,546 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #fafafa;
+    min-height: 100vh;
+    color: #2c3e50;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: #ffffff;
+    min-height: 100vh;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.02);
+}
+
+.header {
+    background: #ffffff;
+    color: #2c3e50;
+    padding: 24px 32px;
+    border-bottom: 1px solid #e9ecef;
+    position: relative;
+}
+
+.header h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.header p {
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-weight: 400;
+}
+
+.install-button {
+    position: absolute;
+    top: 24px;
+    right: 32px;
+    background: #f8f9fa;
+    color: #495057;
+    border: 1px solid #dee2e6;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.install-button:hover {
+    background: #e9ecef;
+}
+
+.total-display {
+    background: #f8f9fa;
+    color: #2c3e50;
+    padding: 20px 32px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.backup-reminder {
+    background: #fff3cd;
+    color: #856404;
+    padding: 12px 32px;
+    text-align: center;
+    border-bottom: 1px solid #ffeaa7;
+    display: none;
+}
+
+.backup-reminder.show {
+    display: block;
+}
+
+.section {
+    padding: 32px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.section:last-child {
+    border-bottom: none;
+}
+
+.section h2 {
+    color: #2c3e50;
+    margin-bottom: 24px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    border-left: 3px solid #6c757d;
+    padding-left: 12px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #ffffff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none;
+    border-color: #495057;
+    box-shadow: 0 0 0 2px rgba(73, 80, 87, 0.1);
+}
+
+.button {
+    background: #495057;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: inline-block;
+    text-decoration: none;
+}
+
+.button:hover {
+    background: #343a40;
+}
+
+.button.danger {
+    background: #F44336;
+}
+
+.button.danger:hover {
+    background: #d32f2f;
+}
+
+.button.success {
+    background: #4CAF50;
+}
+
+.button.success:hover {
+    background: #388e3c;
+}
+
+/* Calendar Styles */
+.calendar-container {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.calendar-nav {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    color: #495057;
+    transition: background-color 0.2s ease;
+}
+
+.calendar-nav:hover {
+    background: #e9ecef;
+}
+
+.calendar-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.calendar-day-header {
+    text-align: center;
+    font-weight: 600;
+    padding: 12px 8px;
+    color: #6c757d;
+    background: #f8f9fa;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+    background: #ffffff;
+    border: 1px solid transparent;
+    font-size: 14px;
+}
+
+.calendar-day:hover {
+    background: #f8f9fa;
+}
+
+.calendar-day.other-month {
+    color: #adb5bd;
+    background: #f8f9fa;
+}
+
+.calendar-day.today {
+    border-color: #495057;
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+.calendar-day.positive {
+    background: #d4edda;
+    color: #155724;
+    border-color: #4CAF50;
+}
+
+.calendar-day.negative {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #F44336;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background: white;
+    margin: 5% auto;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    background: #f8f9fa;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e9ecef;
+    border-radius: 8px 8px 0 0;
+}
+
+.modal-header h2 {
+    color: #2c3e50;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    border: none;
+    padding: 0;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.close {
+    color: #6c757d;
+    float: right;
+    font-size: 24px;
+    font-weight: 500;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close:hover {
+    color: #495057;
+}
+
+.daily-transaction {
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    border-left: 3px solid transparent;
+    background: #f8f9fa;
+}
+
+.daily-transaction.positive {
+    background: #d4edda;
+    border-left-color: #4CAF50;
+}
+
+.daily-transaction.negative {
+    background: #f8d7da;
+    border-left-color: #F44336;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.wage-display {
+    background: #d4edda;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-top: 12px;
+    border-left: 3px solid #4CAF50;
+}
+
+.calculation-preview {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 6px;
+    margin-top: 16px;
+    border: 1px solid #e9ecef;
+}
+
+.calculation-preview h4 {
+    color: #495057;
+    margin-bottom: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.calculation-steps {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+    font-size: 13px;
+    color: #6c757d;
+}
+
+.export-section {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.shift-badges {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+}
+
+.shift-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.shift-badge.dag { background: #fff3cd; color: #856404; }
+.shift-badge.vroege { background: #d1ecf1; color: #0c5460; }
+.shift-badge.late { background: #f8d7da; color: #721c24; }
+.shift-badge.nacht { background: #e2e3e5; color: #383d41; }
+
+/* Tab Interface Styles */
+.tabs-container {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    margin-bottom: 24px;
+}
+
+.tab-navigation {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    border-radius: 8px 8px 0 0;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 16px 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 20px;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tab-button:hover {
+    background: #e9ecef;
+}
+
+.tab-button.active {
+    background: #ffffff;
+    color: #2c3e50;
+    border-bottom: 2px solid #495057;
+}
+
+.tab-button:not(:last-child) {
+    border-right: 1px solid #e9ecef;
+}
+
+.tab-content {
+    display: none;
+    padding: 24px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .header {
+        padding: 20px;
+    }
+    
+    .header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .section {
+        padding: 20px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .calendar-grid {
+        gap: 1px;
+    }
+    
+    .calendar-day {
+        font-size: 12px;
+    }
+    
+    .install-button {
+        position: static;
+        margin-top: 12px;
+        display: block;
+        width: fit-content;
+    }
+    
+    .export-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .tab-button {
+        padding: 12px 8px;
+        font-size: 18px;
+    }
+    
+    .tab-content {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 16px;
+    }
+    
+    .section {
+        padding: 16px;
+    }
+    
+    .tab-button {
+        padding: 10px 6px;
+        font-size: 16px;
+    }
+    
+    .tab-content {
+        padding: 12px;
+    }
+    
+    .total-display {
+        padding: 16px;
+        font-size: 1.25rem;
+    }
+}
+
+/* Status Colors */
+#totalAmount {
+    font-weight: 700;
+}
+
+.positive-amount {
+    color: #4CAF50 !important;
+}
+
+.negative-amount {
+    color: #F44336 !important;
+}
+
+/* Utility Classes */
+.text-center {
+    text-align: center;
+}
+
+.mt-1 { margin-top: 8px; }
+.mt-2 { margin-top: 16px; }
+.mt-3 { margin-top: 24px; }
+.mb-1 { margin-bottom: 8px; }
+.mb-2 { margin-bottom: 16px; }
+.mb-3 { margin-bottom: 24px; }
+
+.small-text {
+    font-size: 0.875rem;
+    color: #6c757d;
+}
