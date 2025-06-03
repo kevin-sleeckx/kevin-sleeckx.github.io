@@ -1,12 +1,14 @@
 const CACHE_NAME = 'overtime-logger-v1';
 const urlsToCache = [
-  '/overtime_logger.html',
+  '/index.html',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
+  '/style.css',
+  '/script.js',
   // CDN resources
-  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js'
+  'https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js',
+  'https://unpkg.com/jspdf-autotable@latest/dist/jspdf.plugin.autotable.min.js'
 ];
 
 // Install event - cache resources
@@ -23,8 +25,10 @@ self.addEventListener('install', event => {
         return caches.open(CACHE_NAME)
           .then(cache => {
             return cache.addAll([
-              '/overtime_logger.html',
-              '/manifest.json'
+              '/index.html',
+              '/manifest.json',
+              '/style.css',
+              '/script.js'
             ]);
           });
       })
@@ -132,7 +136,7 @@ self.addEventListener('notificationclick', event => {
   
   if (event.action === 'explore') {
     event.waitUntil(
-      self.clients.openWindow('/overtime_logger.html')
+      self.clients.openWindow('/index.html')
     );
   }
 });
