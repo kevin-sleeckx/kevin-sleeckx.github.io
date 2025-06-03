@@ -1,14 +1,14 @@
 {
   "name": "Overtime Logger",
   "short_name": "Overtime",
-  "description": "Professional overtime tracking with calendar view and PDF export",
-  "start_url": "/overtime_logger.html",
+  "description": "Professionele overuren bijhouden met kalender weergave en PDF export",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#f0f9ff",
   "theme_color": "#7dd3fc",
   "orientation": "portrait-primary",
   "categories": ["productivity", "business", "utilities"],
-  "lang": "en",
+  "lang": "nl",
   "dir": "ltr",
   "icons": [
     {
@@ -26,10 +26,10 @@
   ],
   "shortcuts": [
     {
-      "name": "Add Overtime",
-      "short_name": "Add",
-      "description": "Quickly add overtime hours",
-      "url": "/overtime_logger.html#add-overtime",
+      "name": "Overuren Toevoegen",
+      "short_name": "Toevoegen",
+      "description": "Snel overuren toevoegen",
+      "url": "/index.html#add-overtime",
       "icons": [
         {
           "src": "icon-192.png",
@@ -38,10 +38,10 @@
       ]
     },
     {
-      "name": "Export PDF",
-      "short_name": "Export",
-      "description": "Export overtime report to PDF",
-      "url": "/overtime_logger.html#export",
+      "name": "PDF Exporteren",
+      "short_name": "Exporteren",
+      "description": "Exporteer overuren rapport naar PDF",
+      "url": "/index.html#export",
       "icons": [
         {
           "src": "icon-192.png", 
