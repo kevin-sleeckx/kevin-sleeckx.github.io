@@ -1,6 +1,6 @@
 {
-  "name": "Overtime Logger",
-  "short_name": "Overtime",
+  "name": "Overuren Logger",
+  "short_name": "Overuren",
   "description": "Professionele overuren bijhouden met kalender weergave en PDF export",
   "start_url": "/index.html",
   "display": "standalone",
