@@ -544,3 +544,36 @@ body {
     font-size: 0.875rem;
     color: #6c757d;
 }
+
+/* Offline Mode Styles */
+body.offline::before {
+    content: "📡 Offline Modus";
+    display: block;
+    background: #f87171;
+    color: white;
+    text-align: center;
+    padding: 8px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+body.offline {
+    padding-top: 36px;
+}
+
+@media (display-mode: standalone) {
+    /* PWA-specific styles */
+    body {
+        overscroll-behavior-y: contain;
+        -webkit-touch-callout: none;
+        user-select: none;
+    }
+    
+    /* Hide browser-specific UI in PWA mode */
+    .installBtn {
+        display: none !important;
+    }
+}

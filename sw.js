@@ -1,6 +1,7 @@
-const CACHE_NAME = 'overtime-logger-v1';
+const CACHE_NAME = 'overtime-logger-v2';
 const urlsToCache = [
   '/index.html',
+  '/offline.html',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
@@ -35,19 +36,20 @@ self.addEventListener('install', event => {
   );
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - serve from cache, fallback to network, then offline page
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Return cached version or fetch from network
+        // Return cached version if found
         if (response) {
           return response;
         }
         
+        // Otherwise, try network
         return fetch(event.request)
           .then(response => {
-            // Check if valid response
+            // Check if we received a valid response
             if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
@@ -55,12 +57,24 @@ self.addEventListener('fetch', event => {
             // Clone the response
             const responseToCache = response.clone();
 
+            // Add it to cache for later
             caches.open(CACHE_NAME)
               .then(cache => {
                 cache.put(event.request, responseToCache);
               });
 
             return response;
+          })
+          .catch(async () => {
+            // Network failed, check if this was a navigation request
+            if (event.request.mode === 'navigate') {
+              // Show offline page
+              const cache = await caches.open(CACHE_NAME);
+              return cache.match('/offline.html');
+            }
+            
+            // For non-navigation requests, just fail
+            throw new Error('Network unavailable');
           });
       })
   );
