@@ -23,7 +23,67 @@ function handleURLParams() {
     }
 }
 
-// Shift multipliers for earning overtime
+// Helper functions for hours/minutes validation and conversion
+function validateMinutes(minutes) {
+    const allowedMinutes = [0, 15, 30, 45];
+    return allowedMinutes.includes(parseInt(minutes));
+}
+
+function convertHoursMinutesToDecimal(hours, minutes) {
+    const h = parseInt(hours) || 0;
+    const m = parseInt(minutes) || 0;
+    
+    // Validate inputs
+    if (h < 0 || h > 24) return null;
+    if (!validateMinutes(m)) return null;
+    if (h === 0 && m === 0) return null; // At least one field must be filled
+    
+    return h + (m / 60);
+}
+
+function getOvertimeHours() {
+    const hours = document.getElementById('overtimeHours').value;
+    const minutes = document.getElementById('overtimeMinutes').value;
+    return convertHoursMinutesToDecimal(hours, minutes);
+}
+
+function getTakeHours() {
+    const hours = document.getElementById('takeHours').value;
+    const minutes = document.getElementById('takeMinutes').value;
+    return convertHoursMinutesToDecimal(hours, minutes);
+}
+
+// Validation for minutes input
+function validateMinutesInput(inputElement) {
+    const value = parseInt(inputElement.value);
+    if (inputElement.value !== '' && !validateMinutes(value)) {
+        inputElement.setCustomValidity('Alleen 0, 15, 30, of 45 minuten toegestaan');
+        inputElement.reportValidity();
+        return false;
+    } else {
+        inputElement.setCustomValidity('');
+        return true;
+    }
+}
+
+// Add event listeners for minutes validation
+document.addEventListener('DOMContentLoaded', function() {
+    const overtimeMinutes = document.getElementById('overtimeMinutes');
+    const takeMinutes = document.getElementById('takeMinutes');
+    
+    if (overtimeMinutes) {
+        overtimeMinutes.addEventListener('blur', function() {
+            validateMinutesInput(this);
+        });
+    }
+    
+    if (takeMinutes) {
+        takeMinutes.addEventListener('blur', function() {
+            validateMinutesInput(this);
+        });
+    }
+});
+
 const earnMultipliers = {
     dag: 1.5,    // +50%
     vroege: 1.55, // +55%
@@ -400,19 +460,10 @@ function calculateDeduction(hours, shiftType) {
 }
 
 function updateEarnPreview() {
-    const hours = parseFloat(document.getElementById('overtimeHours').value);
-    const customHours = parseFloat(document.getElementById('customHoursInput').value);
-    const actualHours = hours === 0 && customHours ? customHours : hours;
+    const actualHours = getOvertimeHours();
     const shiftType = document.getElementById('shiftType').value;
     
-    // Show/hide custom hours input
-    if (document.getElementById('overtimeHours').value === 'custom') {
-        document.getElementById('customOvertimeHours').style.display = 'block';
-    } else {
-        document.getElementById('customOvertimeHours').style.display = 'none';
-    }
-    
-    if (actualHours > 0 && dailyWage > 0) {
+    if (actualHours && actualHours > 0 && dailyWage > 0) {
         const earnings = calculateEarnings(actualHours, shiftType);
         const hourlyRate = dailyWage / 7.25;
         const multiplier = earnMultipliers[shiftType];
@@ -430,19 +481,10 @@ function updateEarnPreview() {
 }
 
 function updateTakePreview() {
-    const hours = parseFloat(document.getElementById('takeHours').value);
-    const customHours = parseFloat(document.getElementById('customTakeInput').value);
-    const actualHours = hours === 0 && customHours ? customHours : hours;
+    const actualHours = getTakeHours();
     const shiftType = document.getElementById('takeShiftType').value;
     
-    // Show/hide custom hours input
-    if (document.getElementById('takeHours').value === 'custom') {
-        document.getElementById('customTakeHours').style.display = 'block';
-    } else {
-        document.getElementById('customTakeHours').style.display = 'none';
-    }
-    
-    if (actualHours > 0 && dailyWage > 0) {
+    if (actualHours && actualHours > 0 && dailyWage > 0) {
         const deduction = calculateDeduction(actualHours, shiftType);
         const hourlyRate = dailyWage / 7.25;
         const multiplier = takeMultipliers[shiftType];
@@ -469,13 +511,21 @@ function updateTakePreview() {
 // Transaction functions
 function addOvertime() {
     const date = document.getElementById('overtimeDate').value;
-    const hours = parseFloat(document.getElementById('overtimeHours').value);
-    const customHours = parseFloat(document.getElementById('customHoursInput').value);
-    const actualHours = hours === 0 && customHours ? customHours : hours;
+    const actualHours = getOvertimeHours();
     const shiftType = document.getElementById('shiftType').value;
     
-    if (!date || actualHours <= 0 || dailyWage <= 0) {
-        alert('Vul alle velden in en stel eerst een dagloon in');
+    if (!date) {
+        alert('Vul een datum in');
+        return;
+    }
+    
+    if (!actualHours || actualHours <= 0) {
+        alert('Vul geldige overuren in (minimaal één veld invullen)');
+        return;
+    }
+    
+    if (dailyWage <= 0) {
+        alert('Stel eerst een dagloon in');
         return;
     }
     
@@ -497,9 +547,8 @@ function addOvertime() {
     renderCalendar();
     
     // Reset form
-    document.getElementById('overtimeHours').value = '0';
-    document.getElementById('customHoursInput').value = '';
-    document.getElementById('customOvertimeHours').style.display = 'none';
+    document.getElementById('overtimeHours').value = '';
+    document.getElementById('overtimeMinutes').value = '';
     document.getElementById('earnPreview').style.display = 'none';
     
     alert(`€${earnings.toFixed(2).replace('.', ',')} toegevoegd aan uw saldo!`);
@@ -507,13 +556,21 @@ function addOvertime() {
 
 function takeOvertime() {
     const date = document.getElementById('takeDate').value;
-    const hours = parseFloat(document.getElementById('takeHours').value);
-    const customHours = parseFloat(document.getElementById('customTakeInput').value);
-    const actualHours = hours === 0 && customHours ? customHours : hours;
+    const actualHours = getTakeHours();
     const shiftType = document.getElementById('takeShiftType').value;
     
-    if (!date || actualHours <= 0 || dailyWage <= 0) {
-        alert('Vul alle velden in en stel eerst een dagloon in');
+    if (!date) {
+        alert('Vul een datum in');
+        return;
+    }
+    
+    if (!actualHours || actualHours <= 0) {
+        alert('Vul geldige uren in (minimaal één veld invullen)');
+        return;
+    }
+    
+    if (dailyWage <= 0) {
+        alert('Stel eerst een dagloon in');
         return;
     }
     
@@ -535,9 +592,8 @@ function takeOvertime() {
     renderCalendar();
     
     // Reset form
-    document.getElementById('takeHours').value = '0';
-    document.getElementById('customTakeInput').value = '';
-    document.getElementById('customTakeHours').style.display = 'none';
+    document.getElementById('takeHours').value = '';
+    document.getElementById('takeMinutes').value = '';
     document.getElementById('takePreview').style.display = 'none';
     
     alert(`€${deduction.toFixed(2).replace('.', ',')} afgetrokken van uw saldo!`);

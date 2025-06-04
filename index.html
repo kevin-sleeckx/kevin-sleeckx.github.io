@@ -111,42 +111,18 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="overtimeHours">Overuren</label>
-                        <select id="overtimeHours" onchange="updateEarnPreview()">
-                            <option value="0">Selecteer overuren</option>
-                            <option value="0.25">15 minuten</option>
-                            <option value="0.5">30 minuten</option>
-                            <option value="0.75">45 minuten</option>
-                            <option value="1">1 uur</option>
-                            <option value="1.25">1 uur 15 minuten</option>
-                            <option value="1.5">1 uur 30 minuten</option>
-                            <option value="1.75">1 uur 45 minuten</option>
-                            <option value="2">2 uur</option>
-                            <option value="2.25">2 uur 15 minuten</option>
-                            <option value="2.5">2 uur 30 minuten</option>
-                            <option value="2.75">2 uur 45 minuten</option>
-                            <option value="3">3 uur</option>
-                            <option value="3.25">3 uur 15 minuten</option>
-                            <option value="3.5">3 uur 30 minuten</option>
-                            <option value="3.75">3 uur 45 minuten</option>
-                            <option value="4">4 uur</option>
-                            <option value="4.25">4 uur 15 minuten</option>
-                            <option value="4.5">4 uur 30 minuten</option>
-                            <option value="4.75">4 uur 45 minuten</option>
-                            <option value="5">5 uur</option>
-                            <option value="5.5">5 uur 30 minuten</option>
-                            <option value="6">6 uur</option>
-                            <option value="6.5">6 uur 30 minuten</option>
-                            <option value="7">7 uur</option>
-                            <option value="8">8 uur</option>
-                            <option value="9">9 uur</option>
-                            <option value="10">10 uur</option>
-                            <option value="custom">Aangepast (handmatig invoeren)</option>
-                        </select>
-                    </div>
-                    <div id="customOvertimeHours" class="form-group" style="display: none;">
-                        <label for="customHoursInput">Aangepaste Uren (in decimaal formaat, bijv. 2,5 voor 2u 30min)</label>
-                        <input type="number" id="customHoursInput" step="0.25" min="0" max="24" placeholder="Voer uren in" onchange="updateEarnPreview()">
+                        <label>Overuren</label>
+                        <div class="form-row">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <input type="number" id="overtimeHours" min="0" max="24" placeholder="Uren" onchange="updateEarnPreview()" oninput="updateEarnPreview()">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <input type="number" id="overtimeMinutes" min="0" max="45" step="15" placeholder="Minuten" onchange="updateEarnPreview()" oninput="updateEarnPreview()">
+                            </div>
+                        </div>
+                        <small class="small-text mt-1">
+                            Minuten: alleen 0, 15, 30, of 45. Minimaal één veld invullen.
+                        </small>
                     </div>
                     <div id="earnPreview" class="calculation-preview" style="display: none;">
                         <h4>💡 Berekening Voorvertoning</h4>
@@ -173,42 +149,18 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="takeHours">Uren Om Op Te Nemen</label>
-                        <select id="takeHours" onchange="updateTakePreview()">
-                            <option value="0">Selecteer uren om op te nemen</option>
-                            <option value="0.25">15 minuten</option>
-                            <option value="0.5">30 minuten</option>
-                            <option value="0.75">45 minuten</option>
-                            <option value="1">1 uur</option>
-                            <option value="1.25">1 uur 15 minuten</option>
-                            <option value="1.5">1 uur 30 minuten</option>
-                            <option value="1.75">1 uur 45 minuten</option>
-                            <option value="2">2 uur</option>
-                            <option value="2.25">2 uur 15 minuten</option>
-                            <option value="2.5">2 uur 30 minuten</option>
-                            <option value="2.75">2 uur 45 minuten</option>
-                            <option value="3">3 uur</option>
-                            <option value="3.25">3 uur 15 minuten</option>
-                            <option value="3.5">3 uur 30 minuten</option>
-                            <option value="3.75">3 uur 45 minuten</option>
-                            <option value="4">4 uur</option>
-                            <option value="4.25">4 uur 15 minuten</option>
-                            <option value="4.5">4 uur 30 minuten</option>
-                            <option value="4.75">4 uur 45 minuten</option>
-                            <option value="5">5 uur</option>
-                            <option value="5.5">5 uur 30 minuten</option>
-                            <option value="6">6 uur</option>
-                            <option value="6.5">6 uur 30 minuten</option>
-                            <option value="7">7 uur</option>
-                            <option value="8">8 uur</option>
-                            <option value="9">9 uur</option>
-                            <option value="10">10 uur</option>
-                            <option value="custom">Aangepast (handmatig invoeren)</option>
-                        </select>
-                    </div>
-                    <div id="customTakeHours" class="form-group" style="display: none;">
-                        <label for="customTakeInput">Aangepaste Uren (in decimaal formaat, bijv. 2,5 voor 2u 30min)</label>
-                        <input type="number" id="customTakeInput" step="0.25" min="0" max="24" placeholder="Voer uren in" onchange="updateTakePreview()">
+                        <label>Uren Om Op Te Nemen</label>
+                        <div class="form-row">
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <input type="number" id="takeHours" min="0" max="24" placeholder="Uren" onchange="updateTakePreview()" oninput="updateTakePreview()">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <input type="number" id="takeMinutes" min="0" max="45" step="15" placeholder="Minuten" onchange="updateTakePreview()" oninput="updateTakePreview()">
+                            </div>
+                        </div>
+                        <small class="small-text mt-1">
+                            Minuten: alleen 0, 15, 30, of 45. Minimaal één veld invullen.
+                        </small>
                     </div>
                     <div id="takePreview" class="calculation-preview" style="display: none;">
                         <h4>💡 Berekening Voorvertoning</h4>
