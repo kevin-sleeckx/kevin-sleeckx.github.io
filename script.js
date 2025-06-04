@@ -882,44 +882,6 @@ window.onclick = function(event) {
 }
 
 // Toggle section functions for collapsible sections
-function toggleOvertimeSection() {
-    const section = document.getElementById('overtimeSection');
-    const btn = document.getElementById('toggleOvertimeBtn');
-    
-    if (section.style.display === 'none') {
-        section.style.display = 'block';
-        btn.textContent = '📝 Overuren Invoer Verbergen';
-    } else {
-        section.style.display = 'none';
-        btn.textContent = '📝 Overuren Invoer Toevoegen';
-    }
-}
-
-function toggleTakeSection() {
-    const section = document.getElementById('takeSection');
-    const btn = document.getElementById('toggleTakeBtn');
-    
-    if (section.style.display === 'none') {
-        section.style.display = 'block';
-        btn.textContent = '📤 Overuren Opname Verbergen';
-    } else {
-        section.style.display = 'none';
-        btn.textContent = '📤 Overuren Opname Invoer';
-    }
-}
-
-function toggleOrderSection() {
-    const section = document.getElementById('orderSection');
-    const btn = document.getElementById('toggleOrderBtn');
-    
-    if (section.style.display === 'none') {
-        section.style.display = 'block';
-        btn.textContent = '🛍️ Bestelling Invoer Verbergen';
-    } else {
-        section.style.display = 'none';
-        btn.textContent = '🛍️ Bestelling Invoer Toevoegen';
-    }
-}
 
 function toggleExportSection() {
     const section = document.getElementById('exportSection');
@@ -948,58 +910,67 @@ function toggleTransferSection() {
 }
 
 // Data transfer functions
-function generateExportData() {
-    const exportData = {
-        dailyWage: dailyWage,
-        startingAmount: startingAmount,
-        transactions: transactions,
-        exported: new Date().toISOString(),
-        version: '1.0'
-    };
-    
-    const compressed = btoa(JSON.stringify(exportData));
-    document.getElementById('exportDataText').value = compressed;
-}
+function exportData() {
+  const data = {};
 
-function copyToClipboard() {
-    const textArea = document.getElementById('exportDataText');
-    if (!textArea.value) {
-        alert('Genereer eerst export gegevens');
-        return;
-    }
-    
-    textArea.select();
-    document.execCommand('copy');
-    alert('Gegevens gekopieerd naar klembord!');
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    data[key] = localStorage.getItem(key);
+  }
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `overuren-export-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
 }
 
 function importData() {
-    const importText = document.getElementById('importDataText').value.trim();
-    if (!importText) {
-        alert('Plak eerst de gegevens in het tekstveld');
-        return;
-    }
-    
-    try {
-        const decompressed = atob(importText);
-        const importData = JSON.parse(decompressed);
-        
-        if (confirm('Dit vervangt alle huidige gegevens. Weet u het zeker?')) {
-            dailyWage = importData.dailyWage || 0;
-            startingAmount = importData.startingAmount || 0;
-            transactions = importData.transactions || [];
-            
-            localStorage.setItem('dailyWage', dailyWage.toString());
-            localStorage.setItem('startingAmount', startingAmount.toString());
-            localStorage.setItem('transactions', JSON.stringify(transactions));
-            
-            init();
-            alert('Gegevens succesvol geïmporteerd!');
-            document.getElementById('importDataText').value = '';
+  if (!confirm("Weet je zeker dat je alle huidige gegevens wilt vervangen met een bestand?\nDit kan niet ongedaan worden gemaakt.")) {
+    return;
+  }
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target.result);
+
+        // Reset alle bestaande localStorage
+        localStorage.clear();
+
+        let ietsGeïmporteerd = false;
+
+        for (const key in data) {
+          if (data[key] !== undefined && data[key] !== null) {
+            localStorage.setItem(key, data[key]);
+            ietsGeïmporteerd = true;
+          }
         }
-    } catch (error) {
-        alert('Ongeldige gegevens. Controleer of u de juiste tekst heeft geplakt.');
-    }
+
+        if (ietsGeïmporteerd) {
+          alert("Data succesvol geïmporteerd. De pagina wordt herladen.");
+          location.reload();
+        } else {
+          alert("Geen geldige data gevonden in het bestand.");
+        }
+      } catch (err) {
+        alert("Fout bij het inlezen van het bestand. Zorg dat het een geldig JSON-bestand is.");
+      }
+    };
+
+    reader.readAsText(file);
+  };
+
+  input.click();
 }
 
 function exportToText() {
