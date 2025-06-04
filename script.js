@@ -4,6 +4,25 @@ let startingAmount = parseFloat(localStorage.getItem('startingAmount')) || 0;
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let currentDate = new Date();
 
+// Handle PWA shortcuts
+function handleURLParams() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+    if (action) {
+        switch (action) {
+            case 'add':
+                switchTab('add');
+                break;
+            case 'take':
+                switchTab('take');
+                break;
+            case 'order':
+                switchTab('order');
+                break;
+        }
+    }
+}
+
 // Shift multipliers for earning overtime
 const earnMultipliers = {
     dag: 1.5,    // +50%
@@ -40,6 +59,7 @@ function init() {
     renderCalendar();
     checkBackupReminder();
     registerServiceWorker();
+    handleURLParams();
 }
 
 // PWA Service Worker Registration
@@ -611,128 +631,145 @@ function generatePDFWithName() {
     if (transactions.length === 0) {
         doc.text('Geen transacties geregistreerd.', 20, yPosition);
     } else {
-        // Group transactions by month and week
-        const monthlyData = {};
-        
-        // Sort transactions by date descending (newest first)
+        // Sort all transactions by date descending (newest first)
         const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        // Group transactions by week while maintaining chronological order
+        const weeklyGroups = [];
+        let currentWeekData = null;
         
         sortedTransactions.forEach(t => {
             const date = new Date(t.date);
-            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-            const weekNumber = getWeekNumber(date);
-            const weekKey = `${date.getFullYear()}-W${String(weekNumber).padStart(2, '0')}`;
-            const monthNames = [
-                'Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni',
-                'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December'
-            ];
-            const monthName = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+            const year = date.getFullYear();
             
-            if (!monthlyData[monthKey]) {
-                monthlyData[monthKey] = {
-                    name: monthName,
-                    weeks: {},
-                    total: 0
-                };
+            // Calculate week number within the calendar year (not ISO week)
+            // This ensures weeks don't cross calendar years
+            const startOfYear = new Date(year, 0, 1);
+            const dayOfYear = Math.floor((date - startOfYear) / (24 * 60 * 60 * 1000)) + 1;
+            
+            // Find the first Monday of the year
+            const firstMonday = new Date(year, 0, 1);
+            const dayOfWeek = firstMonday.getDay();
+            const daysToMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek; // If Sunday, add 1 day, otherwise add days to reach Monday
+            firstMonday.setDate(firstMonday.getDate() + daysToMonday);
+            
+            let weekNumber;
+            if (date < firstMonday) {
+                // Before first Monday - this is week 1
+                weekNumber = 1;
+            } else {
+                // Calculate week number from first Monday
+                const daysSinceFirstMonday = Math.floor((date - firstMonday) / (24 * 60 * 60 * 1000));
+                weekNumber = Math.floor(daysSinceFirstMonday / 7) + 2; // +2 because first partial week is week 1
             }
             
-            if (!monthlyData[monthKey].weeks[weekKey]) {
-                monthlyData[monthKey].weeks[weekKey] = {
+            const weekKey = `${year}-W${String(weekNumber).padStart(2, '0')}`;
+            
+            // If this is a new week or first transaction, create new week group
+            if (!currentWeekData || currentWeekData.weekKey !== weekKey) {
+                // If we have a previous week, push it to the groups
+                if (currentWeekData) {
+                    weeklyGroups.push(currentWeekData);
+                }
+                
+                // Start new week group
+                currentWeekData = {
+                    weekKey: weekKey,
                     weekNumber: weekNumber,
-                    year: date.getFullYear(),
+                    year: year,
                     transactions: [],
                     total: 0
                 };
             }
             
-            monthlyData[monthKey].weeks[weekKey].transactions.push(t);
-            monthlyData[monthKey].weeks[weekKey].total += t.amount;
-            monthlyData[monthKey].total += t.amount;
+            // Add transaction to current week
+            currentWeekData.transactions.push(t);
+            currentWeekData.total += t.amount;
         });
         
-        // Sort months newest first
-        const sortedMonths = Object.keys(monthlyData).sort().reverse();
+        // Don't forget to add the last week group
+        if (currentWeekData) {
+            weeklyGroups.push(currentWeekData);
+        }
         
-        sortedMonths.forEach(monthKey => {
-            const monthData = monthlyData[monthKey];
-            
-            // Check if we need a new page
-            if (yPosition > 250) {
-                doc.addPage();
-                yPosition = 30;
+        // Check if we need a new page
+        if (yPosition > 250) {
+            doc.addPage();
+            yPosition = 30;
+        }
+        
+        // Prepare table data with all transactions and weekly summaries in chronological order
+        const tableData = [];
+        
+        weeklyGroups.forEach((weekData, weekIndex) => {
+            // Add spacing before each week (except the first one)
+            if (weekIndex > 0) {
+                tableData.push(['', '', '', '']); // Empty row for spacing
             }
             
-            // Month header
-            doc.setFontSize(16);
-            doc.setTextColor(60, 60, 60);
-            doc.text(`${monthData.name} - Totaal: €${monthData.total.toFixed(2).replace('.', ',')}`, 20, yPosition);
-            yPosition += 15;
-            
-            // Sort weeks newest first within the month
-            const sortedWeeks = Object.keys(monthData.weeks).sort().reverse();
-            
-            // Prepare table data with weekly summaries
-            const tableData = [];
-            
-            sortedWeeks.forEach(weekKey => {
-                const weekData = monthData.weeks[weekKey];
-                
-                // Add all transactions for this week (already sorted by date descending)
-                weekData.transactions.forEach(t => {
-                    tableData.push([
-                        new Date(t.date).toLocaleDateString('nl-NL'),
-                        t.description,
-                        t.shiftType || '-',
-                        `€${t.amount.toFixed(2).replace('.', ',')}`
-                    ]);
-                });
-                
-                // Add weekly summary row
-                const weekSummaryText = `Week ${weekData.weekNumber} (${weekData.year}) - Totaal`;
-                const weekTotalFormatted = `€${weekData.total.toFixed(2).replace('.', ',')}`;
-                
+            // Add all transactions for this week (already sorted by date descending)
+            weekData.transactions.forEach(t => {
                 tableData.push([
-                    '',
-                    weekSummaryText,
-                    '',
-                    weekTotalFormatted
+                    new Date(t.date).toLocaleDateString('nl-NL'),
+                    t.description,
+                    t.shiftType || '-',
+                    `€${t.amount.toFixed(2).replace('.', ',')}`
                 ]);
             });
             
-            doc.autoTable({
-                startY: yPosition,
-                head: [['Datum', 'Beschrijving', 'Dienst', 'Bedrag']],
-                body: tableData,
-                theme: 'grid',
-                styles: { fontSize: 9 },
-                headStyles: { fillColor: [108, 117, 125] }, // Gray header (#6c757d)
-                columnStyles: {
-                    3: { 
-                        textColor: function(data) {
-                            return parseFloat(data.cell.text[0].replace('€', '').replace(',', '.')) >= 0 ? [76, 175, 80] : [244, 67, 54]; // #4CAF50 and #F44336
-                        }
-                    }
-                },
-                didParseCell: function(data) {
-                    // Style weekly summary rows
-                    if (data.row.raw[1] && data.row.raw[1].includes('Week ') && data.row.raw[1].includes('Totaal')) {
-                        data.cell.styles.fillColor = [248, 249, 250]; // Light gray background (#f8f9fa)
-                        data.cell.styles.fontStyle = 'bold';
-                        data.cell.styles.fontSize = 10;
-                        
-                        // Special styling for the total amount column
-                        if (data.column.index === 3) {
-                            const amount = parseFloat(data.cell.text[0].replace('€', '').replace(',', '.'));
-                            data.cell.styles.textColor = amount >= 0 ? [76, 175, 80] : [244, 67, 54]; // #4CAF50 and #F44336
-                            data.cell.styles.fontStyle = 'bold';
-                        }
-                    }
-                },
-                margin: { left: 20, right: 20 }
-            });
+            // Add weekly summary row after each week's transactions
+            const weekSummaryText = `Week ${weekData.weekNumber} (${weekData.year}) - Totaal`;
+            const weekTotalFormatted = `€${weekData.total.toFixed(2).replace('.', ',')}`;
             
-            yPosition = doc.lastAutoTable.finalY + 20;
+            tableData.push([
+                '',
+                weekSummaryText,
+                '',
+                weekTotalFormatted
+            ]);
         });
+        
+        doc.autoTable({
+            startY: yPosition,
+            head: [['Datum', 'Beschrijving', 'Shift', 'Bedrag']],
+            body: tableData,
+            theme: 'grid',
+            styles: { fontSize: 9 },
+            headStyles: { fillColor: [108, 117, 125] }, // Gray header (#6c757d)
+            columnStyles: {
+                3: { 
+                    textColor: function(data) {
+                        return parseFloat(data.cell.text[0].replace('€', '').replace(',', '.')) >= 0 ? [76, 175, 80] : [244, 67, 54]; // #4CAF50 and #F44336
+                    }
+                }
+            },
+            didParseCell: function(data) {
+                // Style weekly summary rows
+                if (data.row.raw[1] && data.row.raw[1].includes('Week ') && data.row.raw[1].includes('Totaal')) {
+                    data.cell.styles.fillColor = [173, 216, 230]; // Light blue background
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fontSize = 10;
+                    
+                    // Special styling for the total amount column
+                    if (data.column.index === 3) {
+                        const amount = parseFloat(data.cell.text[0].replace('€', '').replace(',', '.'));
+                        data.cell.styles.textColor = amount >= 0 ? [76, 175, 80] : [244, 67, 54]; // #4CAF50 and #F44336
+                        data.cell.styles.fontStyle = 'bold';
+                    }
+                }
+                
+                // Style empty spacing rows
+                if (data.row.raw[0] === '' && data.row.raw[1] === '' && data.row.raw[2] === '' && data.row.raw[3] === '') {
+                    data.cell.styles.minCellHeight = 8; // Add height for spacing
+                    data.cell.styles.fillColor = [255, 255, 255]; // White background
+                    data.cell.styles.lineColor = [255, 255, 255]; // Hide borders
+                    data.cell.styles.lineWidth = 0; // No border
+                }
+            },
+            margin: { left: 20, right: 20 }
+        });
+        
+        yPosition = doc.lastAutoTable.finalY + 20;
     }
     
     // Footer
