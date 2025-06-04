@@ -637,9 +637,6 @@ function closeNameModal() {
 
 function generatePDFWithName() {
     const exportOrdersOnly = localStorage.getItem('exportOrdersOnly') === 'true';
-    console.log('Export orders only:', exportOrdersOnly);
-    console.log('All transactions:', transactions);
-    console.log('Orders only:', transactions.filter(t => t.type === 'order'));
 
     const employeeName = document.getElementById('employeeName').value.trim();
     if (!employeeName) {
@@ -784,46 +781,6 @@ window.onclick = function(event) {
     }
     if (event.target === nameModal) {
         closeNameModal();
-    }
-}
-
-// Toggle section functions for collapsible sections
-function toggleOvertimeSection() {
-    const section = document.getElementById('overtimeSection');
-    const btn = document.getElementById('toggleOvertimeBtn');
-    
-    if (section.style.display === 'none') {
-        section.style.display = 'block';
-        btn.textContent = '📝 Overuren Invoer Verbergen';
-    } else {
-        section.style.display = 'none';
-        btn.textContent = '📝 Overuren Invoer Toevoegen';
-    }
-}
-
-function toggleTakeSection() {
-    const section = document.getElementById('takeSection');
-    const btn = document.getElementById('toggleTakeBtn');
-    
-    if (section.style.display === 'none') {
-        section.style.display = 'block';
-        btn.textContent = '📤 Overuren Opname Verbergen';
-    } else {
-        section.style.display = 'none';
-        btn.textContent = '📤 Overuren Opname Invoer';
-    }
-}
-
-function toggleOrderSection() {
-    const section = document.getElementById('orderSection');
-    const btn = document.getElementById('toggleOrderBtn');
-    
-    if (section.style.display === 'none') {
-        section.style.display = 'block';
-        btn.textContent = '🛍️ Bestelling Invoer Verbergen';
-    } else {
-        section.style.display = 'none';
-        btn.textContent = '🛍️ Bestelling Invoer Toevoegen';
     }
 }
 
