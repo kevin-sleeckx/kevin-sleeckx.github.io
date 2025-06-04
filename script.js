@@ -4,6 +4,40 @@ let startingAmount = parseFloat(localStorage.getItem('startingAmount')) || 0;
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let currentDate = new Date();
 
+// Get ISO week number and year
+function getISOWeekData(date) {
+    const target = new Date(date);
+    target.setHours(0, 0, 0, 0);
+
+    // Thursday in current week decides the year
+    const dayNumber = (target.getDay() + 6) % 7; // Make Monday = 0
+    target.setDate(target.getDate() - dayNumber + 3);
+
+    // First Thursday of the year decides the first week
+    const firstThursday = new Date(target.getFullYear(), 0, 1);
+    if (firstThursday.getDay() !== 4) {
+        firstThursday.setMonth(0, 1 + ((4 - firstThursday.getDay() + 7) % 7));
+    }
+
+    // Get week number
+    const weekDiff = (target - firstThursday) / (7 * 24 * 60 * 60 * 1000);
+    const weekNumber = 1 + Math.floor(weekDiff);
+
+    // Get the year that this week belongs to
+    const isoYear = target.getFullYear();
+
+    // Handle year boundary cases
+    if (weekNumber === 0) {
+        // Last week of previous year
+        return getISOWeekData(new Date(date.getFullYear() - 1, 11, 31));
+    } else if (weekNumber === 53 && new Date(isoYear, 11, 31).getDay() !== 4) {
+        // Week 53 only exists in years that end on Thursday
+        return { weekNumber: 1, year: isoYear + 1 };
+    }
+
+    return { weekNumber, year: isoYear };
+}
+
 // Handle PWA shortcuts
 function handleURLParams() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -690,49 +724,26 @@ function generatePDFWithName() {
         // Sort all transactions by date descending (newest first)
         const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
         
-        // Group transactions by week while maintaining chronological order
+        // Group transactions by ISO week
         const weeklyGroups = [];
         let currentWeekData = null;
         
         sortedTransactions.forEach(t => {
             const date = new Date(t.date);
-            const year = date.getFullYear();
-            
-            // Calculate week number within the calendar year (not ISO week)
-            // This ensures weeks don't cross calendar years
-            const startOfYear = new Date(year, 0, 1);
-            const dayOfYear = Math.floor((date - startOfYear) / (24 * 60 * 60 * 1000)) + 1;
-            
-            // Find the first Monday of the year
-            const firstMonday = new Date(year, 0, 1);
-            const dayOfWeek = firstMonday.getDay();
-            const daysToMonday = dayOfWeek === 0 ? 1 : 8 - dayOfWeek; // If Sunday, add 1 day, otherwise add days to reach Monday
-            firstMonday.setDate(firstMonday.getDate() + daysToMonday);
-            
-            let weekNumber;
-            if (date < firstMonday) {
-                // Before first Monday - this is week 1
-                weekNumber = 1;
-            } else {
-                // Calculate week number from first Monday
-                const daysSinceFirstMonday = Math.floor((date - firstMonday) / (24 * 60 * 60 * 1000));
-                weekNumber = Math.floor(daysSinceFirstMonday / 7) + 2; // +2 because first partial week is week 1
-            }
-            
-            const weekKey = `${year}-W${String(weekNumber).padStart(2, '0')}`;
+            // Get ISO week number and year for proper week boundaries
+            const { weekNumber, year: isoYear } = getISOWeekData(date);
+            const weekKey = `${isoYear}-W${String(weekNumber).padStart(2, '0')}`;
             
             // If this is a new week or first transaction, create new week group
             if (!currentWeekData || currentWeekData.weekKey !== weekKey) {
-                // If we have a previous week, push it to the groups
                 if (currentWeekData) {
                     weeklyGroups.push(currentWeekData);
                 }
                 
-                // Start new week group
                 currentWeekData = {
                     weekKey: weekKey,
                     weekNumber: weekNumber,
-                    year: year,
+                    year: isoYear,
                     transactions: [],
                     total: 0
                 };
@@ -743,7 +754,7 @@ function generatePDFWithName() {
             currentWeekData.total += t.amount;
         });
         
-        // Don't forget to add the last week group
+        // Add the last week group
         if (currentWeekData) {
             weeklyGroups.push(currentWeekData);
         }
@@ -754,16 +765,16 @@ function generatePDFWithName() {
             yPosition = 30;
         }
         
-        // Prepare table data with all transactions and weekly summaries in chronological order
+        // Prepare table data with all transactions and weekly summaries
         const tableData = [];
         
         weeklyGroups.forEach((weekData, weekIndex) => {
             // Add spacing before each week (except the first one)
             if (weekIndex > 0) {
-                tableData.push(['', '', '', '']); // Empty row for spacing
+                tableData.push(['', '', '', '']);
             }
             
-            // Add all transactions for this week (already sorted by date descending)
+            // Add all transactions for this week
             weekData.transactions.forEach(t => {
                 tableData.push([
                     new Date(t.date).toLocaleDateString('nl-NL'),
@@ -773,7 +784,7 @@ function generatePDFWithName() {
                 ]);
             });
             
-            // Add weekly summary row after each week's transactions
+            // Add weekly summary row - using ISO week year
             const weekSummaryText = `Week ${weekData.weekNumber} (${weekData.year}) - Totaal`;
             const weekTotalFormatted = `€${weekData.total.toFixed(2).replace('.', ',')}`;
             
