@@ -713,7 +713,7 @@ function generatePDFWithName() {
     doc.text(`Naam: ${employeeName}`, 20, 45);
     doc.text(`Gegenereerd: ${new Date().toLocaleDateString('nl-NL')}`, 20, 55);
     doc.text(`Start Bedrag: €${startingAmount.toFixed(2).replace('.', ',')}`, 20, 65);
-    doc.text(`Verdiend/Afgetrokken: €${transactionTotal.toFixed(2).replace('.', ',')}`, 20, 75);
+    doc.text(`Verdiend/Opgenomen: €${transactionTotal.toFixed(2).replace('.', ',')}`, 20, 75);
     doc.text(`Totaal Saldo: €${grandTotal.toFixed(2).replace('.', ',')}`, 20, 85);
     
     let yPosition = 105;
