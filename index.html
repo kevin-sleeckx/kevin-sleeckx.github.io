@@ -7,7 +7,6 @@
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#7dd3fc">
-    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Overuren Logger">
@@ -102,12 +101,12 @@
                             <input type="date" id="overtimeDate">
                         </div>
                         <div class="form-group">
-                            <label for="shiftType">Shift Type</label>
+                            <label for="shiftType">Dienst Type</label>
                             <select id="shiftType" onchange="updateEarnPreview()">
-                                <option value="dag">Dag (+50%)</option>
-                                <option value="vroege">Vroege (+55%)</option>
-                                <option value="late">Late (+65%)</option>
-                                <option value="nacht">Nacht (+100%)</option>
+                                <option value="dag">Dag Dienst (+50%)</option>
+                                <option value="vroege">Vroege Dienst (+55%)</option>
+                                <option value="late">Late Dienst (+65%)</option>
+                                <option value="nacht">Nacht Dienst (+100%)</option>
                             </select>
                         </div>
                     </div>
@@ -129,21 +128,19 @@
                             <option value="3">3 uur</option>
                             <option value="3.25">3 uur 15 minuten</option>
                             <option value="3.5">3 uur 30 minuten</option>
-                            <option value="3.75">3 uur 45 minuten (halve dag)</option>
+                            <option value="3.75">3 uur 45 minuten</option>
                             <option value="4">4 uur</option>
                             <option value="4.25">4 uur 15 minuten</option>
                             <option value="4.5">4 uur 30 minuten</option>
                             <option value="4.75">4 uur 45 minuten</option>
                             <option value="5">5 uur</option>
-                            <option value="5.25">5 uur 15 minuten</option>
                             <option value="5.5">5 uur 30 minuten</option>
-                            <option value="5.75">5 uur 45 minuten</option>
                             <option value="6">6 uur</option>
-                            <option value="6.25">6 uur 15 minuten</option>
                             <option value="6.5">6 uur 30 minuten</option>
-                            <option value="6.75">6 uur 45 minuten</option>
                             <option value="7">7 uur</option>
-                            <option value="7.25">7 uur 15 minuten (hele dag)</option>
+                            <option value="8">8 uur</option>
+                            <option value="9">9 uur</option>
+                            <option value="10">10 uur</option>
                             <option value="custom">Aangepast (handmatig invoeren)</option>
                         </select>
                     </div>
@@ -166,19 +163,19 @@
                             <input type="date" id="takeDate">
                         </div>
                         <div class="form-group">
-                            <label for="takeShiftType">Shift Type</label>
+                            <label for="takeShiftType">Dienst Type</label>
                             <select id="takeShiftType" onchange="updateTakePreview()">
-                                <option value="dag">Dag (Basis Tarief)</option>
-                                <option value="vroege">Vroege (+5% aftrek)</option>
-                                <option value="late">Late (+15% aftrek)</option>
-                                <option value="nacht">Nacht (+50% aftrek)</option>
+                                <option value="dag">Dag Dienst (Basis Tarief)</option>
+                                <option value="vroege">Vroege Dienst (+5% aftrek)</option>
+                                <option value="late">Late Dienst (+15% aftrek)</option>
+                                <option value="nacht">Nacht Dienst (+50% aftrek)</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="takeHours">Uren Om Op Te Nemen</label>
                         <select id="takeHours" onchange="updateTakePreview()">
-                            <option value="0">Selecteer overuren</option>
+                            <option value="0">Selecteer uren om op te nemen</option>
                             <option value="0.25">15 minuten</option>
                             <option value="0.5">30 minuten</option>
                             <option value="0.75">45 minuten</option>
@@ -193,21 +190,19 @@
                             <option value="3">3 uur</option>
                             <option value="3.25">3 uur 15 minuten</option>
                             <option value="3.5">3 uur 30 minuten</option>
-                            <option value="3.75">3 uur 45 minuten (halve dag)</option>
+                            <option value="3.75">3 uur 45 minuten</option>
                             <option value="4">4 uur</option>
                             <option value="4.25">4 uur 15 minuten</option>
                             <option value="4.5">4 uur 30 minuten</option>
                             <option value="4.75">4 uur 45 minuten</option>
                             <option value="5">5 uur</option>
-                            <option value="5.25">5 uur 15 minuten</option>
                             <option value="5.5">5 uur 30 minuten</option>
-                            <option value="5.75">5 uur 45 minuten</option>
                             <option value="6">6 uur</option>
-                            <option value="6.25">6 uur 15 minuten</option>
                             <option value="6.5">6 uur 30 minuten</option>
-                            <option value="6.75">6 uur 45 minuten</option>
                             <option value="7">7 uur</option>
-                            <option value="7.25">7 uur 15 minuten (hele dag)</option>
+                            <option value="8">8 uur</option>
+                            <option value="9">9 uur</option>
+                            <option value="10">10 uur</option>
                             <option value="custom">Aangepast (handmatig invoeren)</option>
                         </select>
                     </div>
@@ -267,8 +262,6 @@
                 <div class="export-section">
                     <button class="button success" onclick="exportToPDF()">📄 Exporteren naar PDF</button>
                     <button class="button" onclick="exportToText()">📝 Exporteren naar Tekst</button>
-                    <button class="button success" onclick="exportOrdersToPDF()">🛒 Bestellingen naar PDF</button>
-                    <button class="button" onclick="exportOrdersToText()">🛒 Bestellingen naar Tekst</button>
                     <button class="button danger" onclick="clearAllData()">🗑️ Alle Gegevens Wissen</button>
                 </div>
                 <p class="small-text mt-2">

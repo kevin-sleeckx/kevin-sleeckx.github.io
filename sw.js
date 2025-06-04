@@ -1,15 +1,12 @@
-const CACHE_NAME = 'overtime-logger-v2';
+const CACHE_NAME = 'overtime-logger-v1';
 const urlsToCache = [
-  '/index.html',
-  '/offline.html',
+  '/overtime_logger.html',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
-  '/style.css',
-  '/script.js',
   // CDN resources
-  'https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js',
-  'https://unpkg.com/jspdf-autotable@latest/dist/jspdf.plugin.autotable.min.js'
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js'
 ];
 
 // Install event - cache resources
@@ -26,30 +23,27 @@ self.addEventListener('install', event => {
         return caches.open(CACHE_NAME)
           .then(cache => {
             return cache.addAll([
-              '/index.html',
-              '/manifest.json',
-              '/style.css',
-              '/script.js'
+              '/overtime_logger.html',
+              '/manifest.json'
             ]);
           });
       })
   );
 });
 
-// Fetch event - serve from cache, fallback to network, then offline page
+// Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Return cached version if found
+        // Return cached version or fetch from network
         if (response) {
           return response;
         }
         
-        // Otherwise, try network
         return fetch(event.request)
           .then(response => {
-            // Check if we received a valid response
+            // Check if valid response
             if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
@@ -57,24 +51,12 @@ self.addEventListener('fetch', event => {
             // Clone the response
             const responseToCache = response.clone();
 
-            // Add it to cache for later
             caches.open(CACHE_NAME)
               .then(cache => {
                 cache.put(event.request, responseToCache);
               });
 
             return response;
-          })
-          .catch(async () => {
-            // Network failed, check if this was a navigation request
-            if (event.request.mode === 'navigate') {
-              // Show offline page
-              const cache = await caches.open(CACHE_NAME);
-              return cache.match('/offline.html');
-            }
-            
-            // For non-navigation requests, just fail
-            throw new Error('Network unavailable');
           });
       })
   );
@@ -150,7 +132,7 @@ self.addEventListener('notificationclick', event => {
   
   if (event.action === 'explore') {
     event.waitUntil(
-      self.clients.openWindow('/index.html')
+      self.clients.openWindow('/overtime_logger.html')
     );
   }
 });

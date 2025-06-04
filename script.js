@@ -20,20 +20,6 @@ const takeMultipliers = {
     nacht: 1.5   // +50% additional deduction
 };
 
-// Function to update the total display
-function updateTotalDisplay() {
-    const transactionTotal = transactions.reduce((sum, t) => sum + t.amount, 0);
-    const total = startingAmount + transactionTotal;
-    const totalElement = document.getElementById('totalAmount');
-    totalElement.textContent = total.toFixed(2).replace('.', ',');
-    totalElement.classList.remove('positive-amount', 'negative-amount');
-    if (total >= 0) {
-        totalElement.classList.add('positive-amount');
-    } else {
-        totalElement.classList.add('negative-amount');
-    }
-}
-
 // Tab switching function
 function switchTab(tabName) {
     // Remove active class from all tab buttons
@@ -56,50 +42,33 @@ function init() {
     registerServiceWorker();
 }
 
-// Variable to store the deferred prompt
-let deferredPrompt;
-
 // PWA Service Worker Registration
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js')
             .then(registration => {
                 console.log('Service Worker registered successfully:', registration);
+                
+                // Show install button if app is installable
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    const installBtn = document.getElementById('installBtn');
+                    installBtn.style.display = 'block';
+                    installBtn.onclick = () => {
+                        e.prompt();
+                        e.userChoice.then((choiceResult) => {
+                            if (choiceResult.outcome === 'accepted') {
+                                installBtn.style.display = 'none';
+                            }
+                        });
+                    };
+                });
             })
             .catch(error => {
                 console.log('Service Worker registration failed:', error);
             });
     }
 }
-
-// Install button functionality
-window.addEventListener('beforeinstallprompt', (e) => {
-    // Prevent Chrome 67 and earlier from automatically showing the prompt
-    e.preventDefault();
-    // Stash the event so it can be triggered later
-    deferredPrompt = e;
-    // Update UI to notify the user they can add to home screen
-    const installBtn = document.getElementById('installBtn');
-    installBtn.style.display = 'block';
-    
-    installBtn.addEventListener('click', async () => {
-        // Hide our user interface that shows our install button
-        installBtn.style.display = 'none';
-        // Show the prompt
-        deferredPrompt.prompt();
-        // Wait for the user to respond to the prompt
-        const { outcome } = await deferredPrompt.userChoice;
-        console.log(`User response to the install prompt: ${outcome}`);
-        // We've used the prompt, and can't use it again, clear it
-        deferredPrompt = null;
-    });
-});
-
-// Hide the install button when the PWA is already installed
-window.addEventListener('appinstalled', () => {
-    document.getElementById('installBtn').style.display = 'none';
-    console.log('PWA was installed');
-});
 
 function setDefaultDates() {
     const today = new Date().toISOString().split('T')[0];
@@ -584,47 +553,24 @@ function addOrder() {
     alert(`€${amount.toFixed(2).replace('.', ',')} afgetrokken voor: ${description}`);
 }
 
-// Save transactions and try to sync
 function saveTransactions() {
     localStorage.setItem('transactions', JSON.stringify(transactions));
+}
+
+function updateTotalDisplay() {
+    const transactionTotal = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+    const grandTotal = startingAmount + transactionTotal;
+    document.getElementById('totalAmount').textContent = grandTotal.toFixed(2).replace('.', ',');
     
-    // Try to sync if we're online and have background sync
-    if (navigator.onLine && 'serviceWorker' in navigator && 'SyncManager' in window) {
-        navigator.serviceWorker.ready
-            .then(registration => {
-                registration.sync.register('sync-transactions')
-                    .catch(err => console.log('Background sync failed:', err));
-            });
-    }
-}
-
-// Check online status and update UI
-function updateOnlineStatus() {
-    if (navigator.onLine) {
-        document.body.classList.remove('offline');
-        // Try to sync any pending data
-        if ('serviceWorker' in navigator && 'SyncManager' in window) {
-            navigator.serviceWorker.ready
-                .then(registration => {
-                    registration.sync.register('sync-transactions')
-                        .catch(err => console.log('Background sync failed:', err));
-                });
-        }
+    // Color coding for total using new CSS classes
+    const totalElement = document.getElementById('totalAmount');
+    totalElement.classList.remove('positive-amount', 'negative-amount');
+    if (grandTotal >= 0) {
+        totalElement.classList.add('positive-amount');
     } else {
-        document.body.classList.add('offline');
+        totalElement.classList.add('negative-amount');
     }
 }
-
-// Initialize the app when page loads
-document.addEventListener('DOMContentLoaded', () => {
-    init();
-    registerServiceWorker();
-    updateOnlineStatus();
-});
-
-// Listen for online/offline events
-window.addEventListener('online', updateOnlineStatus);
-window.addEventListener('offline', updateOnlineStatus);
 
 // PDF Export Function (Updated - no daily wage, includes starting amount)
 async function exportToPDF() {
@@ -636,8 +582,6 @@ function closeNameModal() {
 }
 
 function generatePDFWithName() {
-    const exportOrdersOnly = localStorage.getItem('exportOrdersOnly') === 'true';
-
     const employeeName = document.getElementById('employeeName').value.trim();
     if (!employeeName) {
         alert('Voer uw naam in voor het PDF rapport');
@@ -647,56 +591,147 @@ function generatePDFWithName() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
-    // Filter transactions if we're only exporting orders
-    const relevantTransactions = exportOrdersOnly 
-        ? transactions.filter(t => t.type === 'order')
-        : transactions;
-    
-    // Sort transactions by date (newest first)
-    const sortedTransactions = [...relevantTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const transactionTotal = transactions.reduce((sum, t) => sum + t.amount, 0);
+    const grandTotal = startingAmount + transactionTotal;
     
     // Header
     doc.setFontSize(20);
     doc.setTextColor(40, 40, 40);
-    doc.text(exportOrdersOnly ? 'Bestellingen Rapport' : 'Overuren Rapport', 20, 30);
+    doc.text('Overuren Rapport', 20, 30);
     
     doc.setFontSize(12);
     doc.text(`Naam: ${employeeName}`, 20, 45);
     doc.text(`Gegenereerd: ${new Date().toLocaleDateString('nl-NL')}`, 20, 55);
+    doc.text(`Start Bedrag: €${startingAmount.toFixed(2).replace('.', ',')}`, 20, 65);
+    doc.text(`Verdiend/Afgetrokken: €${transactionTotal.toFixed(2).replace('.', ',')}`, 20, 75);
+    doc.text(`Totaal Saldo: €${grandTotal.toFixed(2).replace('.', ',')}`, 20, 85);
     
-    if (exportOrdersOnly) {
-        const totalOrders = sortedTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
-        doc.text(`Totaal Bestellingen: €${totalOrders.toFixed(2).replace('.', ',')}`, 20, 65);
+    let yPosition = 105;
+    
+    if (transactions.length === 0) {
+        doc.text('Geen transacties geregistreerd.', 20, yPosition);
     } else {
-        doc.text(`Start Bedrag: €${startingAmount.toFixed(2).replace('.', ',')}`, 20, 65);
-        const transactionTotal = transactions.reduce((sum, t) => sum + t.amount, 0);
-        const grandTotal = startingAmount + transactionTotal;
-        doc.text(`Verdiend/Afgetrokken: €${transactionTotal.toFixed(2).replace('.', ',')}`, 20, 75);
-        doc.text(`Totaal Saldo: €${grandTotal.toFixed(2).replace('.', ',')}`, 20, 85);
-    }
-    
-    let yPosition = exportOrdersOnly ? 85 : 105;
-    
-    if (sortedTransactions.length === 0) {
-        doc.text(exportOrdersOnly ? 'Geen bestellingen geregistreerd.' : 'Geen transacties geregistreerd.', 20, yPosition);
-    } else {
-        const tableData = sortedTransactions.map(t => [
-            new Date(t.date).toLocaleDateString('nl-NL'),
-            t.description,
-            `€${Math.abs(t.amount).toFixed(2).replace('.', ',')}`
-        ]);
+        // Group transactions by month and week
+        const monthlyData = {};
         
-        doc.autoTable({
-            startY: yPosition,
-            head: [['Datum', 'Beschrijving', 'Bedrag']],
-            body: tableData,
-            theme: 'grid',
-            styles: { fontSize: 9 },
-            headStyles: { fillColor: [108, 117, 125] },
-            columnStyles: {
-                2: { halign: 'right' }
-            },
-            margin: { left: 20, right: 20 }
+        // Sort transactions by date descending (newest first)
+        const sortedTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        sortedTransactions.forEach(t => {
+            const date = new Date(t.date);
+            const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            const weekNumber = getWeekNumber(date);
+            const weekKey = `${date.getFullYear()}-W${String(weekNumber).padStart(2, '0')}`;
+            const monthNames = [
+                'Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni',
+                'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December'
+            ];
+            const monthName = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+            
+            if (!monthlyData[monthKey]) {
+                monthlyData[monthKey] = {
+                    name: monthName,
+                    weeks: {},
+                    total: 0
+                };
+            }
+            
+            if (!monthlyData[monthKey].weeks[weekKey]) {
+                monthlyData[monthKey].weeks[weekKey] = {
+                    weekNumber: weekNumber,
+                    year: date.getFullYear(),
+                    transactions: [],
+                    total: 0
+                };
+            }
+            
+            monthlyData[monthKey].weeks[weekKey].transactions.push(t);
+            monthlyData[monthKey].weeks[weekKey].total += t.amount;
+            monthlyData[monthKey].total += t.amount;
+        });
+        
+        // Sort months newest first
+        const sortedMonths = Object.keys(monthlyData).sort().reverse();
+        
+        sortedMonths.forEach(monthKey => {
+            const monthData = monthlyData[monthKey];
+            
+            // Check if we need a new page
+            if (yPosition > 250) {
+                doc.addPage();
+                yPosition = 30;
+            }
+            
+            // Month header
+            doc.setFontSize(16);
+            doc.setTextColor(60, 60, 60);
+            doc.text(`${monthData.name} - Totaal: €${monthData.total.toFixed(2).replace('.', ',')}`, 20, yPosition);
+            yPosition += 15;
+            
+            // Sort weeks newest first within the month
+            const sortedWeeks = Object.keys(monthData.weeks).sort().reverse();
+            
+            // Prepare table data with weekly summaries
+            const tableData = [];
+            
+            sortedWeeks.forEach(weekKey => {
+                const weekData = monthData.weeks[weekKey];
+                
+                // Add all transactions for this week (already sorted by date descending)
+                weekData.transactions.forEach(t => {
+                    tableData.push([
+                        new Date(t.date).toLocaleDateString('nl-NL'),
+                        t.description,
+                        t.shiftType || '-',
+                        `€${t.amount.toFixed(2).replace('.', ',')}`
+                    ]);
+                });
+                
+                // Add weekly summary row
+                const weekSummaryText = `Week ${weekData.weekNumber} (${weekData.year}) - Totaal`;
+                const weekTotalFormatted = `€${weekData.total.toFixed(2).replace('.', ',')}`;
+                
+                tableData.push([
+                    '',
+                    weekSummaryText,
+                    '',
+                    weekTotalFormatted
+                ]);
+            });
+            
+            doc.autoTable({
+                startY: yPosition,
+                head: [['Datum', 'Beschrijving', 'Dienst', 'Bedrag']],
+                body: tableData,
+                theme: 'grid',
+                styles: { fontSize: 9 },
+                headStyles: { fillColor: [108, 117, 125] }, // Gray header (#6c757d)
+                columnStyles: {
+                    3: { 
+                        textColor: function(data) {
+                            return parseFloat(data.cell.text[0].replace('€', '').replace(',', '.')) >= 0 ? [76, 175, 80] : [244, 67, 54]; // #4CAF50 and #F44336
+                        }
+                    }
+                },
+                didParseCell: function(data) {
+                    // Style weekly summary rows
+                    if (data.row.raw[1] && data.row.raw[1].includes('Week ') && data.row.raw[1].includes('Totaal')) {
+                        data.cell.styles.fillColor = [248, 249, 250]; // Light gray background (#f8f9fa)
+                        data.cell.styles.fontStyle = 'bold';
+                        data.cell.styles.fontSize = 10;
+                        
+                        // Special styling for the total amount column
+                        if (data.column.index === 3) {
+                            const amount = parseFloat(data.cell.text[0].replace('€', '').replace(',', '.'));
+                            data.cell.styles.textColor = amount >= 0 ? [76, 175, 80] : [244, 67, 54]; // #4CAF50 and #F44336
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                    }
+                },
+                margin: { left: 20, right: 20 }
+            });
+            
+            yPosition = doc.lastAutoTable.finalY + 20;
         });
     }
     
@@ -710,66 +745,24 @@ function generatePDFWithName() {
         doc.text('Gegenereerd door Overuren Logger', doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 10);
     }
     
-    // Save PDF with appropriate name
-    const filename = exportOrdersOnly 
-        ? `bestellingen-rapport-${employeeName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`
-        : `overuren-rapport-${employeeName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`;
+    // Save PDF
+    doc.save(`overuren-rapport-${employeeName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`);
     
-    doc.save(filename);
-    
-    // Clear the orders-only flag and close the modal
-    localStorage.removeItem('exportOrdersOnly');
+    // Mark backup as done
+    markBackupDone();
     closeNameModal();
-    alert(exportOrdersOnly ? 'Bestellingen rapport geëxporteerd!' : 'PDF succesvol geëxporteerd! Backup herinnering gewist voor deze week.');
-    
-    // Only mark backup as done for full exports
-    if (!exportOrdersOnly) {
-        markBackupDone();
-    }
+    alert('PDF succesvol geëxporteerd! Backup herinnering gewist voor deze week.');
 }
 
-function exportOrdersToPDF() {
-    document.getElementById('nameModal').style.display = 'block';
-    // Set a flag to indicate we're exporting orders only
-    localStorage.setItem('exportOrdersOnly', 'true');
-}
-
-function exportOrdersToText() {
-    // Filter only order transactions and sort by date (newest first)
-    const orderTransactions = transactions
-        .filter(t => t.type === 'order')
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    let textReport = `BESTELLINGEN RAPPORT\n`;
-    textReport += `Gegenereerd: ${new Date().toLocaleDateString('nl-NL')}\n\n`;
-    
-    if (orderTransactions.length === 0) {
-        textReport += 'Geen bestellingen geregistreerd.\n';
-    } else {
-        textReport += 'BESTELLINGEN:\n';
-        textReport += '='.repeat(50) + '\n';
-        
-        orderTransactions.forEach(t => {
-            textReport += `${new Date(t.date).toLocaleDateString('nl-NL')} - ${t.description} - €${Math.abs(t.amount).toFixed(2).replace('.', ',')}\n`;
-        });
-        
-        const totalOrders = orderTransactions.reduce((sum, t) => sum + Math.abs(t.amount), 0);
-        textReport += '\n='.repeat(50) + '\n';
-        textReport += `Totaal Bestellingen: €${totalOrders.toFixed(2).replace('.', ',')}\n`;
+function clearAllData() {
+    if (confirm('Weet u zeker dat u alle gegevens wilt wissen? Dit kan niet ongedaan gemaakt worden.')) {
+        localStorage.clear();
+        dailyWage = 0;
+        startingAmount = 0;
+        transactions = [];
+        init();
+        alert('Alle gegevens gewist!');
     }
-    
-    // Create download
-    const blob = new Blob([textReport], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `bestellingen-rapport-${new Date().toISOString().split('T')[0]}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    alert('Bestellingen rapport gedownload!');
 }
 
 // Close modals when clicking outside
@@ -781,6 +774,46 @@ window.onclick = function(event) {
     }
     if (event.target === nameModal) {
         closeNameModal();
+    }
+}
+
+// Toggle section functions for collapsible sections
+function toggleOvertimeSection() {
+    const section = document.getElementById('overtimeSection');
+    const btn = document.getElementById('toggleOvertimeBtn');
+    
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        btn.textContent = '📝 Overuren Invoer Verbergen';
+    } else {
+        section.style.display = 'none';
+        btn.textContent = '📝 Overuren Invoer Toevoegen';
+    }
+}
+
+function toggleTakeSection() {
+    const section = document.getElementById('takeSection');
+    const btn = document.getElementById('toggleTakeBtn');
+    
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        btn.textContent = '📤 Overuren Opname Verbergen';
+    } else {
+        section.style.display = 'none';
+        btn.textContent = '📤 Overuren Opname Invoer';
+    }
+}
+
+function toggleOrderSection() {
+    const section = document.getElementById('orderSection');
+    const btn = document.getElementById('toggleOrderBtn');
+    
+    if (section.style.display === 'none') {
+        section.style.display = 'block';
+        btn.textContent = '🛍️ Bestelling Invoer Verbergen';
+    } else {
+        section.style.display = 'none';
+        btn.textContent = '🛍️ Bestelling Invoer Toevoegen';
     }
 }
 
@@ -902,7 +935,4 @@ function exportToText() {
 }
 
 // Initialize the app when page loads
-document.addEventListener('DOMContentLoaded', () => {
-    init();
-    registerServiceWorker();
-});
+document.addEventListener('DOMContentLoaded', init);
