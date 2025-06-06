@@ -4,28 +4,28 @@ let startingAmount = parseFloat(localStorage.getItem('startingAmount')) || 0;
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let currentDate = new Date();
 
-// Correcte ISO 8601 weeknummer en jaar functie
+// Correct ISO 8601 week number and year calculation
 function getISOWeekData(date) {
-    const target = new Date(date);
+    const target = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
 
-    // ISO week start op maandag, dus we zoeken de donderdag van dezelfde week
-    const day = target.getUTCDay();
-    const diff = (day <= 4 ? 4 : 11) - day; // Donderdag = 4
-    const thursday = new Date(target);
-    thursday.setUTCDate(target.getUTCDate() + diff);
+    // Get the day number (Monday = 1, Sunday = 7)
+    const dayNr = (target.getUTCDay() + 6) % 7 + 1;
 
-    // Jaar van de donderdag bepaalt het ISO jaar
-    const isoYear = thursday.getUTCFullYear();
+    // Set target to Thursday in current week
+    target.setUTCDate(target.getUTCDate() + (4 - dayNr));
 
-    // Eerste donderdag van het ISO jaar
+    // ISO year is the year of the Thursday
+    const isoYear = target.getUTCFullYear();
+
+    // Get first Thursday of the ISO year
     const jan4 = new Date(Date.UTC(isoYear, 0, 4));
-    const jan4Day = jan4.getUTCDay();
-    const jan4Diff = (jan4Day <= 4 ? 4 : 11) - jan4Day;
-    const firstThursday = new Date(jan4);
-    firstThursday.setUTCDate(jan4.getUTCDate() + jan4Diff);
+    const jan4DayNr = (jan4.getUTCDay() + 6) % 7 + 1;
+    jan4.setUTCDate(jan4.getUTCDate() - (jan4DayNr - 1) + 3); // move to Thursday
 
-    // Bereken het weeknummer
-    const weekNumber = Math.floor((thursday - firstThursday) / (7 * 24 * 60 * 60 * 1000)) + 1;    return { weekNumber, year: isoYear };
+    // Calculate week number
+    const weekNumber = Math.floor(1 + (target - jan4) / (7 * 24 * 60 * 60 * 1000));
+
+    return { weekNumber, year: isoYear };
 }
 
 // Handle PWA shortcuts
