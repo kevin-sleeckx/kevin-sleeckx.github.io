@@ -7,17 +7,18 @@ let currentDate = new Date();
 // Get ISO week number and year according to ISO 8601
 function getISOWeekData(date) {
     const target = new Date(date);
-    target.setHours(0, 0, 0, 0);    // Get to Thursday in the target week (the day that determines the year)
-    target.setDate(target.getDate() + 3 - ((target.getDay() + 6) % 7));
+    target.setHours(0, 0, 0, 0);    // Find Thursday of the current week (the day that determines the ISO year and week)
+    const thursdayDate = new Date(date);
+    thursdayDate.setDate(date.getDate() + 3 - ((date.getDay() + 6) % 7));
 
     // Get January 1st of the target year
-    const yearStart = new Date(target.getFullYear(), 0, 1);
+    const yearStart = new Date(thursdayDate.getFullYear(), 0, 1);
 
     // Calculate full weeks from January 1st to target Thursday
-    const weekNumber = Math.ceil((((target - yearStart) / 86400000) + 1) / 7);
+    const weekNumber = Math.ceil((((thursdayDate - yearStart) / 86400000) + 1) / 7);
 
-    // Get the year that this week belongs to (the year of Thursday in this week)
-    const isoYear = target.getFullYear();
+    // The ISO year is the year that contains Thursday of this week
+    const isoYear = thursdayDate.getFullYear();
 
     // Handle year boundary cases    // Handle edge cases for year transitions
     if (weekNumber === 0) {

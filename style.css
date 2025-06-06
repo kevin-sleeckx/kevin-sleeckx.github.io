@@ -544,3 +544,24 @@ body {
     font-size: 0.875rem;
     color: #6c757d;
 }
+
+.version-display {
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 30px;
+    color: #6b7280;
+    font-size: 0.8rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.version-display span {
+    opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .version-display {
+        padding: 15px 0;
+        margin-top: 20px;
+        font-size: 0.75rem;
+    }
+}
