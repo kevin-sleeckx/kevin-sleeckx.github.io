@@ -4,35 +4,38 @@ let startingAmount = parseFloat(localStorage.getItem('startingAmount')) || 0;
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let currentDate = new Date();
 
-// Get ISO week number and year
+// Get ISO week number and year according to ISO 8601
 function getISOWeekData(date) {
     const target = new Date(date);
     target.setHours(0, 0, 0, 0);
 
-    // Thursday in current week decides the year
-    const dayNumber = (target.getDay() + 6) % 7; // Make Monday = 0
-    target.setDate(target.getDate() - dayNumber + 3);
+    // Get to Thursday in the target week
+    target.setDate(target.getDate() + 3 - ((target.getDay() + 6) % 7));
 
-    // First Thursday of the year decides the first week
-    const firstThursday = new Date(target.getFullYear(), 0, 1);
-    if (firstThursday.getDay() !== 4) {
-        firstThursday.setMonth(0, 1 + ((4 - firstThursday.getDay() + 7) % 7));
-    }
+    // Get January 1st of the target year
+    const yearStart = new Date(target.getFullYear(), 0, 1);
 
-    // Get week number
-    const weekDiff = (target - firstThursday) / (7 * 24 * 60 * 60 * 1000);
-    const weekNumber = 1 + Math.floor(weekDiff);
+    // Calculate full weeks from January 1st to target Thursday
+    const weekNumber = Math.ceil((((target - yearStart) / 86400000) + 1) / 7);
 
-    // Get the year that this week belongs to
+    // Get the year that this week belongs to (may be different near year boundaries)
     const isoYear = target.getFullYear();
 
-    // Handle year boundary cases
+    // Handle year boundary cases    // Handle edge cases for year transitions
     if (weekNumber === 0) {
-        // Last week of previous year
-        return getISOWeekData(new Date(date.getFullYear() - 1, 11, 31));
-    } else if (weekNumber === 53 && new Date(isoYear, 11, 31).getDay() !== 4) {
-        // Week 53 only exists in years that end on Thursday
+        // If it's week 0, it belongs to the last week of previous year
+        const lastDayPrevYear = new Date(date.getFullYear() - 1, 11, 31);
+        return getISOWeekData(lastDayPrevYear);
+    }
+
+    if (weekNumber === 1 && date.getMonth() === 11) {
+        // If it's week 1 in December, it belongs to next year
         return { weekNumber: 1, year: isoYear + 1 };
+    }
+
+    if (weekNumber >= 52 && date.getMonth() === 0) {
+        // If it's week 52 or 53 in January, it belongs to previous year
+        return { weekNumber, year: isoYear - 1 };
     }
 
     return { weekNumber, year: isoYear };
