@@ -4,40 +4,28 @@ let startingAmount = parseFloat(localStorage.getItem('startingAmount')) || 0;
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let currentDate = new Date();
 
-// Get ISO week number and year according to ISO 8601
+// Correcte ISO 8601 weeknummer en jaar functie
 function getISOWeekData(date) {
     const target = new Date(date);
-    target.setHours(0, 0, 0, 0);    // Find Thursday of the current week (the day that determines the ISO year and week)
-    const thursdayDate = new Date(date);
-    thursdayDate.setDate(date.getDate() + 3 - ((date.getDay() + 6) % 7));
 
-    // Get January 1st of the target year
-    const yearStart = new Date(thursdayDate.getFullYear(), 0, 1);
+    // ISO week start op maandag, dus we zoeken de donderdag van dezelfde week
+    const day = target.getUTCDay();
+    const diff = (day <= 4 ? 4 : 11) - day; // Donderdag = 4
+    const thursday = new Date(target);
+    thursday.setUTCDate(target.getUTCDate() + diff);
 
-    // Calculate full weeks from January 1st to target Thursday
-    const weekNumber = Math.ceil((((thursdayDate - yearStart) / 86400000) + 1) / 7);
+    // Jaar van de donderdag bepaalt het ISO jaar
+    const isoYear = thursday.getUTCFullYear();
 
-    // The ISO year is the year that contains Thursday of this week
-    const isoYear = thursdayDate.getFullYear();
+    // Eerste donderdag van het ISO jaar
+    const jan4 = new Date(Date.UTC(isoYear, 0, 4));
+    const jan4Day = jan4.getUTCDay();
+    const jan4Diff = (jan4Day <= 4 ? 4 : 11) - jan4Day;
+    const firstThursday = new Date(jan4);
+    firstThursday.setUTCDate(jan4.getUTCDate() + jan4Diff);
 
-    // Handle year boundary cases    // Handle edge cases for year transitions
-    if (weekNumber === 0) {
-        // If it's week 0, it belongs to the last week of previous year
-        const lastDayPrevYear = new Date(date.getFullYear() - 1, 11, 31);
-        return getISOWeekData(lastDayPrevYear);
-    }
-
-    if (weekNumber === 1 && date.getMonth() === 11) {
-        // If it's week 1 in December, it belongs to next year
-        return { weekNumber: 1, year: isoYear + 1 };
-    }
-
-    if (weekNumber >= 52 && date.getMonth() === 0) {
-        // If it's week 52 or 53 in January, it belongs to previous year
-        return { weekNumber, year: isoYear - 1 };
-    }
-
-    return { weekNumber, year: isoYear };
+    // Bereken het weeknummer
+    const weekNumber = Math.floor((thursday - firstThursday) / (7 * 24 * 60 * 60 * 1000)) + 1;    return { weekNumber, year: isoYear };
 }
 
 // Handle PWA shortcuts
