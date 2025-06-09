@@ -1,4 +1,5 @@
-const CACHE_NAME = 'overtime-logger-v1';
+const APP_VERSION = '1.3.4';  // Update this to force cache refresh
+const CACHE_NAME = `overtime-logger-v${APP_VERSION}`;
 const urlsToCache = [
   '/',
   '/index.html',
@@ -139,4 +140,11 @@ self.addEventListener('notificationclick', event => {
       self.clients.openWindow('/overtime_logger.html')
     );
   }
+});
+
+// Message handling for update
+self.addEventListener('message', (event) => {
+    if (event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });

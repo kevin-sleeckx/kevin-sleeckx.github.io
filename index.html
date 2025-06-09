@@ -28,6 +28,13 @@
 </head>
 <body>
     <div class="container">
+        <!-- Update Notification (hidden by default) -->
+        <div id="updateNotification" class="update-notification" style="display: none;">
+            <strong>📦 Nieuwe versie beschikbaar!</strong>
+            <p>Er is een nieuwe versie van de app beschikbaar.</p>
+            <button class="button" onclick="updateApp()">Nu Updaten</button>
+        </div>
+
         <div class="header">
             <h1>⏰ Overuren Logger</h1>
             <button id="installBtn" class="install-button" style="display: none;">
@@ -229,7 +236,7 @@
                 <button onclick="exportData()" class="button success">Exporteer data</button>
                 <button onclick="importData()" class="button danger">Importeer data</button>
                 <p class="small-text mt-2">
-                    💡 <strong>Hoe over te dragen:</strong> 1) Genereer export bestand 2) Stuur bestand via Whatsapp of email 3) Op nieuw apparaat importeer het bestand 4) Alle uw gegevens zijn overgedragen!
+                    💡 <strong>Hoe over te dragen:</strong> 1) Genereer export bestand 2) Stuur bestand via email (bvb naar uzelf) 3) Op nieuw apparaat importeer het bestand 4) Alle uw gegevens zijn overgedragen!
                 </p>
             </div>
         </div>

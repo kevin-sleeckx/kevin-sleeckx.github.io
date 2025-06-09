@@ -4,6 +4,35 @@ let startingAmount = parseFloat(localStorage.getItem('startingAmount')) || 0;
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let currentDate = new Date();
 
+// Version management
+const CURRENT_VERSION = '1.3.4';
+const LAST_VERSION_KEY = 'app_version';
+
+async function checkVersion() {
+    const lastVersion = localStorage.getItem(LAST_VERSION_KEY);
+    
+    if (lastVersion !== CURRENT_VERSION) {
+        // Clear cache to force reload of new assets
+        if ('caches' in window) {
+            try {
+                const cacheKeys = await caches.keys();
+                await Promise.all(
+                    cacheKeys.map(key => caches.delete(key))
+                );
+                console.log('Cache cleared successfully');
+            } catch (err) {
+                console.error('Error clearing cache:', err);
+            }
+        }
+        
+        // Update stored version
+        localStorage.setItem(LAST_VERSION_KEY, CURRENT_VERSION);
+        
+        // Force reload of the page to get new assets
+        window.location.reload(true);
+    }
+}
+
 // Correct ISO 8601 week number and year calculation
 function getISOWeekData(date) {
     const target = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -136,6 +165,7 @@ function switchTab(tabName) {
 
 // Initialize app
 function init() {
+    checkVersion();
     updateTotalDisplay();
     updateWageDisplay();
     updateStartingDisplay();
@@ -144,6 +174,13 @@ function init() {
     checkBackupReminder();
     registerServiceWorker();
     handleURLParams();
+    
+    // Update version display
+    const versionInfo = document.getElementById('versionInfo');
+    if (versionInfo) {
+        const lastUpdated = new Date().toISOString().split('T')[0];
+        versionInfo.textContent = `Version ${CURRENT_VERSION} – Last updated: ${lastUpdated}`;
+    }
 }
 
 // PWA Service Worker Registration
@@ -153,6 +190,16 @@ function registerServiceWorker() {
             .then(registration => {
                 console.log('Service Worker registered successfully:', registration);
                 
+                // Check for updates
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            showUpdateNotification();
+                        }
+                    });
+                });
+
                 // Show install button if app is installable
                 window.addEventListener('beforeinstallprompt', (e) => {
                     e.preventDefault();
@@ -166,6 +213,15 @@ function registerServiceWorker() {
                             }
                         });
                     };
+                });
+
+                // Listen for the controlling service worker changing
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    if (!refreshing) {
+                        refreshing = true;
+                        window.location.reload();
+                    }
                 });
             })
             .catch(error => {
@@ -1001,3 +1057,24 @@ function exportToText() {
 
 // Initialize the app when page loads
 document.addEventListener('DOMContentLoaded', init);
+
+// Update notification functions
+function showUpdateNotification() {
+    const notification = document.getElementById('updateNotification');
+    if (notification) {
+        notification.style.display = 'flex';
+    }
+}
+
+function updateApp() {
+    // Hide the notification
+    const notification = document.getElementById('updateNotification');
+    if (notification) {
+        notification.style.display = 'none';
+    }
+
+    // Skip waiting on the service worker
+    if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
+    }
+}
