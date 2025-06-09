@@ -17,13 +17,13 @@ function getISOWeekData(date) {
     // ISO year is the year of the Thursday
     const isoYear = target.getUTCFullYear();
 
-    // Get first Thursday of the ISO year
-    const jan4 = new Date(Date.UTC(isoYear, 0, 4));
-    const jan4DayNr = (jan4.getUTCDay() + 6) % 7 + 1;
-    jan4.setUTCDate(jan4.getUTCDate() - (jan4DayNr - 1) + 3); // move to Thursday
+    // Get Thursday of the first ISO week
+    const firstThursday = new Date(Date.UTC(isoYear, 0, 4));
+    const firstThursdayDayNr = (firstThursday.getUTCDay() + 6) % 7 + 1;
+    firstThursday.setUTCDate(firstThursday.getUTCDate() - (firstThursdayDayNr - 4));
 
-    // Calculate week number
-    const weekNumber = Math.floor(1 + (target - jan4) / (7 * 24 * 60 * 60 * 1000));
+    // Calculate ISO week number
+    const weekNumber = 1 + Math.floor((target - firstThursday) / (7 * 24 * 60 * 60 * 1000));
 
     return { weekNumber, year: isoYear };
 }
