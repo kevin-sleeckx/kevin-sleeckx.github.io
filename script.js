@@ -5,8 +5,17 @@ let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.3.4';
+const CURRENT_VERSION = '1.4.0';
 const LAST_VERSION_KEY = 'app_version';
+
+// Update version display in the UI
+function updateVersionDisplay() {
+    const versionInfo = document.getElementById('versionInfo');
+    if (versionInfo) {
+        const lastUpdated = new Date().toISOString().split('T')[0];
+        versionInfo.textContent = `Versie ${CURRENT_VERSION} – Laatst bijgewerkt: ${lastUpdated}`;
+    }
+}
 
 async function checkVersion() {
     const lastVersion = localStorage.getItem(LAST_VERSION_KEY);
@@ -174,13 +183,7 @@ function init() {
     checkBackupReminder();
     registerServiceWorker();
     handleURLParams();
-    
-    // Update version display
-    const versionInfo = document.getElementById('versionInfo');
-    if (versionInfo) {
-        const lastUpdated = new Date().toISOString().split('T')[0];
-        versionInfo.textContent = `Version ${CURRENT_VERSION} – Last updated: ${lastUpdated}`;
-    }
+    updateVersionDisplay(); // Use the new function
 }
 
 // PWA Service Worker Registration

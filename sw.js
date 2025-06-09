@@ -1,4 +1,4 @@
-const APP_VERSION = '1.3.4';  // Update this to force cache refresh
+const APP_VERSION = '1.4.0';  // Update this to force cache refresh
 const CACHE_NAME = `overtime-logger-v${APP_VERSION}`;
 const urlsToCache = [
   '/',
