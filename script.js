@@ -5,7 +5,7 @@ let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.5.1';
+const CURRENT_VERSION = '1.5.2';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -36,10 +36,96 @@ async function checkVersion() {
         
         // Update stored version
         localStorage.setItem(LAST_VERSION_KEY, CURRENT_VERSION);
-        
-        // Force reload of the page to get new assets
-        window.location.reload(true);
     }
+}
+
+// PWA Service Worker Registration
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        // Track if we're refreshing to avoid multiple refreshes
+        let refreshing = false;
+
+        // Set up the refresh handler before registering
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+                refreshing = true;
+                console.log('New service worker is controlling the page, reloading...');
+                window.location.reload(true);
+            }
+        });
+
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+                console.log('Service Worker registered successfully:', registration);
+                
+                // Check for updates
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    console.log('Service Worker update found, installing...');
+                    
+                    newWorker.addEventListener('statechange', () => {
+                        console.log('Service Worker state changed:', newWorker.state);
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('New Service Worker installed, showing update notification');
+                            showUpdateNotification();
+                        }
+                    });
+                });
+
+                // Show install button if app is installable
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    const installBtn = document.getElementById('installBtn');
+                    installBtn.style.display = 'block';
+                    installBtn.onclick = () => {
+                        e.prompt();
+                        e.userChoice.then((choiceResult) => {
+                            if (choiceResult.outcome === 'accepted') {
+                                installBtn.style.display = 'none';
+                            }
+                        });
+                    };
+                });
+            })
+            .catch(error => {
+                console.log('Service Worker registration failed:', error);
+            });
+    }
+}
+
+// Update notification functions
+function showUpdateNotification() {
+    const notification = document.getElementById('updateNotification');
+    if (notification) {
+        notification.style.display = 'flex';
+    }
+}
+
+function updateApp() {
+    // Hide the notification
+    const notification = document.getElementById('updateNotification');
+    if (notification) {
+        notification.style.display = 'none';
+    }
+
+    // Get the registration and trigger update
+    navigator.serviceWorker.getRegistration().then(async registration => {
+        if (registration && registration.waiting) {
+            try {
+                // Clear the cache first
+                const cacheKeys = await caches.keys();
+                await Promise.all(
+                    cacheKeys.map(key => caches.delete(key))
+                );
+                console.log('Cache cleared before update');
+                
+                // Skip waiting on the service worker
+                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            } catch (err) {
+                console.error('Error during update:', err);
+            }
+        }
+    });
 }
 
 // Correct ISO 8601 week number and year calculation
@@ -196,8 +282,8 @@ function registerServiceWorker() {
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             if (!refreshing) {
                 refreshing = true;
-                console.log('Service Worker taking control, refreshing page...');
-                window.location.reload();
+                console.log('New service worker is controlling the page, reloading...');
+                window.location.reload(true);
             }
         });
 
@@ -1084,10 +1170,21 @@ function updateApp() {
     }
 
     // Get the registration and trigger update
-    navigator.serviceWorker.getRegistration().then(registration => {
+    navigator.serviceWorker.getRegistration().then(async registration => {
         if (registration && registration.waiting) {
-            // Skip waiting on the service worker
-            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            try {
+                // Clear the cache first
+                const cacheKeys = await caches.keys();
+                await Promise.all(
+                    cacheKeys.map(key => caches.delete(key))
+                );
+                console.log('Cache cleared before update');
+                
+                // Skip waiting on the service worker
+                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            } catch (err) {
+                console.error('Error during update:', err);
+            }
         }
     });
 }
