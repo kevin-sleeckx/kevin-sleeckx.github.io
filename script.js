@@ -61,7 +61,7 @@ function registerServiceWorker() {
             if (!refreshing) {
                 refreshing = true;
                 console.log('[SW] Triggering page reload...');
-                window.location.reload(true);
+                window.location.reload();
             }
         });
 
@@ -90,9 +90,10 @@ function registerServiceWorker() {
                 // Additional registration checks
                 if (registration.waiting) {
                     console.log('[SW] New version waiting to activate');
+                    showUpdateNotification();
                 }
                 if (registration.active) {
-                    console.log('[SW] Active worker version:', APP_VERSION);
+                    console.log('[SW] Active worker detected');
                 }
 
                 // Show install button if app is installable
@@ -362,9 +363,10 @@ function registerServiceWorker() {
                 // Additional registration checks
                 if (registration.waiting) {
                     console.log('[SW] New version waiting to activate');
+                    showUpdateNotification();
                 }
                 if (registration.active) {
-                    console.log('[SW] Active worker version:', APP_VERSION);
+                    console.log('[SW] Active worker detected');
                 }
 
                 // Show install button if app is installable
