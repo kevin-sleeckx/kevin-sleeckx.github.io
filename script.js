@@ -5,7 +5,7 @@ let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.5.3';
+const CURRENT_VERSION = '1.5.4';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -304,8 +304,10 @@ function switchTab(tabName) {
 }
 
 // Initialize app
-function init() {
-    checkVersion();
+async function init() {
+    await checkVersion(); // wacht op versiecontrole, inclusief eventuele reload
+
+    // Alleen verdergaan als er geen reload gebeurde
     updateTotalDisplay();
     updateWageDisplay();
     updateStartingDisplay();
@@ -314,7 +316,7 @@ function init() {
     checkBackupReminder();
     registerServiceWorker();
     handleURLParams();
-    updateVersionDisplay(); // Use the new function
+    updateVersionDisplay();
 }
 
 // PWA Service Worker Registration
@@ -331,7 +333,7 @@ function registerServiceWorker() {
             if (!refreshing) {
                 refreshing = true;
                 console.log('[SW] Triggering page reload...');
-                window.location.reload(true);
+                window.location.reload();
             }
         });
 
