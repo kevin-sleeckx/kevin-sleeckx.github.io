@@ -5,7 +5,7 @@ let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.4.0';
+const CURRENT_VERSION = '1.5.0';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
