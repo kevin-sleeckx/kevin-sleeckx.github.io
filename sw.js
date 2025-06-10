@@ -1,4 +1,4 @@
-const APP_VERSION = '1.5.0';  // Update this to force cache refresh
+const APP_VERSION = '1.5.1';  // Update this to force cache refresh
 const CACHE_NAME = `overtime-logger-v${APP_VERSION}`;
 const urlsToCache = [
   '/',
@@ -145,6 +145,30 @@ self.addEventListener('notificationclick', event => {
 // Message handling for update
 self.addEventListener('message', (event) => {
     if (event.data.type === 'SKIP_WAITING') {
-        self.skipWaiting();
+        console.log('Skip waiting message received, activating new service worker...');
+        self.skipWaiting().then(() => {
+            console.log('skipWaiting completed, new service worker will activate');
+        });
     }
+});
+
+self.addEventListener('activate', (event) => {
+    console.log('Service worker activated');
+    event.waitUntil(
+        Promise.all([
+            // Take control of all clients immediately
+            self.clients.claim(),
+            // Clear old caches
+            caches.keys().then(cacheNames => {
+                return Promise.all(
+                    cacheNames.map(cacheName => {
+                        if (cacheName !== CACHE_NAME) {
+                            console.log('Deleting old cache:', cacheName);
+                            return caches.delete(cacheName);
+                        }
+                    })
+                );
+            })
+        ])
+    );
 });

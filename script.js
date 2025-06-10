@@ -5,7 +5,7 @@ let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.5.0';
+const CURRENT_VERSION = '1.5.1';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -189,6 +189,18 @@ function init() {
 // PWA Service Worker Registration
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
+        // Track if we're refreshing to avoid multiple refreshes
+        let refreshing = false;
+
+        // Set up the refresh handler before registering
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+                refreshing = true;
+                console.log('Service Worker taking control, refreshing page...');
+                window.location.reload();
+            }
+        });
+
         navigator.serviceWorker.register('/sw.js')
             .then(registration => {
                 console.log('Service Worker registered successfully:', registration);
@@ -196,8 +208,12 @@ function registerServiceWorker() {
                 // Check for updates
                 registration.addEventListener('updatefound', () => {
                     const newWorker = registration.installing;
+                    console.log('Service Worker update found, installing...');
+                    
                     newWorker.addEventListener('statechange', () => {
+                        console.log('Service Worker state changed:', newWorker.state);
                         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            console.log('New Service Worker installed, showing update notification');
                             showUpdateNotification();
                         }
                     });
@@ -216,15 +232,6 @@ function registerServiceWorker() {
                             }
                         });
                     };
-                });
-
-                // Listen for the controlling service worker changing
-                let refreshing = false;
-                navigator.serviceWorker.addEventListener('controllerchange', () => {
-                    if (!refreshing) {
-                        refreshing = true;
-                        window.location.reload();
-                    }
                 });
             })
             .catch(error => {
@@ -1076,8 +1083,11 @@ function updateApp() {
         notification.style.display = 'none';
     }
 
-    // Skip waiting on the service worker
-    if (navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({ type: 'SKIP_WAITING' });
-    }
+    // Get the registration and trigger update
+    navigator.serviceWorker.getRegistration().then(registration => {
+        if (registration && registration.waiting) {
+            // Skip waiting on the service worker
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+    });
 }
