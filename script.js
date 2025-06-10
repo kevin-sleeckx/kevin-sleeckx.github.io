@@ -79,36 +79,41 @@ function registerServiceWorker() {
             }
         });
 
+        // Function to check for updates
+        function checkForUpdates(registration) {
+            if (registration.waiting) {
+                console.log('[SW] New version waiting to activate');
+                showUpdateNotification();
+                return;
+            }
+
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                console.log('[SW] Update found, new worker state:', newWorker.state);
+                
+                newWorker.addEventListener('statechange', () => {
+                    console.log('[SW] New worker state changed to:', newWorker.state);
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        console.log('[SW] New version installed, showing notification');
+                        showUpdateNotification();
+                    }
+                });
+            });
+        }
+
+        // Register and check for updates
         navigator.serviceWorker.register('/sw.js')
             .then(registration => {
                 console.log('[SW] Registration successful. Scope:', registration.scope);
                 
-                // Check for updates
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    console.log('[SW] Update found, new worker state:', newWorker.state);
-                    
-                    newWorker.addEventListener('statechange', () => {
-                        console.log('[SW] New worker state changed to:', newWorker.state);
-                        if (newWorker.state === 'installed') {
-                            if (navigator.serviceWorker.controller) {
-                                console.log('[SW] New version installed, controller exists');
-                                showUpdateNotification();
-                            } else {
-                                console.log('[SW] Initial installation, no controller yet');
-                            }
-                        }
-                    });
-                });
+                // Check for updates immediately
+                checkForUpdates(registration);
 
-                // Additional registration checks
-                if (registration.waiting) {
-                    console.log('[SW] New version waiting to activate');
-                    showUpdateNotification();
-                }
-                if (registration.active) {
-                    console.log('[SW] Active worker detected');
-                }
+                // Periodically check for updates (every 60 minutes)
+                setInterval(() => {
+                    console.log('[SW] Checking for updates...');
+                    registration.update().then(() => checkForUpdates(registration));
+                }, 60 * 60 * 1000);
 
                 // Show install button if app is installable
                 window.addEventListener('beforeinstallprompt', (e) => {
@@ -366,36 +371,41 @@ function registerServiceWorker() {
             }
         });
 
+        // Function to check for updates
+        function checkForUpdates(registration) {
+            if (registration.waiting) {
+                console.log('[SW] New version waiting to activate');
+                showUpdateNotification();
+                return;
+            }
+
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                console.log('[SW] Update found, new worker state:', newWorker.state);
+                
+                newWorker.addEventListener('statechange', () => {
+                    console.log('[SW] New worker state changed to:', newWorker.state);
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        console.log('[SW] New version installed, showing notification');
+                        showUpdateNotification();
+                    }
+                });
+            });
+        }
+
+        // Register and check for updates
         navigator.serviceWorker.register('/sw.js')
             .then(registration => {
                 console.log('[SW] Registration successful. Scope:', registration.scope);
                 
-                // Check for updates
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    console.log('[SW] Update found, new worker state:', newWorker.state);
-                    
-                    newWorker.addEventListener('statechange', () => {
-                        console.log('[SW] New worker state changed to:', newWorker.state);
-                        if (newWorker.state === 'installed') {
-                            if (navigator.serviceWorker.controller) {
-                                console.log('[SW] New version installed, controller exists');
-                                showUpdateNotification();
-                            } else {
-                                console.log('[SW] Initial installation, no controller yet');
-                            }
-                        }
-                    });
-                });
+                // Check for updates immediately
+                checkForUpdates(registration);
 
-                // Additional registration checks
-                if (registration.waiting) {
-                    console.log('[SW] New version waiting to activate');
-                    showUpdateNotification();
-                }
-                if (registration.active) {
-                    console.log('[SW] Active worker detected');
-                }
+                // Periodically check for updates (every 60 minutes)
+                setInterval(() => {
+                    console.log('[SW] Checking for updates...');
+                    registration.update().then(() => checkForUpdates(registration));
+                }, 60 * 60 * 1000);
 
                 // Show install button if app is installable
                 window.addEventListener('beforeinstallprompt', (e) => {

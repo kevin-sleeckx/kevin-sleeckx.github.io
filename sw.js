@@ -1,4 +1,4 @@
-const APP_VERSION = '1.5.5';  // Update this to force cache refresh
+const APP_VERSION = '1.5.6';  // Update this to force cache refresh
 const CACHE_NAME = `overtime-logger-v${APP_VERSION}`;
 console.log('[SW] Service Worker script loaded, version:', APP_VERSION);
 
@@ -54,13 +54,15 @@ self.addEventListener('activate', event => {
           })
         );
       }),
-      // Take control of all clients immediately
+      // Take control of all clients immediately and notify them
       self.clients.claim().then(() => {
         console.log('[SW Activate] Clients claimed');
-        // Notify all clients about the update
-        self.clients.matchAll().then(clients => {
+        return self.clients.matchAll().then(clients => {
           clients.forEach(client => {
-            client.postMessage({ type: 'REFRESH_NEEDED' });
+            client.postMessage({ 
+              type: 'REFRESH_NEEDED',
+              version: APP_VERSION 
+            });
           });
         });
       })
@@ -106,18 +108,20 @@ self.addEventListener('fetch', event => {
 self.addEventListener('message', event => {
   if (event.data.type === 'SKIP_WAITING') {
     console.log('[SW Message] Skip waiting message received');
-    self.skipWaiting().then(() => {
-      console.log('[SW Message] skipWaiting completed, worker will activate');
-      self.clients.claim().then(() => {
-        // Notify all clients to refresh
-        self.clients.matchAll().then(clients => {
-          clients.forEach(client => {
-            client.postMessage({ type: 'REFRESH_NEEDED' });
-          });
-        });
-      });
+    Promise.all([
+      self.skipWaiting(),
+      caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(cacheName => {
+            console.log('[SW Message] Deleting cache:', cacheName);
+            return caches.delete(cacheName);
+          })
+        );
+      })
+    ]).then(() => {
+      console.log('[SW Message] skipWaiting and cache cleanup completed');
     }).catch(err => {
-      console.error('[SW Message] skipWaiting failed:', err);
+      console.error('[SW Message] Error during update:', err);
     });
   }
 });
