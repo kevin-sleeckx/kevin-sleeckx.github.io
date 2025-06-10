@@ -1,5 +1,7 @@
-const APP_VERSION = '1.5.2';  // Update this to force cache refresh
+const APP_VERSION = '1.5.3';  // Update this to force cache refresh
 const CACHE_NAME = `overtime-logger-v${APP_VERSION}`;
+console.log('[SW] Service Worker script loaded, version:', APP_VERSION);
+
 const urlsToCache = [
   '/',
   '/index.html',
@@ -15,38 +17,49 @@ const urlsToCache = [
 
 // Install event - cache resources
 self.addEventListener('install', event => {
-  console.log('[Service Worker] Installing new version');
+  console.log('[SW Install] Service Worker installation started');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('[Service Worker] Caching all resources');
-        return cache.addAll(urlsToCache).catch(error => {
-          console.error('[Service Worker] Cache addAll failed:', error);
+        console.log('[SW Install] Cache opened:', CACHE_NAME);
+        console.log('[SW Install] Caching resources:', urlsToCache);
+        return cache.addAll(urlsToCache).then(() => {
+          console.log('[SW Install] All resources cached successfully');
+        }).catch(error => {
+          console.error('[SW Install] Cache addAll failed:', error);
           throw error;
         });
+      })
+      .then(() => {
+        console.log('[SW Install] Installation complete');
       })
   );
 });
 
 // Activate event - clean up old caches
 self.addEventListener('activate', event => {
-  console.log('[Service Worker] Activating new version');
+  console.log('[SW Activate] Service Worker activation started');
   event.waitUntil(
     Promise.all([
       // Clean up old caches
       caches.keys().then(cacheNames => {
+        console.log('[SW Activate] Existing caches:', cacheNames);
         return Promise.all(
           cacheNames.map(cacheName => {
             if (cacheName !== CACHE_NAME) {
-              console.log('[Service Worker] Deleting old cache:', cacheName);
+              console.log('[SW Activate] Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
           })
         );
       }),
       // Take control of all clients immediately
-      self.clients.claim()
-    ])
+      self.clients.claim().then(() => {
+        console.log('[SW Activate] Clients claimed');
+      })
+    ]).then(() => {
+      console.log('[SW Activate] Activation complete');
+    })
   );
 });
 
@@ -56,11 +69,14 @@ self.addEventListener('fetch', event => {
     caches.match(event.request)
       .then(response => {
         if (response) {
+          console.log('[SW Fetch] Serving from cache:', event.request.url);
           return response;
         }
+        console.log('[SW Fetch] Fetching from network:', event.request.url);
         return fetch(event.request).then(response => {
           // Don't cache non-successful responses
           if (!response || response.status !== 200 || response.type !== 'basic') {
+            console.log('[SW Fetch] Not caching response:', event.request.url);
             return response;
           }
           
@@ -69,6 +85,7 @@ self.addEventListener('fetch', event => {
           
           caches.open(CACHE_NAME)
             .then(cache => {
+              console.log('[SW Fetch] Caching new resource:', event.request.url);
               cache.put(event.request, responseToCache);
             });
             
@@ -81,9 +98,11 @@ self.addEventListener('fetch', event => {
 // Message handling for update
 self.addEventListener('message', event => {
   if (event.data.type === 'SKIP_WAITING') {
-    console.log('[Service Worker] Skip waiting message received');
+    console.log('[SW Message] Skip waiting message received');
     self.skipWaiting().then(() => {
-      console.log('[Service Worker] skipWaiting completed');
+      console.log('[SW Message] skipWaiting completed, worker will activate');
+    }).catch(err => {
+      console.error('[SW Message] skipWaiting failed:', err);
     });
   }
 });

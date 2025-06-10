@@ -5,7 +5,7 @@ let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.5.2';
+const CURRENT_VERSION = '1.5.3';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -14,72 +14,97 @@ function updateVersionDisplay() {
     if (versionInfo) {
         const lastUpdated = new Date().toISOString().split('T')[0];
         versionInfo.textContent = `Versie ${CURRENT_VERSION} – Laatst bijgewerkt: ${lastUpdated}`;
+        console.log('[Version] Display updated to:', CURRENT_VERSION);
     }
 }
 
 async function checkVersion() {
+    console.log('[Version] Checking version...');
+    console.log('[Version] Current version:', CURRENT_VERSION);
     const lastVersion = localStorage.getItem(LAST_VERSION_KEY);
+    console.log('[Version] Last version from storage:', lastVersion);
     
     if (lastVersion !== CURRENT_VERSION) {
+        console.log('[Version] Version mismatch detected');
         // Clear cache to force reload of new assets
         if ('caches' in window) {
             try {
+                console.log('[Cache] Clearing all caches...');
                 const cacheKeys = await caches.keys();
+                console.log('[Cache] Found caches:', cacheKeys);
                 await Promise.all(
                     cacheKeys.map(key => caches.delete(key))
                 );
-                console.log('Cache cleared successfully');
+                console.log('[Cache] All caches cleared successfully');
             } catch (err) {
-                console.error('Error clearing cache:', err);
+                console.error('[Cache] Error clearing cache:', err);
             }
         }
         
         // Update stored version
         localStorage.setItem(LAST_VERSION_KEY, CURRENT_VERSION);
+        console.log('[Version] Updated stored version to:', CURRENT_VERSION);
     }
 }
 
 // PWA Service Worker Registration
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
+        console.log('[SW] Browser supports Service Workers');
+        
         // Track if we're refreshing to avoid multiple refreshes
         let refreshing = false;
 
         // Set up the refresh handler before registering
         navigator.serviceWorker.addEventListener('controllerchange', () => {
+            console.log('[SW] Controller change event received');
             if (!refreshing) {
                 refreshing = true;
-                console.log('New service worker is controlling the page, reloading...');
+                console.log('[SW] Triggering page reload...');
                 window.location.reload(true);
             }
         });
 
         navigator.serviceWorker.register('/sw.js')
             .then(registration => {
-                console.log('Service Worker registered successfully:', registration);
+                console.log('[SW] Registration successful. Scope:', registration.scope);
                 
                 // Check for updates
                 registration.addEventListener('updatefound', () => {
                     const newWorker = registration.installing;
-                    console.log('Service Worker update found, installing...');
+                    console.log('[SW] Update found, new worker state:', newWorker.state);
                     
                     newWorker.addEventListener('statechange', () => {
-                        console.log('Service Worker state changed:', newWorker.state);
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log('New Service Worker installed, showing update notification');
-                            showUpdateNotification();
+                        console.log('[SW] New worker state changed to:', newWorker.state);
+                        if (newWorker.state === 'installed') {
+                            if (navigator.serviceWorker.controller) {
+                                console.log('[SW] New version installed, controller exists');
+                                showUpdateNotification();
+                            } else {
+                                console.log('[SW] Initial installation, no controller yet');
+                            }
                         }
                     });
                 });
 
+                // Additional registration checks
+                if (registration.waiting) {
+                    console.log('[SW] New version waiting to activate');
+                }
+                if (registration.active) {
+                    console.log('[SW] Active worker version:', APP_VERSION);
+                }
+
                 // Show install button if app is installable
                 window.addEventListener('beforeinstallprompt', (e) => {
+                    console.log('[Install] Install prompt event received');
                     e.preventDefault();
                     const installBtn = document.getElementById('installBtn');
                     installBtn.style.display = 'block';
                     installBtn.onclick = () => {
                         e.prompt();
                         e.userChoice.then((choiceResult) => {
+                            console.log('[Install] User choice:', choiceResult.outcome);
                             if (choiceResult.outcome === 'accepted') {
                                 installBtn.style.display = 'none';
                             }
@@ -88,13 +113,16 @@ function registerServiceWorker() {
                 });
             })
             .catch(error => {
-                console.log('Service Worker registration failed:', error);
+                console.error('[SW] Registration failed:', error);
             });
+    } else {
+        console.log('[SW] Service Workers not supported');
     }
 }
 
 // Update notification functions
 function showUpdateNotification() {
+    console.log('[Update] Showing update notification');
     const notification = document.getElementById('updateNotification');
     if (notification) {
         notification.style.display = 'flex';
@@ -102,6 +130,8 @@ function showUpdateNotification() {
 }
 
 function updateApp() {
+    console.log('[Update] Update button clicked');
+    
     // Hide the notification
     const notification = document.getElementById('updateNotification');
     if (notification) {
@@ -110,21 +140,36 @@ function updateApp() {
 
     // Get the registration and trigger update
     navigator.serviceWorker.getRegistration().then(async registration => {
+        console.log('[Update] Current registration state:', {
+            waiting: !!registration?.waiting,
+            active: !!registration?.active,
+            installing: !!registration?.installing
+        });
+
         if (registration && registration.waiting) {
             try {
-                // Clear the cache first
+                console.log('[Update] Found waiting worker, clearing caches...');
                 const cacheKeys = await caches.keys();
+                console.log('[Update] Found caches to clear:', cacheKeys);
                 await Promise.all(
-                    cacheKeys.map(key => caches.delete(key))
+                    cacheKeys.map(key => {
+                        console.log('[Update] Deleting cache:', key);
+                        return caches.delete(key);
+                    })
                 );
-                console.log('Cache cleared before update');
+                console.log('[Update] All caches cleared, sending skip waiting message');
                 
                 // Skip waiting on the service worker
                 registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                console.log('[Update] Skip waiting message sent');
             } catch (err) {
-                console.error('Error during update:', err);
+                console.error('[Update] Error during update:', err);
             }
+        } else {
+            console.log('[Update] No waiting worker found');
         }
+    }).catch(err => {
+        console.error('[Update] Error getting registration:', err);
     });
 }
 
@@ -275,44 +320,61 @@ function init() {
 // PWA Service Worker Registration
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
+        console.log('[SW] Browser supports Service Workers');
+        
         // Track if we're refreshing to avoid multiple refreshes
         let refreshing = false;
 
         // Set up the refresh handler before registering
         navigator.serviceWorker.addEventListener('controllerchange', () => {
+            console.log('[SW] Controller change event received');
             if (!refreshing) {
                 refreshing = true;
-                console.log('New service worker is controlling the page, reloading...');
+                console.log('[SW] Triggering page reload...');
                 window.location.reload(true);
             }
         });
 
         navigator.serviceWorker.register('/sw.js')
             .then(registration => {
-                console.log('Service Worker registered successfully:', registration);
+                console.log('[SW] Registration successful. Scope:', registration.scope);
                 
                 // Check for updates
                 registration.addEventListener('updatefound', () => {
                     const newWorker = registration.installing;
-                    console.log('Service Worker update found, installing...');
+                    console.log('[SW] Update found, new worker state:', newWorker.state);
                     
                     newWorker.addEventListener('statechange', () => {
-                        console.log('Service Worker state changed:', newWorker.state);
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            console.log('New Service Worker installed, showing update notification');
-                            showUpdateNotification();
+                        console.log('[SW] New worker state changed to:', newWorker.state);
+                        if (newWorker.state === 'installed') {
+                            if (navigator.serviceWorker.controller) {
+                                console.log('[SW] New version installed, controller exists');
+                                showUpdateNotification();
+                            } else {
+                                console.log('[SW] Initial installation, no controller yet');
+                            }
                         }
                     });
                 });
 
+                // Additional registration checks
+                if (registration.waiting) {
+                    console.log('[SW] New version waiting to activate');
+                }
+                if (registration.active) {
+                    console.log('[SW] Active worker version:', APP_VERSION);
+                }
+
                 // Show install button if app is installable
                 window.addEventListener('beforeinstallprompt', (e) => {
+                    console.log('[Install] Install prompt event received');
                     e.preventDefault();
                     const installBtn = document.getElementById('installBtn');
                     installBtn.style.display = 'block';
                     installBtn.onclick = () => {
                         e.prompt();
                         e.userChoice.then((choiceResult) => {
+                            console.log('[Install] User choice:', choiceResult.outcome);
                             if (choiceResult.outcome === 'accepted') {
                                 installBtn.style.display = 'none';
                             }
@@ -321,8 +383,10 @@ function registerServiceWorker() {
                 });
             })
             .catch(error => {
-                console.log('Service Worker registration failed:', error);
+                console.error('[SW] Registration failed:', error);
             });
+    } else {
+        console.log('[SW] Service Workers not supported');
     }
 }
 
