@@ -55,13 +55,27 @@ function registerServiceWorker() {
         // Track if we're refreshing to avoid multiple refreshes
         let refreshing = false;
 
+        // Set up message handler for refresh
+        navigator.serviceWorker.addEventListener('message', (event) => {
+            if (event.data.type === 'REFRESH_NEEDED') {
+                console.log('[SW] Refresh message received');
+                if (!refreshing) {
+                    refreshing = true;
+                    console.log('[SW] Triggering page reload...');
+                    window.location.reload(true);
+                }
+            }
+        });
+
         // Set up the refresh handler before registering
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             console.log('[SW] Controller change event received');
             if (!refreshing) {
                 refreshing = true;
                 console.log('[SW] Triggering page reload...');
-                window.location.reload();
+                setTimeout(() => {
+                    window.location.reload(true);
+                }, 100); // Small delay to ensure service worker is ready
             }
         });
 
@@ -328,13 +342,27 @@ function registerServiceWorker() {
         // Track if we're refreshing to avoid multiple refreshes
         let refreshing = false;
 
+        // Set up message handler for refresh
+        navigator.serviceWorker.addEventListener('message', (event) => {
+            if (event.data.type === 'REFRESH_NEEDED') {
+                console.log('[SW] Refresh message received');
+                if (!refreshing) {
+                    refreshing = true;
+                    console.log('[SW] Triggering page reload...');
+                    window.location.reload(true);
+                }
+            }
+        });
+
         // Set up the refresh handler before registering
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             console.log('[SW] Controller change event received');
             if (!refreshing) {
                 refreshing = true;
                 console.log('[SW] Triggering page reload...');
-                window.location.reload();
+                setTimeout(() => {
+                    window.location.reload(true);
+                }, 100); // Small delay to ensure service worker is ready
             }
         });
 

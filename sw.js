@@ -18,21 +18,22 @@ const urlsToCache = [
 // Install event - cache resources
 self.addEventListener('install', event => {
   console.log('[SW Install] Service Worker installation started');
+  // Skip waiting during install to activate immediately
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('[SW Install] Cache opened:', CACHE_NAME);
-        console.log('[SW Install] Caching resources:', urlsToCache);
-        return cache.addAll(urlsToCache).then(() => {
-          console.log('[SW Install] All resources cached successfully');
-        }).catch(error => {
-          console.error('[SW Install] Cache addAll failed:', error);
-          throw error;
-        });
-      })
-      .then(() => {
-        console.log('[SW Install] Installation complete');
-      })
+    Promise.all([
+      caches.open(CACHE_NAME)
+        .then(cache => {
+          console.log('[SW Install] Cache opened:', CACHE_NAME);
+          console.log('[SW Install] Caching resources:', urlsToCache);
+          return cache.addAll(urlsToCache).then(() => {
+            console.log('[SW Install] All resources cached successfully');
+          }).catch(error => {
+            console.error('[SW Install] Cache addAll failed:', error);
+            throw error;
+          });
+        }),
+      self.skipWaiting() // Force activation
+    ])
   );
 });
 
@@ -56,6 +57,12 @@ self.addEventListener('activate', event => {
       // Take control of all clients immediately
       self.clients.claim().then(() => {
         console.log('[SW Activate] Clients claimed');
+        // Notify all clients about the update
+        self.clients.matchAll().then(clients => {
+          clients.forEach(client => {
+            client.postMessage({ type: 'REFRESH_NEEDED' });
+          });
+        });
       })
     ]).then(() => {
       console.log('[SW Activate] Activation complete');
@@ -101,6 +108,14 @@ self.addEventListener('message', event => {
     console.log('[SW Message] Skip waiting message received');
     self.skipWaiting().then(() => {
       console.log('[SW Message] skipWaiting completed, worker will activate');
+      self.clients.claim().then(() => {
+        // Notify all clients to refresh
+        self.clients.matchAll().then(clients => {
+          clients.forEach(client => {
+            client.postMessage({ type: 'REFRESH_NEEDED' });
+          });
+        });
+      });
     }).catch(err => {
       console.error('[SW Message] skipWaiting failed:', err);
     });
