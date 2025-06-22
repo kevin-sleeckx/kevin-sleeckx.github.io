@@ -6,7 +6,7 @@ let employeeName = localStorage.getItem('employeeName') || '';
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.7.2';
+const CURRENT_VERSION = '1.7.3';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -56,15 +56,11 @@ function registerServiceWorker() {
         // Track if we're refreshing to avoid multiple refreshes
         let refreshing = false;
 
-        // Always auto-refresh when receiving REFRESH_NEEDED
+        // Only listen for REFRESH_NEEDED to log, do not reload here
         navigator.serviceWorker.addEventListener('message', (event) => {
             if (event.data.type === 'REFRESH_NEEDED') {
                 console.log('[SW] Refresh message received');
-                if (!refreshing) {
-                    refreshing = true;
-                    console.log('[SW] Triggering page reload...');
-                    window.location.reload(true);
-                }
+                // Do not reload here! Wait for controllerchange event.
             }
         });
 
@@ -350,15 +346,11 @@ function registerServiceWorker() {
         // Track if we're refreshing to avoid multiple refreshes
         let refreshing = false;
 
-        // Always auto-refresh when receiving REFRESH_NEEDED
+        // Only listen for REFRESH_NEEDED to log, do not reload here
         navigator.serviceWorker.addEventListener('message', (event) => {
             if (event.data.type === 'REFRESH_NEEDED') {
                 console.log('[SW] Refresh message received');
-                if (!refreshing) {
-                    refreshing = true;
-                    console.log('[SW] Triggering page reload...');
-                    window.location.reload(true);
-                }
+                // Do not reload here! Wait for controllerchange event.
             }
         });
 
