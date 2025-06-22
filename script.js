@@ -6,7 +6,7 @@ let employeeName = localStorage.getItem('employeeName') || '';
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.7.1';
+const CURRENT_VERSION = '1.7.2';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -45,31 +45,6 @@ async function checkVersion() {
         
         // Update stored version
         localStorage.setItem(LAST_VERSION_KEY, CURRENT_VERSION);
-        // Show developer message
-        showDeveloperMessage('Er is een nieuwe versie van de app beschikbaar (v1.7.1). <p>Nieuwe kalenderfuncties, feest- en zondagen toegevoegd, ... </p>Vernieuw de pagina of klik op Sluiten om verder te gaan.');
-    }
-}
-
-// Show developer message in the middle of the screen if there is a new version
-function showDeveloperMessage(message) {
-    let devMsg = document.getElementById('developerMessage');
-    if (!devMsg) {
-        devMsg = document.createElement('div');
-        devMsg.id = 'developerMessage';
-        devMsg.style.position = 'fixed';
-        devMsg.style.top = '50%';
-        devMsg.style.left = '50%';
-        devMsg.style.transform = 'translate(-50%, -50%)';
-        devMsg.style.background = '#3b82f6';
-        devMsg.style.color = 'white';
-        devMsg.style.padding = '2rem 2.5rem';
-        devMsg.style.borderRadius = '1rem';
-        devMsg.style.boxShadow = '0 8px 32px rgba(0,0,0,0.18)';
-        devMsg.style.zIndex = '2000';
-        devMsg.style.textAlign = 'center';
-        devMsg.style.fontSize = '1.15rem';
-        devMsg.innerHTML = `<strong>🔔 App Update</strong><br><div style='margin: 1rem 0;'>${message}</div><button class='button' onclick='this.parentElement.remove()'>Sluiten</button>`;
-        document.body.appendChild(devMsg);
     }
 }
 
@@ -81,7 +56,7 @@ function registerServiceWorker() {
         // Track if we're refreshing to avoid multiple refreshes
         let refreshing = false;
 
-        // Set up message handler for refresh
+        // Always auto-refresh when receiving REFRESH_NEEDED
         navigator.serviceWorker.addEventListener('message', (event) => {
             if (event.data.type === 'REFRESH_NEEDED') {
                 console.log('[SW] Refresh message received');
@@ -93,7 +68,7 @@ function registerServiceWorker() {
             }
         });
 
-        // Set up the refresh handler before registering
+        // Always auto-refresh on controllerchange
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             console.log('[SW] Controller change event received');
             if (!refreshing) {
@@ -375,7 +350,7 @@ function registerServiceWorker() {
         // Track if we're refreshing to avoid multiple refreshes
         let refreshing = false;
 
-        // Set up message handler for refresh
+        // Always auto-refresh when receiving REFRESH_NEEDED
         navigator.serviceWorker.addEventListener('message', (event) => {
             if (event.data.type === 'REFRESH_NEEDED') {
                 console.log('[SW] Refresh message received');
@@ -387,7 +362,7 @@ function registerServiceWorker() {
             }
         });
 
-        // Set up the refresh handler before registering
+        // Always auto-refresh on controllerchange
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             console.log('[SW] Controller change event received');
             if (!refreshing) {
