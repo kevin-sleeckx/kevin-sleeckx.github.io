@@ -206,7 +206,6 @@
             <div id="exportSection" style="display: none; margin-top: 20px;">
                 <div class="export-section">
                     <button class="button success" onclick="exportToPDF()">📄 Exporteren naar PDF</button>
-                    <button class="button danger" onclick="clearAllData()">🗑️ Alle Gegevens Wissen</button>
                 </div>
                 <p class="small-text mt-2">
                     💡 <strong>Tip:</strong> Exporteer uw gegevens wekelijks om verlies te voorkomen en professionele rapporten voor HR te maken.
@@ -216,7 +215,7 @@
 
         <!-- Gegevens Overdracht Sectie -->
         <div class="section">
-            <h2>📱 Backup</h2>
+            <h2>📱 Backup & Herstarten</h2>
             <button class="button" onclick="toggleTransferSection()" id="toggleTransferBtn">🔄 Gegevens Overdracht Opties</button>
             <div id="transferSection" style="display: none; margin-top: 20px;">
                 <button onclick="exportData()" class="button success">Exporteer data</button>
@@ -224,6 +223,7 @@
                 <p class="small-text mt-2">
                     💡 <strong>Hoe over te dragen:</strong> 1) Genereer export bestand 2) Stuur bestand via email (bvb naar uzelf) 3) Op nieuw apparaat importeer het bestand 4) Alle uw gegevens zijn overgedragen!
                 </p>
+                <button class="button danger" onclick="clearAllData()">🗑️ Alle Gegevens Wissen</button>
             </div>
         </div>
     </div>
