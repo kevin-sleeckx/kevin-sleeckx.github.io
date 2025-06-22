@@ -73,6 +73,15 @@
                     </small>
                 </div>
                 <button class="button success" onclick="saveDailyWage()">Dagloon Opslaan</button>
+                <!-- Naam Medewerker -->
+                <div class="form-group">
+                    <label for="employeeNameConfig">Naam</label>
+                    <input type="text" id="employeeNameConfig" placeholder="Voer uw volledige naam in">
+                    <small class="small-text mt-1">
+                        Dit verschijnt bovenaan het PDF rapport.
+                    </small>
+                </div>
+                <button class="button success" onclick="saveEmployeeName()">Naam Opslaan</button>
             </div>
         </div>
 
@@ -241,28 +250,6 @@
                 <div class="text-center mt-3">
                     <strong>Dag Totaal: €<span id="dayTotal">0,00</span></strong>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Naam Invoer Modal voor PDF Export -->
-    <div id="nameModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="close" onclick="closeNameModal()">&times;</span>
-                <h2>Voer Uw Naam In Voor PDF Rapport</h2>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="employeeName">Uw Volledige Naam</label>
-                    <input type="text" id="employeeName" placeholder="Voer uw volledige naam in voor het PDF rapport">
-                    <small class="small-text mt-1">
-                        Dit verschijnt bovenaan het PDF rapport voor HR identificatie
-                    </small>
-                </div>
-                <div class="export-section mt-3">
-                    <button class="button success" onclick="generatePDFWithName()">📄 PDF Genereren</button>
-                    <button class="button danger" onclick="closeNameModal()">Annuleren</button>                </div>
             </div>
         </div>
     </div>

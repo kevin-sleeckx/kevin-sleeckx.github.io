@@ -2,10 +2,11 @@
 let dailyWage = parseFloat(localStorage.getItem('dailyWage')) || 0;
 let startingAmount = parseFloat(localStorage.getItem('startingAmount')) || 0;
 let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+let employeeName = localStorage.getItem('employeeName') || '';
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.6.2';
+const CURRENT_VERSION = '1.6.3';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -333,6 +334,7 @@ async function init() {
     updateTotalDisplay();
     updateWageDisplay();
     updateStartingDisplay();
+    updateEmployeeNameDisplay();
     setDefaultDates();
     renderCalendar();
     checkBackupReminder();
@@ -476,6 +478,22 @@ function updateWageDisplay() {
     if (dailyWage > 0) {
         document.getElementById('dailyWage').value = dailyWage;
     }
+}
+
+// Employee Name Management
+function saveEmployeeName() {
+    const name = document.getElementById('employeeNameConfig').value.trim();
+    if (!name) {
+        alert('Voer een geldige naam in');
+        return;
+    }
+    employeeName = name;
+    localStorage.setItem('employeeName', employeeName);
+    alert('Naam succesvol opgeslagen!');
+}
+
+function updateEmployeeNameDisplay() {
+    document.getElementById('employeeNameConfig').value = employeeName;
 }
 
 // Calendar Functions
@@ -932,40 +950,25 @@ function updateTotalDisplay() {
 
 // PDF Export Function (Updated - no daily wage, includes starting amount)
 async function exportToPDF() {
-    document.getElementById('nameModal').style.display = 'block';
-}
-
-function closeNameModal() {
-    document.getElementById('nameModal').style.display = 'none';
-}
-
-function generatePDFWithName() {
-    const employeeName = document.getElementById('employeeName').value.trim();
     if (!employeeName) {
-        alert('Voer uw naam in voor het PDF rapport');
+        alert('Stel eerst uw naam in bij de configuratie voordat u exporteert.');
         return;
     }
-    
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    
     const transactionTotal = transactions.reduce((sum, t) => sum + t.amount, 0);
     const grandTotal = startingAmount + transactionTotal;
-    
     // Header
     doc.setFontSize(20);
     doc.setTextColor(40, 40, 40);
     doc.text('Overuren Rapport', 20, 30);
-    
     doc.setFontSize(12);
     doc.text(`Naam: ${employeeName}`, 20, 45);
     doc.text(`Gegenereerd: ${new Date().toLocaleDateString('nl-NL')}`, 20, 55);
     doc.text(`Start Bedrag: €${startingAmount.toFixed(2).replace('.', ',')}`, 20, 65);
     doc.text(`Verdiend/Opgenomen: €${transactionTotal.toFixed(2).replace('.', ',')}`, 20, 75);
     doc.text(`Totaal Saldo: €${grandTotal.toFixed(2).replace('.', ',')}`, 20, 85);
-    
     let yPosition = 105;
-    
     if (transactions.length === 0) {
         doc.text('Geen transacties geregistreerd.', 20, yPosition);
     } else {
@@ -1102,110 +1105,98 @@ function generatePDFWithName() {
     
     // Mark backup as done
     markBackupDone();
-    closeNameModal();
     alert('PDF succesvol geëxporteerd! Backup herinnering gewist voor deze week.');
 }
 
 function exportCurrentWeekToPDF() {
-    // Ask for name using the same modal, but with a different handler
-    document.getElementById('nameModal').style.display = 'block';
-    // Temporarily override the generatePDFWithName button
-    const exportBtn = document.querySelector('#nameModal .button.success');
-    const originalHandler = exportBtn.onclick;
-    exportBtn.onclick = function() {
-        const employeeName = document.getElementById('employeeName').value.trim();
-        if (!employeeName) {
-            alert('Voer uw naam in voor het PDF rapport');
-            return;
-        }
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        // Filter transactions for current week
-        const now = new Date();
-        const { weekNumber: currentWeek, year: currentYear } = getISOWeekData(now);
-        const filteredTransactions = transactions.filter(t => {
-            const tDate = new Date(t.date);
-            const { weekNumber, year } = getISOWeekData(tDate);
-            return weekNumber === currentWeek && year === currentYear;
-        });
-        const transactionTotal = filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
-        const grandTotal = startingAmount + transactions.reduce((sum, t) => sum + t.amount, 0);
-        // Header
-        doc.setFontSize(20);
-        doc.setTextColor(40, 40, 40);
-        doc.text('Overuren Rapport (Huidige Week)', 20, 30);
-        doc.setFontSize(12);
-        doc.text(`Naam: ${employeeName}`, 20, 45);
-        doc.text(`Gegenereerd: ${new Date().toLocaleDateString('nl-NL')}`, 20, 55);
-        doc.text(`Start Bedrag: €${startingAmount.toFixed(2).replace('.', ',')}`, 20, 65);
-        doc.text(`Verdiend/Opgenomen deze week: €${transactionTotal.toFixed(2).replace('.', ',')}`, 20, 75);
-        doc.text(`Totaal Saldo: €${grandTotal.toFixed(2).replace('.', ',')}`, 20, 85);
-        let yPosition = 105;
-        if (filteredTransactions.length === 0) {
-            doc.text('Geen transacties geregistreerd voor deze week.', 20, yPosition);
-        } else {
-            // Sort by date descending
-            const sortedTransactions = [...filteredTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
-            // Prepare table data
-            const tableData = sortedTransactions.map(t => [
-                new Date(t.date).toLocaleDateString('nl-NL'),
-                t.description,
-                t.shiftType || '-',
-                `€${t.amount.toFixed(2).replace('.', ',')}`
-            ]);
-            // Add summary row for the week
-            tableData.push([
-                '',
-                `Week ${currentWeek} (${currentYear}) - Totaal`,
-                '',
-                `€${transactionTotal.toFixed(2).replace('.', ',')}`
-            ]);
-            doc.autoTable({
-                startY: yPosition,
-                head: [['Datum', 'Beschrijving', 'Shift', 'Bedrag']],
-                body: tableData,
-                theme: 'grid',
-                styles: { fontSize: 9 },
-                headStyles: { fillColor: [108, 117, 125] }, // Gray header (#6c757d)
-                columnStyles: {
-                    3: {
-                        textColor: function(data) {
-                            return parseFloat(data.cell.text[0].replace('€', '').replace(',', '.')) >= 0 ? [76, 175, 80] : [244, 67, 54];
-                        }
+    if (!employeeName) {
+        alert('Stel eerst uw naam in bij de configuratie voordat u exporteert.');
+        return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    // Filter transactions for current week
+    const now = new Date();
+    const { weekNumber: currentWeek, year: currentYear } = getISOWeekData(now);
+    const filteredTransactions = transactions.filter(t => {
+        const tDate = new Date(t.date);
+        const { weekNumber, year } = getISOWeekData(tDate);
+        return weekNumber === currentWeek && year === currentYear;
+    });
+    const transactionTotal = filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
+    const grandTotal = startingAmount + transactions.reduce((sum, t) => sum + t.amount, 0);
+    // Header
+    doc.setFontSize(20);
+    doc.setTextColor(40, 40, 40);
+    doc.text('Overuren Rapport (Huidige Week)', 20, 30);
+    doc.setFontSize(12);
+    doc.text(`Naam: ${employeeName}`, 20, 45);
+    doc.text(`Gegenereerd: ${new Date().toLocaleDateString('nl-NL')}`, 20, 55);
+    doc.text(`Start Bedrag: €${startingAmount.toFixed(2).replace('.', ',')}`, 20, 65);
+    doc.text(`Verdiend/Opgenomen deze week: €${transactionTotal.toFixed(2).replace('.', ',')}`, 20, 75);
+    doc.text(`Totaal Saldo: €${grandTotal.toFixed(2).replace('.', ',')}`, 20, 85);
+    let yPosition = 105;
+    if (filteredTransactions.length === 0) {
+        doc.text('Geen transacties geregistreerd voor deze week.', 20, yPosition);
+    } else {
+        // Sort by date descending
+        const sortedTransactions = [...filteredTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+        // Prepare table data
+        const tableData = sortedTransactions.map(t => [
+            new Date(t.date).toLocaleDateString('nl-NL'),
+            t.description,
+            t.shiftType || '-',
+            `€${t.amount.toFixed(2).replace('.', ',')}`
+        ]);
+        // Add summary row for the week
+        tableData.push([
+            '',
+            `Week ${currentWeek} (${currentYear}) - Totaal`,
+            '',
+            `€${transactionTotal.toFixed(2).replace('.', ',')}`
+        ]);
+        doc.autoTable({
+            startY: yPosition,
+            head: [['Datum', 'Beschrijving', 'Shift', 'Bedrag']],
+            body: tableData,
+            theme: 'grid',
+            styles: { fontSize: 9 },
+            headStyles: { fillColor: [108, 117, 125] }, // Gray header (#6c757d)
+            columnStyles: {
+                3: {
+                    textColor: function(data) {
+                        return parseFloat(data.cell.text[0].replace('€', '').replace(',', '.')) >= 0 ? [76, 175, 80] : [244, 67, 54];
                     }
-                },
-                didParseCell: function(data) {
-                    // Style weekly summary row
-                    if (data.row.index === tableData.length - 1) {
-                        data.cell.styles.fillColor = [173, 216, 230]; // Light blue background
+                }
+            },
+            didParseCell: function(data) {
+                // Style weekly summary row
+                if (data.row.index === tableData.length - 1) {
+                    data.cell.styles.fillColor = [173, 216, 230]; // Light blue background
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fontSize = 10;
+                    if (data.column.index === 3) {
+                        const amount = parseFloat(data.cell.text[0].replace('€', '').replace(',', '.'));
+                        data.cell.styles.textColor = amount >= 0 ? [76, 175, 80] : [244, 67, 54];
                         data.cell.styles.fontStyle = 'bold';
-                        data.cell.styles.fontSize = 10;
-                        if (data.column.index === 3) {
-                            const amount = parseFloat(data.cell.text[0].replace('€', '').replace(',', '.'));
-                            data.cell.styles.textColor = amount >= 0 ? [76, 175, 80] : [244, 67, 54];
-                            data.cell.styles.fontStyle = 'bold';
-                        }
                     }
-                },
-                margin: { left: 20, right: 20 }
-            });
-        }
-        // Footer
-        const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            doc.setFontSize(8);
-            doc.setTextColor(128, 128, 128);
-            doc.text(`Pagina ${i} van ${pageCount}`, 20, doc.internal.pageSize.height - 10);
-            doc.text('Gegenereerd door Overuren Logger', doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 10);
-        }
-        doc.save(`overuren-week-${employeeName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`);
-        document.getElementById('nameModal').style.display = 'none';
-        document.getElementById('employeeName').value = '';
-        exportBtn.onclick = originalHandler; // Restore original handler
-        markBackupDone();
-        alert('PDF van huidige week succesvol geëxporteerd! Backup herinnering gewist voor deze week.');
-    };
+                }
+            },
+            margin: { left: 20, right: 20 }
+        });
+    }
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(128, 128, 128);
+        doc.text(`Pagina ${i} van ${pageCount}`, 20, doc.internal.pageSize.height - 10);
+        doc.text('Gegenereerd door Overuren Logger', doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 10);
+    }
+    doc.save(`overuren-week-${employeeName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`);
+    markBackupDone();
+    alert('PDF van huidige week succesvol geëxporteerd! Backup herinnering gewist voor deze week.');
 }
 
 // Close modals when clicking outside
