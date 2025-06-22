@@ -5,7 +5,7 @@ let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.6.1';
+const CURRENT_VERSION = '1.6.2';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -1128,8 +1128,8 @@ function exportCurrentWeekToPDF() {
             const { weekNumber, year } = getISOWeekData(tDate);
             return weekNumber === currentWeek && year === currentYear;
         });
-        const transactionTotal = transactions.reduce((sum, t) => sum + t.amount, 0);
-        const grandTotal = startingAmount + transactionTotal;
+        const transactionTotal = filteredTransactions.reduce((sum, t) => sum + t.amount, 0);
+        const grandTotal = startingAmount + transactions.reduce((sum, t) => sum + t.amount, 0);
         // Header
         doc.setFontSize(20);
         doc.setTextColor(40, 40, 40);
@@ -1138,7 +1138,7 @@ function exportCurrentWeekToPDF() {
         doc.text(`Naam: ${employeeName}`, 20, 45);
         doc.text(`Gegenereerd: ${new Date().toLocaleDateString('nl-NL')}`, 20, 55);
         doc.text(`Start Bedrag: €${startingAmount.toFixed(2).replace('.', ',')}`, 20, 65);
-        doc.text(`Verdiend/Opgenomen: €${transactionTotal.toFixed(2).replace('.', ',')}`, 20, 75);
+        doc.text(`Verdiend/Opgenomen deze week: €${transactionTotal.toFixed(2).replace('.', ',')}`, 20, 75);
         doc.text(`Totaal Saldo: €${grandTotal.toFixed(2).replace('.', ',')}`, 20, 85);
         let yPosition = 105;
         if (filteredTransactions.length === 0) {
@@ -1146,19 +1146,65 @@ function exportCurrentWeekToPDF() {
         } else {
             // Sort by date descending
             const sortedTransactions = [...filteredTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
-            sortedTransactions.forEach(t => {
-                if (yPosition > 270) {
-                    doc.addPage();
-                    yPosition = 30;
-                }
-                doc.text(`${t.date} | ${t.description} | €${t.amount.toFixed(2).replace('.', ',')}`, 20, yPosition);
-                yPosition += 10;
+            // Prepare table data
+            const tableData = sortedTransactions.map(t => [
+                new Date(t.date).toLocaleDateString('nl-NL'),
+                t.description,
+                t.shiftType || '-',
+                `€${t.amount.toFixed(2).replace('.', ',')}`
+            ]);
+            // Add summary row for the week
+            tableData.push([
+                '',
+                `Week ${currentWeek} (${currentYear}) - Totaal`,
+                '',
+                `€${transactionTotal.toFixed(2).replace('.', ',')}`
+            ]);
+            doc.autoTable({
+                startY: yPosition,
+                head: [['Datum', 'Beschrijving', 'Shift', 'Bedrag']],
+                body: tableData,
+                theme: 'grid',
+                styles: { fontSize: 9 },
+                headStyles: { fillColor: [108, 117, 125] }, // Gray header (#6c757d)
+                columnStyles: {
+                    3: {
+                        textColor: function(data) {
+                            return parseFloat(data.cell.text[0].replace('€', '').replace(',', '.')) >= 0 ? [76, 175, 80] : [244, 67, 54];
+                        }
+                    }
+                },
+                didParseCell: function(data) {
+                    // Style weekly summary row
+                    if (data.row.index === tableData.length - 1) {
+                        data.cell.styles.fillColor = [173, 216, 230]; // Light blue background
+                        data.cell.styles.fontStyle = 'bold';
+                        data.cell.styles.fontSize = 10;
+                        if (data.column.index === 3) {
+                            const amount = parseFloat(data.cell.text[0].replace('€', '').replace(',', '.'));
+                            data.cell.styles.textColor = amount >= 0 ? [76, 175, 80] : [244, 67, 54];
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                    }
+                },
+                margin: { left: 20, right: 20 }
             });
         }
-        doc.save('overuren-week.pdf');
+        // Footer
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(128, 128, 128);
+            doc.text(`Pagina ${i} van ${pageCount}`, 20, doc.internal.pageSize.height - 10);
+            doc.text('Gegenereerd door Overuren Logger', doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 10);
+        }
+        doc.save(`overuren-week-${employeeName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`);
         document.getElementById('nameModal').style.display = 'none';
         document.getElementById('employeeName').value = '';
         exportBtn.onclick = originalHandler; // Restore original handler
+        markBackupDone();
+        alert('PDF van huidige week succesvol geëxporteerd! Backup herinnering gewist voor deze week.');
     };
 }
 
