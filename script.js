@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
         notification.innerHTML = `
             <strong>ℹ️ Belangrijk bericht</strong>
             <p>Welkom bij versie 1.7.0! 🎉</p>
-            <p>Toegevoegd: Kalenderknoppen, verbeterde configuratie, en meer...
+            <p>Toegevoegd: Kalenderknoppen, verbeterde configuratie, en meer...</p>
             <button class="button" onclick="this.parentElement.style.display='none'">Sluiten</button>
         `;
         notification.style.display = 'flex';
