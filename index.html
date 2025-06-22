@@ -55,6 +55,15 @@
         <div class="section">
             <button class="button" id="toggleConfigBtn" onclick="toggleConfigSection()">⚙️ Configuratie Opties</button>
             <div id="configSection" style="display: none; margin-top: 20px;">
+                <!-- Naam Medewerker -->
+                <div class="form-group">
+                    <label for="employeeNameConfig">Naam</label>
+                    <input type="text" id="employeeNameConfig" placeholder="Voer uw volledige naam in">
+                    <small class="small-text mt-1">
+                        Dit verschijnt bovenaan het PDF rapport.
+                    </small>
+                </div>
+                <button class="button success" onclick="saveEmployeeName()">Naam Opslaan</button>
                 <!-- Start Bedrag -->
                 <div class="form-group">
                     <label for="startingAmount">Start Bedrag (€)</label>
@@ -73,15 +82,6 @@
                     </small>
                 </div>
                 <button class="button success" onclick="saveDailyWage()">Dagloon Opslaan</button>
-                <!-- Naam Medewerker -->
-                <div class="form-group">
-                    <label for="employeeNameConfig">Naam</label>
-                    <input type="text" id="employeeNameConfig" placeholder="Voer uw volledige naam in">
-                    <small class="small-text mt-1">
-                        Dit verschijnt bovenaan het PDF rapport.
-                    </small>
-                </div>
-                <button class="button success" onclick="saveEmployeeName()">Naam Opslaan</button>
             </div>
         </div>
 
