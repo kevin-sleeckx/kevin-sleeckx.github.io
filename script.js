@@ -5,7 +5,7 @@ let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.5.9';
+const CURRENT_VERSION = '1.6.0';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -456,24 +456,25 @@ function saveStartingAmount() {
 }
 
 function updateStartingDisplay() {
-    document.getElementById('currentStarting').textContent = startingAmount.toFixed(2).replace('.', ',');
     document.getElementById('startingAmount').value = startingAmount;
-    if (startingAmount !== 0) {
-        document.getElementById('startingDisplay').style.display = 'block';
-    }
 }
 
 // Daily Wage Management (Hidden by default)
-function toggleDailyWage() {
-    const section = document.getElementById('dailyWageSection');
-    const btn = document.getElementById('toggleWageBtn');
-    
+function toggleConfigSection() {
+    const section = document.getElementById('configSection');
+    const btn = document.getElementById('toggleConfigBtn');
     if (section.style.display === 'none') {
         section.style.display = 'block';
-        btn.textContent = '🔒 Dagloon Verbergen';
+        btn.textContent = '🔒 Configuratie Verbergen';
     } else {
         section.style.display = 'none';
-        btn.textContent = '⚙️ Dagloon Configureren';
+        btn.textContent = '⚙️ Configuratie Opties';
+    }
+}
+
+function updateWageDisplay() {
+    if (dailyWage > 0) {
+        document.getElementById('dailyWage').value = dailyWage;
     }
 }
 
@@ -721,9 +722,6 @@ function saveDailyWage() {
 
 function updateWageDisplay() {
     if (dailyWage > 0) {
-        document.getElementById('currentWage').textContent = dailyWage.toFixed(2).replace('.', ',');
-        document.getElementById('hourlyRate').textContent = (dailyWage / 7.25).toFixed(2).replace('.', ',');
-        document.getElementById('wageDisplay').style.display = 'block';
         document.getElementById('dailyWage').value = dailyWage;
     }
 }
