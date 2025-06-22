@@ -5,7 +5,7 @@ let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.6.0';
+const CURRENT_VERSION = '1.6.1';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -1106,15 +1106,60 @@ function generatePDFWithName() {
     alert('PDF succesvol geëxporteerd! Backup herinnering gewist voor deze week.');
 }
 
-function clearAllData() {
-    if (confirm('Weet u zeker dat u alle gegevens wilt wissen? Dit kan niet ongedaan gemaakt worden.')) {
-        localStorage.clear();
-        dailyWage = 0;
-        startingAmount = 0;
-        transactions = [];
-        init();
-        alert('Alle gegevens gewist!');
-    }
+function exportCurrentWeekToPDF() {
+    // Ask for name using the same modal, but with a different handler
+    document.getElementById('nameModal').style.display = 'block';
+    // Temporarily override the generatePDFWithName button
+    const exportBtn = document.querySelector('#nameModal .button.success');
+    const originalHandler = exportBtn.onclick;
+    exportBtn.onclick = function() {
+        const employeeName = document.getElementById('employeeName').value.trim();
+        if (!employeeName) {
+            alert('Voer uw naam in voor het PDF rapport');
+            return;
+        }
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        // Filter transactions for current week
+        const now = new Date();
+        const { weekNumber: currentWeek, year: currentYear } = getISOWeekData(now);
+        const filteredTransactions = transactions.filter(t => {
+            const tDate = new Date(t.date);
+            const { weekNumber, year } = getISOWeekData(tDate);
+            return weekNumber === currentWeek && year === currentYear;
+        });
+        const transactionTotal = transactions.reduce((sum, t) => sum + t.amount, 0);
+        const grandTotal = startingAmount + transactionTotal;
+        // Header
+        doc.setFontSize(20);
+        doc.setTextColor(40, 40, 40);
+        doc.text('Overuren Rapport (Huidige Week)', 20, 30);
+        doc.setFontSize(12);
+        doc.text(`Naam: ${employeeName}`, 20, 45);
+        doc.text(`Gegenereerd: ${new Date().toLocaleDateString('nl-NL')}`, 20, 55);
+        doc.text(`Start Bedrag: €${startingAmount.toFixed(2).replace('.', ',')}`, 20, 65);
+        doc.text(`Verdiend/Opgenomen: €${transactionTotal.toFixed(2).replace('.', ',')}`, 20, 75);
+        doc.text(`Totaal Saldo: €${grandTotal.toFixed(2).replace('.', ',')}`, 20, 85);
+        let yPosition = 105;
+        if (filteredTransactions.length === 0) {
+            doc.text('Geen transacties geregistreerd voor deze week.', 20, yPosition);
+        } else {
+            // Sort by date descending
+            const sortedTransactions = [...filteredTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+            sortedTransactions.forEach(t => {
+                if (yPosition > 270) {
+                    doc.addPage();
+                    yPosition = 30;
+                }
+                doc.text(`${t.date} | ${t.description} | €${t.amount.toFixed(2).replace('.', ',')}`, 20, yPosition);
+                yPosition += 10;
+            });
+        }
+        doc.save('overuren-week.pdf');
+        document.getElementById('nameModal').style.display = 'none';
+        document.getElementById('employeeName').value = '';
+        exportBtn.onclick = originalHandler; // Restore original handler
+    };
 }
 
 // Close modals when clicking outside
