@@ -5,7 +5,7 @@ let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.5.8';
+const CURRENT_VERSION = '1.5.9';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -301,7 +301,8 @@ const earnMultipliers = {
     dag: 1.5,    // +50%
     vroege: 1.55, // +55%
     late: 1.65,  // +65%
-    nacht: 2.0   // +100%
+    nacht: 2.0,   // +100%
+    feestdag: 3.0 // +200%
 };
 
 // Additional deduction multipliers for taking overtime
