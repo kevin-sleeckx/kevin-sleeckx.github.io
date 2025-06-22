@@ -6,7 +6,7 @@ let employeeName = localStorage.getItem('employeeName') || '';
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.7.0';
+const CURRENT_VERSION = '1.7.1';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -46,7 +46,7 @@ async function checkVersion() {
         // Update stored version
         localStorage.setItem(LAST_VERSION_KEY, CURRENT_VERSION);
         // Show developer message
-        showDeveloperMessage('Er is een nieuwe versie van de app beschikbaar (v1.7.0). Vernieuw de pagina of klik op Sluiten om verder te gaan.');
+        showDeveloperMessage('Er is een nieuwe versie van de app beschikbaar (v1.7.1). <p>Nieuwe kalenderfuncties, feest- en zondagen toegevoegd, ... </p>Vernieuw de pagina of klik op Sluiten om verder te gaan.');
     }
 }
 
@@ -700,7 +700,31 @@ function showDayDetails(dateStr) {
                 }, 100);
             };
         }
+
+        // Add event listeners for prev/next day
+        const prevBtn = document.getElementById('prevDayBtn');
+        const nextBtn = document.getElementById('nextDayBtn');
+        if (prevBtn) {
+            prevBtn.onclick = function(e) {
+                e.stopPropagation();
+                const prevDate = getAdjacentDay(dateStr, -1);
+                showDayDetails(prevDate);
+            };
+        }
+        if (nextBtn) {
+            nextBtn.onclick = function(e) {
+                e.stopPropagation();
+                const nextDate = getAdjacentDay(dateStr, 1);
+                showDayDetails(nextDate);
+            };
+        }
     }, 0);
+}
+
+function getAdjacentDay(dateStr, offset) {
+    const d = new Date(dateStr);
+    d.setDate(d.getDate() + offset);
+    return d.toISOString().split('T')[0];
 }
 
 // Delete individual transaction
