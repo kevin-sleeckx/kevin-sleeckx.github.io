@@ -12,7 +12,8 @@ const LAST_VERSION_KEY = 'app_version';
 function updateVersionDisplay() {
     const versionInfo = document.getElementById('versionInfo');
     if (versionInfo) {
-        const lastUpdated = new Date().toISOString().split('T')[0];
+        const lastUpdatedDate = new Date();
+        const lastUpdated = `${lastUpdatedDate.getDate().toString().padStart(2, '0')}-${(lastUpdatedDate.getMonth() + 1).toString().padStart(2, '0')}-${lastUpdatedDate.getFullYear()}`;
         versionInfo.textContent = `Versie ${CURRENT_VERSION} – Laatst bijgewerkt: ${lastUpdated}`;
         console.log('[Version] Display updated to:', CURRENT_VERSION);
     }
