@@ -650,6 +650,9 @@ function showDayDetails(dateStr) {
                 switchTab('add');
                 document.getElementById('overtimeDate').value = dateStr;
                 closeDailyModal();
+                setTimeout(() => {
+                    document.getElementById('addTab').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
             };
         }
         if (takeBtn) {
@@ -657,6 +660,9 @@ function showDayDetails(dateStr) {
                 switchTab('take');
                 document.getElementById('takeDate').value = dateStr;
                 closeDailyModal();
+                setTimeout(() => {
+                    document.getElementById('takeTab').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
             };
         }
         if (orderBtn) {
@@ -664,6 +670,9 @@ function showDayDetails(dateStr) {
                 switchTab('order');
                 document.getElementById('orderDate').value = dateStr;
                 closeDailyModal();
+                setTimeout(() => {
+                    document.getElementById('orderTab').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
             };
         }
     }, 0);
