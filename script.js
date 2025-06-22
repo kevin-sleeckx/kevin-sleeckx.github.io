@@ -6,7 +6,7 @@ let employeeName = localStorage.getItem('employeeName') || '';
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.7.1';
+const CURRENT_VERSION = '1.6.5';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -53,29 +53,31 @@ async function checkVersion() {
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         console.log('[SW] Browser supports Service Workers');
+        
+        // Track if we're refreshing to avoid multiple refreshes
         let refreshing = false;
-        let manualUpdateInProgress = false; // Track if user requested update
 
-        // Only show notification, do not auto-refresh
+        // Set up message handler for refresh
         navigator.serviceWorker.addEventListener('message', (event) => {
             if (event.data.type === 'REFRESH_NEEDED') {
                 console.log('[SW] Refresh message received');
                 if (!refreshing) {
                     refreshing = true;
-                    showUpdateNotification();
+                    console.log('[SW] Triggering page reload...');
+                    window.location.reload(true);
                 }
             }
         });
 
-        // Prevent auto-refresh on controllerchange
+        // Set up the refresh handler before registering
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             console.log('[SW] Controller change event received');
-            if (manualUpdateInProgress) {
-                // Only reload if user explicitly requested update
-                window.location.reload();
-            } else {
-                // Do nothing, block auto-refresh
-                console.log('[SW] Controller change ignored (no manual update)');
+            if (!refreshing) {
+                refreshing = true;
+                console.log('[SW] Triggering page reload...');
+                setTimeout(() => {
+                    window.location.reload(true);
+                }, 100); // Small delay to ensure service worker is ready
             }
         });
 
@@ -140,22 +142,9 @@ function registerServiceWorker() {
     }
 }
 
-// Show developer message on load (example)
-document.addEventListener('DOMContentLoaded', function() {
-    const notification = document.getElementById('updateNotification');
-    if (notification) {
-        notification.innerHTML = `
-            <strong>ℹ️ Belangrijk bericht</strong>
-            <p>App update versie 1.7.1!</p>
-            <p>Toegevoegd: Kalenderknoppen, verbeterde configuratie, en meer...</p>
-            <button class="button" onclick="this.parentElement.style.display='none'">Sluiten</button>
-        `;
-        notification.style.display = 'flex';
-    }
-});
-
 // Update notification functions
 function showUpdateNotification() {
+    console.log('[Update] Showing update notification');
     const notification = document.getElementById('updateNotification');
     if (notification) {
         notification.style.display = 'flex';
@@ -163,6 +152,8 @@ function showUpdateNotification() {
 }
 
 function updateApp() {
+    console.log('[Update] Update button clicked');
+    
     // Hide the notification
     const notification = document.getElementById('updateNotification');
     if (notification) {
@@ -171,24 +162,36 @@ function updateApp() {
 
     // Get the registration and trigger update
     navigator.serviceWorker.getRegistration().then(async registration => {
+        console.log('[Update] Current registration state:', {
+            waiting: !!registration?.waiting,
+            active: !!registration?.active,
+            installing: !!registration?.installing
+        });
+
         if (registration && registration.waiting) {
             try {
-                // Clear the cache first
+                console.log('[Update] Found waiting worker, clearing caches...');
                 const cacheKeys = await caches.keys();
+                console.log('[Update] Found caches to clear:', cacheKeys);
                 await Promise.all(
-                    cacheKeys.map(key => caches.delete(key))
+                    cacheKeys.map(key => {
+                        console.log('[Update] Deleting cache:', key);
+                        return caches.delete(key);
+                    })
                 );
-                console.log('Cache cleared before update');
-                // Set manual update flag so only user action reloads
-                if (window.manualUpdateInProgress === undefined) {
-                    window.manualUpdateInProgress = true;
-                }
+                console.log('[Update] All caches cleared, sending skip waiting message');
+                
                 // Skip waiting on the service worker
                 registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                console.log('[Update] Skip waiting message sent');
             } catch (err) {
-                console.error('Error during update:', err);
+                console.error('[Update] Error during update:', err);
             }
+        } else {
+            console.log('[Update] No waiting worker found');
         }
+    }).catch(err => {
+        console.error('[Update] Error getting registration:', err);
     });
 }
 
@@ -338,6 +341,99 @@ async function init() {
     registerServiceWorker();
     handleURLParams();
     updateVersionDisplay();
+}
+
+// PWA Service Worker Registration
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        console.log('[SW] Browser supports Service Workers');
+        
+        // Track if we're refreshing to avoid multiple refreshes
+        let refreshing = false;
+
+        // Set up message handler for refresh
+        navigator.serviceWorker.addEventListener('message', (event) => {
+            if (event.data.type === 'REFRESH_NEEDED') {
+                console.log('[SW] Refresh message received');
+                if (!refreshing) {
+                    refreshing = true;
+                    console.log('[SW] Triggering page reload...');
+                    window.location.reload(true);
+                }
+            }
+        });
+
+        // Set up the refresh handler before registering
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            console.log('[SW] Controller change event received');
+            if (!refreshing) {
+                refreshing = true;
+                console.log('[SW] Triggering page reload...');
+                setTimeout(() => {
+                    window.location.reload(true);
+                }, 100); // Small delay to ensure service worker is ready
+            }
+        });
+
+        // Function to check for updates
+        function checkForUpdates(registration) {
+            if (registration.waiting) {
+                console.log('[SW] New version waiting to activate');
+                showUpdateNotification();
+                return;
+            }
+
+            registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                console.log('[SW] Update found, new worker state:', newWorker.state);
+                
+                newWorker.addEventListener('statechange', () => {
+                    console.log('[SW] New worker state changed to:', newWorker.state);
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        console.log('[SW] New version installed, showing notification');
+                        showUpdateNotification();
+                    }
+                });
+            });
+        }
+
+        // Register and check for updates
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+                console.log('[SW] Registration successful. Scope:', registration.scope);
+                
+                // Check for updates immediately
+                checkForUpdates(registration);
+
+                // Periodically check for updates (every 60 minutes)
+                setInterval(() => {
+                    console.log('[SW] Checking for updates...');
+                    registration.update().then(() => checkForUpdates(registration));
+                }, 60 * 60 * 1000);
+
+                // Show install button if app is installable
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    console.log('[Install] Install prompt event received');
+                    e.preventDefault();
+                    const installBtn = document.getElementById('installBtn');
+                    installBtn.style.display = 'block';
+                    installBtn.onclick = () => {
+                        e.prompt();
+                        e.userChoice.then((choiceResult) => {
+                            console.log('[Install] User choice:', choiceResult.outcome);
+                            if (choiceResult.outcome === 'accepted') {
+                                installBtn.style.display = 'none';
+                            }
+                        });
+                    };
+                });
+            })
+            .catch(error => {
+                console.error('[SW] Registration failed:', error);
+            });
+    } else {
+        console.log('[SW] Service Workers not supported');
+    }
 }
 
 function setDefaultDates() {
@@ -1283,3 +1379,38 @@ function exportToText() {
 
 // Initialize the app when page loads
 document.addEventListener('DOMContentLoaded', init);
+
+// Update notification functions
+function showUpdateNotification() {
+    const notification = document.getElementById('updateNotification');
+    if (notification) {
+        notification.style.display = 'flex';
+    }
+}
+
+function updateApp() {
+    // Hide the notification
+    const notification = document.getElementById('updateNotification');
+    if (notification) {
+        notification.style.display = 'none';
+    }
+
+    // Get the registration and trigger update
+    navigator.serviceWorker.getRegistration().then(async registration => {
+        if (registration && registration.waiting) {
+            try {
+                // Clear the cache first
+                const cacheKeys = await caches.keys();
+                await Promise.all(
+                    cacheKeys.map(key => caches.delete(key))
+                );
+                console.log('Cache cleared before update');
+                
+                // Skip waiting on the service worker
+                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            } catch (err) {
+                console.error('Error during update:', err);
+            }
+        }
+    });
+}
