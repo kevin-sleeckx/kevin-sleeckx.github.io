@@ -6,7 +6,7 @@ let employeeName = localStorage.getItem('employeeName') || '';
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.6.3';
+const CURRENT_VERSION = '1.6.4';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -639,6 +639,34 @@ function showDayDetails(dateStr) {
     }
     
     document.getElementById('dailyModal').style.display = 'block';
+
+    // Add event listeners for quick add buttons
+    setTimeout(() => {
+        const addBtn = document.getElementById('addOvertimeFromDayBtn');
+        const takeBtn = document.getElementById('takeOvertimeFromDayBtn');
+        const orderBtn = document.getElementById('addOrderFromDayBtn');
+        if (addBtn) {
+            addBtn.onclick = function() {
+                switchTab('add');
+                document.getElementById('overtimeDate').value = dateStr;
+                closeDailyModal();
+            };
+        }
+        if (takeBtn) {
+            takeBtn.onclick = function() {
+                switchTab('take');
+                document.getElementById('takeDate').value = dateStr;
+                closeDailyModal();
+            };
+        }
+        if (orderBtn) {
+            orderBtn.onclick = function() {
+                switchTab('order');
+                document.getElementById('orderDate').value = dateStr;
+                closeDailyModal();
+            };
+        }
+    }, 0);
 }
 
 // Delete individual transaction
