@@ -592,3 +592,27 @@ body {
 #dailyModal .modal-body .text-center.mt-3 button {
     color: #fff !important;
 }
+
+#dailyModal .modal-body .text-center.mt-3 .emoji-action-btn {
+    background: none;
+    border: none;
+    color: #495057;
+    font-size: 2.2rem;
+    margin: 0 10px;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, transform 0.1s;
+    border-radius: 50%;
+    box-shadow: none;
+    outline: none;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#dailyModal .modal-body .text-center.mt-3 .emoji-action-btn:hover {
+    background: #f0f0f0;
+    color: #222;
+    transform: scale(1.15);
+}
