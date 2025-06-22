@@ -6,7 +6,7 @@ let employeeName = localStorage.getItem('employeeName') || '';
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.7.0';
+const CURRENT_VERSION = '1.7.1';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -54,6 +54,7 @@ function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         console.log('[SW] Browser supports Service Workers');
         let refreshing = false;
+        let manualUpdateInProgress = false; // Track if user requested update
 
         // Only show notification, do not auto-refresh
         navigator.serviceWorker.addEventListener('message', (event) => {
@@ -66,10 +67,16 @@ function registerServiceWorker() {
             }
         });
 
-        // Remove auto-refresh on controllerchange
+        // Prevent auto-refresh on controllerchange
         navigator.serviceWorker.addEventListener('controllerchange', () => {
             console.log('[SW] Controller change event received');
-            // Do nothing, wait for user to click update
+            if (manualUpdateInProgress) {
+                // Only reload if user explicitly requested update
+                window.location.reload();
+            } else {
+                // Do nothing, block auto-refresh
+                console.log('[SW] Controller change ignored (no manual update)');
+            }
         });
 
         // Function to check for updates
@@ -139,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (notification) {
         notification.innerHTML = `
             <strong>ℹ️ Belangrijk bericht</strong>
-            <p>Welkom bij versie 1.7.0! 🎉</p>
+            <p>App update versie 1.7.1!</p>
             <p>Toegevoegd: Kalenderknoppen, verbeterde configuratie, en meer...</p>
             <button class="button" onclick="this.parentElement.style.display='none'">Sluiten</button>
         `;
@@ -172,7 +179,10 @@ function updateApp() {
                     cacheKeys.map(key => caches.delete(key))
                 );
                 console.log('Cache cleared before update');
-                
+                // Set manual update flag so only user action reloads
+                if (window.manualUpdateInProgress === undefined) {
+                    window.manualUpdateInProgress = true;
+                }
                 // Skip waiting on the service worker
                 registration.waiting.postMessage({ type: 'SKIP_WAITING' });
             } catch (err) {
