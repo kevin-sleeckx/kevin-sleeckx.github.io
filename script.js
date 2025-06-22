@@ -6,7 +6,7 @@ let employeeName = localStorage.getItem('employeeName') || '';
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.6.4';
+const CURRENT_VERSION = '1.6.5';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -645,13 +645,14 @@ function showDayDetails(dateStr) {
         const addBtn = document.getElementById('addOvertimeFromDayBtn');
         const takeBtn = document.getElementById('takeOvertimeFromDayBtn');
         const orderBtn = document.getElementById('addOrderFromDayBtn');
+        const tabNav = document.querySelector('.tab-navigation');
         if (addBtn) {
             addBtn.onclick = function() {
                 switchTab('add');
                 document.getElementById('overtimeDate').value = dateStr;
                 closeDailyModal();
                 setTimeout(() => {
-                    document.getElementById('addTab').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (tabNav) tabNav.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
             };
         }
@@ -661,7 +662,7 @@ function showDayDetails(dateStr) {
                 document.getElementById('takeDate').value = dateStr;
                 closeDailyModal();
                 setTimeout(() => {
-                    document.getElementById('takeTab').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (tabNav) tabNav.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
             };
         }
@@ -671,7 +672,7 @@ function showDayDetails(dateStr) {
                 document.getElementById('orderDate').value = dateStr;
                 closeDailyModal();
                 setTimeout(() => {
-                    document.getElementById('orderTab').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    if (tabNav) tabNav.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
             };
         }
