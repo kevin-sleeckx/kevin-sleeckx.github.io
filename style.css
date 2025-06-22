@@ -588,3 +588,7 @@ body {
         opacity: 1;
     }
 }
+
+#dailyModal .modal-body .text-center.mt-3 button {
+    color: #fff !important;
+}
