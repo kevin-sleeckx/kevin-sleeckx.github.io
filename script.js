@@ -6,7 +6,7 @@ let employeeName = localStorage.getItem('employeeName') || '';
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.7.3';
+const CURRENT_VERSION = '1.7.4';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -299,7 +299,7 @@ const earnMultipliers = {
     vroege: 1.55, // +55%
     late: 1.65,  // +65%
     nacht: 2.0,   // +100%
-    feestdag: 3.0 // +200%
+    feestdag: 2.5 // +150%
 };
 
 // Additional deduction multipliers for taking overtime
