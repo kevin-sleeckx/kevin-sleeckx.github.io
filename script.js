@@ -6,7 +6,7 @@ let employeeName = localStorage.getItem('employeeName') || '';
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.7.4';
+const CURRENT_VERSION = '1.7.5';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
