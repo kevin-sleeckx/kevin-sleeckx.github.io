@@ -85,6 +85,11 @@
                     </small>
                 </div>
                 <button class="button success" onclick="saveDailyWage()">Dagloon Opslaan</button>
+                <!-- Toon Berekening Checkbox -->
+                <div class="form-group" style="margin-top: 25px; display: flex; align-items: center;">
+                    <input type="checkbox" id="showCalcCheckbox" checked onchange="toggleShowCalculations()" style="margin-right: 10px; width: 18px; height: 18px;">
+                    <label for="showCalcCheckbox" style="margin: 0; font-size: 1em; cursor: pointer;">Toon berekening bij toevoegen/opnemen</label>
+                </div>
             </div>
         </div>
 
@@ -95,10 +100,6 @@
                     <button class="tab-button tab-add active" onclick="switchTab('add')">➕</button>
                     <button class="tab-button tab-take" onclick="switchTab('take')">➖</button>
                     <button class="tab-button tab-order" onclick="switchTab('order')">🛒</button>
-                </div>
-                <div style="margin: 10px 0 20px 0;">
-                    <input type="checkbox" id="showCalcCheckbox" checked onchange="toggleShowCalculations()">
-                    <label for="showCalcCheckbox">Toon berekening bij toevoegen/opnemen</label>
                 </div>
 
                 <!-- Add Overtime Tab -->
@@ -238,7 +239,7 @@
                 <p class="small-text mt-2">
                     💡 <strong>Hoe over te dragen:</strong> 1) Genereer export bestand 2) Stuur bestand via email (bvb naar uzelf) 3) Op nieuw apparaat importeer het bestand 4) Alle uw gegevens zijn overgedragen!
                 </p>
-                <button class="button danger" onclick="clearAllData()">🗑️ Alle Gegevens Wissen</button>
+                <button class="button danger" onclick="clearAllData()" style="margin-top: 12px;">🗑️ Alle Gegevens Wissen</button>
             </div>
         </div>
     </div>
@@ -250,7 +251,6 @@
                 <button id="prevDayBtn" class="emoji-action-btn" style="margin-right: 10px; font-size: 1.5em; background: none; border: none;" title="Vorige dag">⬅️</button>
                 <h2 id="modalDate" style="flex: 1; text-align: center; margin: 0;">Dagelijkse Transacties</h2>
                 <button id="nextDayBtn" class="emoji-action-btn" style="margin-left: 10px; font-size: 1.5em; background: none; border: none;" title="Volgende dag">➡️</button>
-                <button class="close" onclick="closeDailyModal()" style="position: absolute; top: 10px; right: 10px; font-size: 2em; background: none; border: none; cursor: pointer;">✖️</button>
             </div>
             <div class="modal-body">
                 <div id="dailyTransactions">
@@ -263,6 +263,9 @@
                     <button class="emoji-action-btn" id="addOvertimeFromDayBtn" title="Overuren Toevoegen">➕</button>
                     <button class="emoji-action-btn" id="takeOvertimeFromDayBtn" title="Overuren Opnemen">➖</button>
                     <button class="emoji-action-btn" id="addOrderFromDayBtn" title="Bestelling Toevoegen">🛒</button>
+                </div>
+                <div class="text-center mt-4">
+                    <button class="button danger" onclick="closeDailyModal()" style="min-width: 120px;">Sluiten</button>
                 </div>
             </div>
         </div>
