@@ -6,7 +6,7 @@ let employeeName = localStorage.getItem('employeeName') || '';
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.7.5';
+const CURRENT_VERSION = '1.7.6';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -812,16 +812,27 @@ function calculateDeduction(hours, shiftType) {
     return hourlyRate * hours * multiplier;
 }
 
+// Calculation preview toggle
+let showCalculations = true;
+function toggleShowCalculations() {
+    showCalculations = document.getElementById('showCalcCheckbox').checked;
+    updateEarnPreview();
+    updateTakePreview();
+}
+
+// Patch preview functions to respect toggle
 function updateEarnPreview() {
     const actualHours = getOvertimeHours();
     const shiftType = document.getElementById('shiftType').value;
-    
+    if (!showCalculations) {
+        document.getElementById('earnPreview').style.display = 'none';
+        return;
+    }
     if (actualHours && actualHours > 0 && dailyWage > 0) {
         const earnings = calculateEarnings(actualHours, shiftType);
         const hourlyRate = dailyWage / 7.25;
         const multiplier = earnMultipliers[shiftType];
         const percentage = ((multiplier - 1) * 100).toFixed(0);
-        
         document.getElementById('earnCalculation').innerHTML = `
             <div>Dagloon: €${dailyWage.toFixed(2).replace('.', ',')}</div>
             <div>Uurloon: €${dailyWage.toFixed(2).replace('.', ',')} ÷ 7,25 = €${hourlyRate.toFixed(2).replace('.', ',')}</div>
@@ -836,24 +847,23 @@ function updateEarnPreview() {
 function updateTakePreview() {
     const actualHours = getTakeHours();
     const shiftType = document.getElementById('takeShiftType').value;
-    
+    if (!showCalculations) {
+        document.getElementById('takePreview').style.display = 'none';
+        return;
+    }
     if (actualHours && actualHours > 0 && dailyWage > 0) {
         const deduction = calculateDeduction(actualHours, shiftType);
         const hourlyRate = dailyWage / 7.25;
         const multiplier = takeMultipliers[shiftType];
         const percentage = ((multiplier - 1) * 100).toFixed(0);
-        
         let calculationText = `
             <div>Dagloon: €${dailyWage.toFixed(2).replace('.', ',')}</div>
             <div>Basis Uurloon: €${dailyWage.toFixed(2).replace('.', ',')} ÷ 7,25 = €${hourlyRate.toFixed(2).replace('.', ',')}</div>
         `;
-        
         if (multiplier > 1) {
             calculationText += `<div>Opname Tarief: €${hourlyRate.toFixed(2).replace('.', ',')} × ${multiplier} (+${percentage}% extra) = €${(hourlyRate * multiplier).toFixed(2).replace('.', ',')}</div>`;
         }
-        
         calculationText += `<div>Aftrekking: ${actualHours} uur × €${(hourlyRate * multiplier).toFixed(2).replace('.', ',')} = <strong>-€${deduction.toFixed(2).replace('.', ',')}</strong></div>`;
-        
         document.getElementById('takeCalculation').innerHTML = calculationText;
         document.getElementById('takePreview').style.display = 'block';
     } else {
@@ -1427,5 +1437,20 @@ function updateApp() {
                 console.error('Error during update:', err);
             }
         }
+    });
+}
+
+// Enable editing of daily wage
+function enableDailyWageEdit() {
+    var input = document.getElementById('dailyWage');
+    input.readOnly = false;
+    input.style.filter = 'none';
+    input.focus();
+    document.getElementById('editDailyWageBtn').style.display = 'none';
+    input.addEventListener('blur', function handler() {
+        input.readOnly = true;
+        input.style.filter = 'blur(6px)';
+        document.getElementById('editDailyWageBtn').style.display = '';
+        input.removeEventListener('blur', handler);
     });
 }

@@ -76,7 +76,10 @@
                 <!-- Dagloon -->
                 <div class="form-group" style="margin-top: 25px;">
                     <label for="dailyWage">Dagloon (€)</label>
-                    <input type="number" id="dailyWage" step="0.01" placeholder="Voer uw dagloon in">
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <input type="number" id="dailyWage" step="0.01" placeholder="Voer uw dagloon in" style="filter: blur(6px); transition: filter 0.2s;" readonly>
+                        <button type="button" id="editDailyWageBtn" class="button" style="position: absolute; right: 0; height: 100%; padding: 0 10px; font-size: 14px;" onclick="enableDailyWageEdit()">Wijzig</button>
+                    </div>
                     <small class="small-text mt-1">
                         Privé - alleen gebruikt voor berekeningen, niet gedeeld in exports
                     </small>
@@ -92,6 +95,10 @@
                     <button class="tab-button tab-add active" onclick="switchTab('add')">➕</button>
                     <button class="tab-button tab-take" onclick="switchTab('take')">➖</button>
                     <button class="tab-button tab-order" onclick="switchTab('order')">🛒</button>
+                </div>
+                <div style="margin: 10px 0 20px 0;">
+                    <input type="checkbox" id="showCalcCheckbox" checked onchange="toggleShowCalculations()">
+                    <label for="showCalcCheckbox">Toon berekening bij toevoegen/opnemen</label>
                 </div>
 
                 <!-- Add Overtime Tab -->
@@ -239,11 +246,11 @@
     <!-- Dagelijkse Detail Modal -->
     <div id="dailyModal" class="modal">
         <div class="modal-content">
-            <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; position: relative;">
-                <button id="prevDayBtn" class="emoji-action-btn" style="margin-right: 10px;" title="Vorige dag">&#8592;</button>
-                <span class="close" onclick="closeDailyModal()" style="position: absolute; right: 50%; transform: translateX(50%); top: 18px; font-size: 28px; cursor: pointer;">&times;</span>
+            <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; position: relative; gap: 0.5em;">
+                <button id="prevDayBtn" class="emoji-action-btn" style="margin-right: 10px; font-size: 1.5em; background: none; border: none;" title="Vorige dag">⬅️</button>
                 <h2 id="modalDate" style="flex: 1; text-align: center; margin: 0;">Dagelijkse Transacties</h2>
-                <button id="nextDayBtn" class="emoji-action-btn" style="margin-left: 10px;" title="Volgende dag">&#8594;</button>
+                <button id="nextDayBtn" class="emoji-action-btn" style="margin-left: 10px; font-size: 1.5em; background: none; border: none;" title="Volgende dag">➡️</button>
+                <button class="close" onclick="closeDailyModal()" style="position: absolute; top: 10px; right: 10px; font-size: 2em; background: none; border: none; cursor: pointer;">✖️</button>
             </div>
             <div class="modal-body">
                 <div id="dailyTransactions">
