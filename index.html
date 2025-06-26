@@ -12,23 +12,23 @@
     <meta name="apple-mobile-web-app-title" content="Overuren Logger">
     <meta name="description" content="Professionele overuren bijhouden met kalender weergave en PDF export">
     
-    <!-- PWA Icons -->
+    <!-- PWA Iconen -->
     <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
     <link rel="apple-touch-icon" href="icon-192.png">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
     
-    <!-- Stylesheets -->
+    <!-- Stijlen -->
     <link rel="stylesheet" href="style.css">
     
-    <!-- PDF Libraries -->
+    <!-- PDF Bibliotheken -->
     <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
     <script src="https://unpkg.com/jspdf-autotable@latest/dist/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <!-- Update Notification (hidden by default) -->
+        <!-- Update Notificatie (standaard verborgen) -->
         <div id="updateNotification" class="update-notification" style="display: none;">
             <strong>📦 Nieuwe versie beschikbaar!</strong>
             <p>Er is een nieuwe versie van de app beschikbaar.</p>
@@ -51,7 +51,7 @@
             <div>Totaal Saldo: €<span id="totalAmount">0,00</span></div>
         </div>
 
-        <!-- Configuratie (Collapsible) -->
+        <!-- Configuratie (Inklapbaar) -->
         <div class="section">
             <button class="button" id="toggleConfigBtn" onclick="toggleConfigSection()">⚙️ Configuratie Opties</button>
             <div id="configSection" style="display: none; margin-top: 20px;">
@@ -65,11 +65,11 @@
                 </div>
                 <button class="button success" onclick="saveEmployeeName()">Naam Opslaan</button>
                 <!-- Start Bedrag -->
-                <div class="form-group" style="margin-top: 25px";>
+                <div class="form-group" style="margin-top: 25px;">
                     <label for="startingAmount">Start Bedrag (€)</label>
                     <input type="number" id="startingAmount" step="0.01" placeholder="Voer uw start overuren saldo in">
                     <small class="small-text mt-1">
-                        Het bedrag dat u had voordat u deze app begon te gebruiken
+                        Het bedrag dat u had voordat u deze app begon te gebruiken.
                     </small>
                 </div>
                 <button class="button success" onclick="saveStartingAmount()">Start Bedrag Opslaan</button>
@@ -81,7 +81,7 @@
                         <button type="button" id="editDailyWageBtn" class="button" style="position: absolute; right: 0; height: 100%; padding: 0 10px; font-size: 14px;" onclick="enableDailyWageEdit()">Wijzig</button>
                     </div>
                     <small class="small-text mt-1">
-                        Privé - alleen gebruikt voor berekeningen, niet gedeeld in exports
+                        Privé - alleen gebruikt voor berekeningen, niet gedeeld in exports. Eerst wijzigen, dan opslaan.
                     </small>
                 </div>
                 <button class="button success" onclick="saveDailyWage()">Dagloon Opslaan</button>
@@ -93,7 +93,7 @@
             </div>
         </div>
 
-        <!-- Tabbed Logging Interface -->
+        <!-- Tabblad Logging Interface -->
         <div class="section">
             <div class="tabs-container">
                 <div class="tab-navigation">
@@ -102,7 +102,7 @@
                     <button class="tab-button tab-order" onclick="switchTab('order')">🛒</button>
                 </div>
 
-                <!-- Add Overtime Tab -->
+                <!-- Tab Overuren Toevoegen -->
                 <div id="addTab" class="tab-content active">
                     <div class="form-row">
                         <div class="form-group">
@@ -141,7 +141,7 @@
                     <button class="button success" onclick="addOvertime()">Overuren Toevoegen</button>
                 </div>
 
-                <!-- Take Overtime Tab -->
+                <!-- Tab Overuren Opnemen -->
                 <div id="takeTab" class="tab-content">
                     <div class="form-row">
                         <div class="form-group">
@@ -179,7 +179,7 @@
                     <button class="button danger" onclick="takeOvertime()">Overuren Opnemen</button>
                 </div>
 
-                <!-- Order Tab -->
+                <!-- Tab Bestelling -->
                 <div id="orderTab" class="tab-content">
                     <div class="form-row">
                         <div class="form-group">
@@ -280,7 +280,7 @@
       </div>
     </div>
 
-    <!-- Version Display -->
+    <!-- Versie Weergave -->
     <div class="version-display">
         <span id="versionInfo"></span>
     </div>

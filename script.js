@@ -6,7 +6,7 @@ let employeeName = localStorage.getItem('employeeName') || '';
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.7.8';
+const CURRENT_VERSION = '1.7.9';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -1457,8 +1457,8 @@ function enableDailyWageEdit() {
 
  
     // --- Developer Message Modal Logic ---
-    const DEV_MESSAGE_VERSION = '1.7.8'; // Update this with each release
-    const DEV_MESSAGE = 'Welkom bij versie 1.7.8! Je ziet dit bericht omdat de app is bijgewerkt. Nieuwe functies: verbeterde modale knoppen bij kalenderdagen, configuratie-opties en meer!'; // Change this message as needed
+    const DEV_MESSAGE_VERSION = '1.7.9'; // Update this with each release
+    const DEV_MESSAGE = 'Welkom bij versie 1.7.9! Je ziet dit bericht omdat de app is bijgewerkt. Nieuwe functies: verbeterde modale knoppen bij kalenderdagen, configuratie-opties en meer!'; // Change this message as needed
 
     function showDevMessageIfNeeded() {
       try {

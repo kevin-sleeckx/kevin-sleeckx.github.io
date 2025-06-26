@@ -1,4 +1,4 @@
-const APP_VERSION = '1.7.8';  // Update this to force cache refresh
+const APP_VERSION = '1.7.9';  // Update this to force cache refresh
 const CACHE_NAME = `overtime-logger-v${APP_VERSION}`;
 console.log('[SW] Service Worker script loaded, version:', APP_VERSION);
 
