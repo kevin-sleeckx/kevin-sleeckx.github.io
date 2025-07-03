@@ -99,7 +99,7 @@
                 <div class="tab-navigation">
                     <button class="tab-button tab-add active" onclick="switchTab('add')">➕</button>
                     <button class="tab-button tab-take" onclick="switchTab('take')">➖</button>
-                    <button class="tab-button tab-order" onclick="switchTab('order')">🛒</button>
+                    <button class="tab-button tab-adjustment" onclick="switchTab('adjustment')">⚖️</button>
                 </div>
 
                 <!-- Tab Overuren Toevoegen -->
@@ -179,23 +179,32 @@
                     <button class="button danger" onclick="takeOvertime()">Overuren Opnemen</button>
                 </div>
 
-                <!-- Tab Bestelling -->
-                <div id="orderTab" class="tab-content">
+                <!-- Tab Correctie/Aanpassing -->
+                <div id="adjustmentTab" class="tab-content">
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="orderDate">Datum</label>
-                            <input type="date" id="orderDate">
+                            <label for="adjustmentDate">Datum</label>
+                            <input type="date" id="adjustmentDate">
                         </div>
                         <div class="form-group">
-                            <label for="orderAmount">Bedrag (€)</label>
-                            <input type="number" id="orderAmount" step="0.01" placeholder="Voer bedrag in">
+                            <label for="adjustmentType">Type</label>
+                            <select id="adjustmentType">
+                                <option value="positive">Positief (+)</option>
+                                <option value="negative">Negatief (−)</option>
+                            </select>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="orderDescription">Beschrijving (Optioneel)</label>
-                        <input type="text" id="orderDescription" placeholder="Wat heeft u besteld?">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="adjustmentAmount">Bedrag (€)</label>
+                            <input type="number" id="adjustmentAmount" step="0.01" placeholder="Voer bedrag in">
+                        </div>
+                        <div class="form-group">
+                            <label for="adjustmentDescription">Beschrijving</label>
+                            <input type="text" id="adjustmentDescription" placeholder="Reden van aanpassing">
+                        </div>
                     </div>
-                    <button class="button danger" onclick="addOrder()">Bestelling Toevoegen</button>
+                    <button class="button success" onclick="addAdjustment()">Aanpassing Toevoegen</button>
                 </div>
             </div>
         </div>
@@ -262,7 +271,7 @@
                 <div class="text-center mt-3">
                     <button class="emoji-action-btn" id="addOvertimeFromDayBtn" title="Overuren Toevoegen">➕</button>
                     <button class="emoji-action-btn" id="takeOvertimeFromDayBtn" title="Overuren Opnemen">➖</button>
-                    <button class="emoji-action-btn" id="addOrderFromDayBtn" title="Bestelling Toevoegen">🛒</button>
+                    <button class="emoji-action-btn" id="addOrderFromDayBtn" title="Bestelling Toevoegen">⚖️</button>
                 </div>
                 <div class="text-center mt-4">
                     <button class="button danger" onclick="closeDailyModal()" style="min-width: 120px; margin-top: 16px;">Sluiten</button>

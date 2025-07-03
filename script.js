@@ -1,3 +1,15 @@
+// Helper to convert decimal hours to "X uur Y min" format
+function decimalToHoursMinutes(decimal) {
+    if (typeof decimal !== 'number' || isNaN(decimal)) return '';
+    const abs = Math.abs(decimal);
+    const hours = Math.floor(abs);
+    const minutes = Math.round((abs - hours) * 60);
+    let result = '';
+    if (hours > 0) result += hours + 'u';
+    if (minutes > 0) result += (hours > 0 ? ' ' : '') + minutes + 'm';
+    if (result === '') result = '0m';
+    return result;
+}
 // Core data management
 let dailyWage = parseFloat(localStorage.getItem('dailyWage')) || 0;
 let startingAmount = parseFloat(localStorage.getItem('startingAmount')) || 0;
@@ -6,7 +18,7 @@ let employeeName = localStorage.getItem('employeeName') || '';
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.7.9';
+const CURRENT_VERSION = '1.7.10';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -226,8 +238,8 @@ function handleURLParams() {
             case 'take':
                 switchTab('take');
                 break;
-            case 'order':
-                switchTab('order');
+            case 'adjustment':
+                switchTab('adjustment');
                 break;
         }
     }
@@ -431,7 +443,7 @@ function setDefaultDates() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('overtimeDate').value = today;
     document.getElementById('takeDate').value = today;
-    document.getElementById('orderDate').value = today;
+    document.getElementById('adjustmentDate').value = today;
 }
 
 // Starting Amount Management
@@ -605,7 +617,11 @@ function showDayDetails(dateStr) {
             const isPositive = transaction.amount > 0;
             const shiftBadge = transaction.shiftType ? 
                 `<span class="shift-badge ${transaction.shiftType}">${transaction.shiftType}</span>` : '';
-            
+            // Show hours/minutes if present, else show amount
+            let extraInfo = '';
+            if (typeof transaction.hours === 'number' && !isNaN(transaction.hours)) {
+                extraInfo = `<span style=\"margin-left:8px; color:#888; font-size:0.95em;\">(${decimalToHoursMinutes(transaction.hours)})</span>`;
+            }
             return `
                 <div class="daily-transaction ${isPositive ? 'positive' : 'negative'}">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -616,6 +632,7 @@ function showDayDetails(dateStr) {
                                 <span style="margin-left: 10px; font-weight: bold;" class="${isPositive ? 'positive-amount' : 'negative-amount'}">
                                     ${isPositive ? '+' : ''}€${Math.abs(transaction.amount).toFixed(2).replace('.', ',')}
                                 </span>
+                                ${extraInfo}
                             </div>
                         </div>
                         <button class="button danger" style="padding: 6px 12px; font-size: 12px; margin-left: 12px;" 
@@ -635,7 +652,7 @@ function showDayDetails(dateStr) {
     setTimeout(() => {
         const addBtn = document.getElementById('addOvertimeFromDayBtn');
         const takeBtn = document.getElementById('takeOvertimeFromDayBtn');
-        const orderBtn = document.getElementById('addOrderFromDayBtn');
+        const adjustmentBtn = document.getElementById('addOrderFromDayBtn');
         const tabNav = document.querySelector('.tab-navigation');
         if (addBtn) {
             addBtn.onclick = function() {
@@ -657,10 +674,10 @@ function showDayDetails(dateStr) {
                 }, 100);
             };
         }
-        if (orderBtn) {
-            orderBtn.onclick = function() {
-                switchTab('order');
-                document.getElementById('orderDate').value = dateStr;
+        if (adjustmentBtn) {
+            adjustmentBtn.onclick = function() {
+                switchTab('adjustment');
+                document.getElementById('adjustmentDate').value = dateStr;
                 closeDailyModal();
                 setTimeout(() => {
                     if (tabNav) tabNav.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -962,34 +979,31 @@ function takeOvertime() {
     alert(`€${deduction.toFixed(2).replace('.', ',')} afgetrokken van uw saldo!`);
 }
 
-function addOrder() {
-    const date = document.getElementById('orderDate').value;
-    const amount = parseFloat(document.getElementById('orderAmount').value);
-    const description = document.getElementById('orderDescription').value || 'Bestelling';
-    
-    if (!date || amount <= 0) {
-        alert('Vul datum en bedrag in');
+function addAdjustment() {
+    const date = document.getElementById('adjustmentDate').value;
+    const type = document.getElementById('adjustmentType').value;
+    const amount = parseFloat(document.getElementById('adjustmentAmount').value);
+    const description = document.getElementById('adjustmentDescription').value || 'Aanpassing';
+    if (!date || isNaN(amount) || amount <= 0) {
+        alert('Vul datum en een positief bedrag in');
         return;
     }
-    
+    const signedAmount = type === 'positive' ? amount : -amount;
     const transaction = {
         id: Date.now(),
-        type: 'order',
+        type: 'adjustment',
         date: date,
-        amount: -amount,
+        amount: signedAmount,
         description: description
     };
-    
     transactions.unshift(transaction);
     saveTransactions();
     updateTotalDisplay();
     renderCalendar();
-    
     // Reset form
-    document.getElementById('orderAmount').value = '';
-    document.getElementById('orderDescription').value = '';
-    
-    alert(`€${amount.toFixed(2).replace('.', ',')} afgetrokken voor: ${description}`);
+    document.getElementById('adjustmentAmount').value = '';
+    document.getElementById('adjustmentDescription').value = '';
+    alert(`€${Math.abs(amount).toFixed(2).replace('.', ',')} ${(type === 'positive' ? 'toegevoegd' : 'afgetrokken')} (${description})`);
 }
 
 function saveTransactions() {
@@ -1081,33 +1095,41 @@ async function exportToPDF() {
         
         // Prepare table data with all transactions and weekly summaries
         const tableData = [];
-        
         weeklyGroups.forEach((weekData, weekIndex) => {
             // Add spacing before each week (except the first one)
             if (weekIndex > 0) {
                 tableData.push(['', '', '', '']);
             }
-            
             // Add all transactions for this week
             weekData.transactions.forEach(t => {
+                let beschrijving = '';
+                if (t.type === 'overtime' || t.type === 'take') {
+                    const uren = (typeof t.hours === 'number' && !isNaN(t.hours)) ? decimalToHoursMinutes(t.hours) : '';
+                    const actie = t.type === 'overtime' ? 'toegevoegd' : 'opgenomen';
+                    beschrijving = `${uren ? uren + ' ' : ''}${actie}`;
+                } else if (t.type === 'adjustment') {
+                    beschrijving = t.description;
+                } else {
+                    beschrijving = t.description;
+                }
+                // Format amount with sign, space, and euro symbol
+                let amountStr = '';
+                if (t.amount > 0) {
+                    amountStr = `+ ${t.amount.toFixed(2).replace('.', ',')} €`;
+                } else {
+                    amountStr = `- ${Math.abs(t.amount).toFixed(2).replace('.', ',')} €`;
+                }
                 tableData.push([
                     new Date(t.date).toLocaleDateString('nl-NL'),
-                    t.description,
+                    beschrijving,
                     t.shiftType || '-',
-                    `€${t.amount.toFixed(2).replace('.', ',')}`
+                    amountStr
                 ]);
             });
-            
             // Add weekly summary row - using ISO week year
             const weekSummaryText = `Week ${weekData.weekNumber} (${weekData.year}) - Totaal`;
-            const weekTotalFormatted = `€${weekData.total.toFixed(2).replace('.', ',')}`;
-            
-            tableData.push([
-                '',
-                weekSummaryText,
-                '',
-                weekTotalFormatted
-            ]);
+            const weekTotalFormatted = (weekData.total >= 0 ? '+ ' : '- ') + `${Math.abs(weekData.total).toFixed(2).replace('.', ',')} €`;
+            tableData.push(['', weekSummaryText, '', weekTotalFormatted]);
         });
         
         doc.autoTable({
@@ -1118,33 +1140,52 @@ async function exportToPDF() {
             styles: { fontSize: 9 },
             headStyles: { fillColor: [108, 117, 125] }, // Gray header (#6c757d)
             columnStyles: {
-                3: { 
+                3: {
                     textColor: function(data) {
-                        return parseFloat(data.cell.text[0].replace('€', '').replace(',', '.')) >= 0 ? [76, 175, 80] : [244, 67, 54]; // #4CAF50 and #F44336
+                        // Always parse the numeric value for color logic
+                        let val = data.cell.text[0];
+                        let num = parseFloat(val.replace(/[^\d,\.-]/g, '').replace(',', '.'));
+                        if (val.trim().startsWith('-')) num = -Math.abs(num);
+                        if (val.trim().startsWith('+')) num = Math.abs(num);
+                        if (num > 0) return [34, 139, 34]; // soft green
+                        if (num < 0) return [220, 53, 69]; // soft red
+                        return [0, 0, 0];
                     }
                 }
             },
             didParseCell: function(data) {
-                // Style weekly summary rows
-                if (data.row.raw[1] && data.row.raw[1].includes('Week ') && data.row.raw[1].includes('Totaal')) {
-                    data.cell.styles.fillColor = [173, 216, 230]; // Light blue background
-                    data.cell.styles.fontStyle = 'bold';
-                    data.cell.styles.fontSize = 10;
-                    
-                    // Special styling for the total amount column
-                    if (data.column.index === 3) {
-                        const amount = parseFloat(data.cell.text[0].replace('€', '').replace(',', '.'));
-                        data.cell.styles.textColor = amount >= 0 ? [76, 175, 80] : [244, 67, 54]; // #4CAF50 and #F44336
-                        data.cell.styles.fontStyle = 'bold';
-                    }
-                }
-                
                 // Style empty spacing rows
                 if (data.row.raw[0] === '' && data.row.raw[1] === '' && data.row.raw[2] === '' && data.row.raw[3] === '') {
                     data.cell.styles.minCellHeight = 8; // Add height for spacing
                     data.cell.styles.fillColor = [255, 255, 255]; // White background
                     data.cell.styles.lineColor = [255, 255, 255]; // Hide borders
                     data.cell.styles.lineWidth = 0; // No border
+                    return;
+                }
+                // Style weekly summary rows
+                if (data.row.raw[1] && data.row.raw[1].includes('Week ') && data.row.raw[1].includes('Totaal')) {
+                    data.cell.styles.fillColor = [173, 216, 230]; // Light blue background
+                    data.cell.styles.fontStyle = 'bold';
+                    data.cell.styles.fontSize = 10;
+                    // Special styling for the total amount column
+                    if (data.column.index === 3) {
+                        let val = data.cell.text[0];
+                        let num = parseFloat(val.replace(/[^\d,\.-]/g, '').replace(',', '.'));
+                        if (val.trim().startsWith('-')) num = -Math.abs(num);
+                        if (val.trim().startsWith('+')) num = Math.abs(num);
+                        data.cell.styles.textColor = num >= 0 ? [34, 139, 34] : [220, 53, 69];
+                        data.cell.styles.fontStyle = 'bold';
+                    }
+                    return;
+                }
+                // Style amount column for all normal rows
+                if (data.column.index === 3) {
+                    let val = data.cell.text[0];
+                    let num = parseFloat(val.replace(/[^\d,\.-]/g, '').replace(',', '.'));
+                    if (val.trim().startsWith('-')) num = -Math.abs(num);
+                    if (val.trim().startsWith('+')) num = Math.abs(num);
+                    if (num > 0) data.cell.styles.textColor = [34, 139, 34];
+                    else if (num < 0) data.cell.styles.textColor = [220, 53, 69];
                 }
             },
             margin: { left: 20, right: 20 }
@@ -1205,18 +1246,37 @@ function exportCurrentWeekToPDF() {
         // Sort by date descending
         const sortedTransactions = [...filteredTransactions].sort((a, b) => new Date(b.date) - new Date(a.date));
         // Prepare table data
-        const tableData = sortedTransactions.map(t => [
-            new Date(t.date).toLocaleDateString('nl-NL'),
-            t.description,
-            t.shiftType || '-',
-            `€${t.amount.toFixed(2).replace('.', ',')}`
-        ]);
+        const tableData = sortedTransactions.map(t => {
+            let beschrijving = '';
+            if (t.type === 'overtime' || t.type === 'take') {
+                const uren = (typeof t.hours === 'number' && !isNaN(t.hours)) ? decimalToHoursMinutes(t.hours) : '';
+                const actie = t.type === 'overtime' ? 'toegevoegd' : 'opgenomen';
+                beschrijving = `${uren ? uren + ' ' : ''}${actie}`;
+            } else if (t.type === 'adjustment') {
+                beschrijving = t.description;
+            } else {
+                beschrijving = t.description;
+            }
+            let amountStr = '';
+            if (t.amount > 0) {
+                amountStr = `+ ${t.amount.toFixed(2).replace('.', ',')} €`;
+            } else {
+                amountStr = `- ${Math.abs(t.amount).toFixed(2).replace('.', ',')} €`;
+            }
+            return [
+                new Date(t.date).toLocaleDateString('nl-NL'),
+                beschrijving,
+                t.shiftType || '-',
+                amountStr
+            ];
+        });
         // Add summary row for the week
+        const weekTotalFormatted = (transactionTotal >= 0 ? '+ ' : '- ') + `${Math.abs(transactionTotal).toFixed(2).replace('.', ',')} €`;
         tableData.push([
             '',
             `Week ${currentWeek} (${currentYear}) - Totaal`,
             '',
-            `€${transactionTotal.toFixed(2).replace('.', ',')}`
+            weekTotalFormatted
         ]);
         doc.autoTable({
             startY: yPosition,
@@ -1228,21 +1288,41 @@ function exportCurrentWeekToPDF() {
             columnStyles: {
                 3: {
                     textColor: function(data) {
-                        return parseFloat(data.cell.text[0].replace('€', '').replace(',', '.')) >= 0 ? [76, 175, 80] : [244, 67, 54];
+                        // Always parse the numeric value for color logic
+                        let val = data.cell.text[0];
+                        let num = parseFloat(val.replace(/[^\d,\.-]/g, '').replace(',', '.'));
+                        if (val.trim().startsWith('-')) num = -Math.abs(num);
+                        if (val.trim().startsWith('+')) num = Math.abs(num);
+                        if (num > 0) return [34, 139, 34]; // soft green
+                        if (num < 0) return [220, 53, 69]; // soft red
+                        return [0, 0, 0];
                     }
                 }
             },
             didParseCell: function(data) {
-                // Style weekly summary row
+                // Style weekly summary row (last row)
                 if (data.row.index === tableData.length - 1) {
                     data.cell.styles.fillColor = [173, 216, 230]; // Light blue background
                     data.cell.styles.fontStyle = 'bold';
                     data.cell.styles.fontSize = 10;
                     if (data.column.index === 3) {
-                        const amount = parseFloat(data.cell.text[0].replace('€', '').replace(',', '.'));
-                        data.cell.styles.textColor = amount >= 0 ? [76, 175, 80] : [244, 67, 54];
+                        let val = data.cell.text[0];
+                        let num = parseFloat(val.replace(/[^\d,\.-]/g, '').replace(',', '.'));
+                        if (val.trim().startsWith('-')) num = -Math.abs(num);
+                        if (val.trim().startsWith('+')) num = Math.abs(num);
+                        data.cell.styles.textColor = num >= 0 ? [34, 139, 34] : [220, 53, 69];
                         data.cell.styles.fontStyle = 'bold';
                     }
+                    return;
+                }
+                // Style amount column for all normal rows
+                if (data.column.index === 3) {
+                    let val = data.cell.text[0];
+                    let num = parseFloat(val.replace(/[^\d,\.-]/g, '').replace(',', '.'));
+                    if (val.trim().startsWith('-')) num = -Math.abs(num);
+                    if (val.trim().startsWith('+')) num = Math.abs(num);
+                    if (num > 0) data.cell.styles.textColor = [34, 139, 34];
+                    else if (num < 0) data.cell.styles.textColor = [220, 53, 69];
                 }
             },
             margin: { left: 20, right: 20 }
@@ -1457,14 +1537,14 @@ function enableDailyWageEdit() {
 
  
     // --- Developer Message Modal Logic ---
-    const DEV_MESSAGE_VERSION = '1.7.9'; // Update this with each release
-    const DEV_MESSAGE = 'Welkom bij versie 1.7.9! Je ziet dit bericht omdat de app is bijgewerkt. Nieuwe functies: verbeterde modale knoppen bij kalenderdagen, configuratie-opties en meer!'; // Change this message as needed
+    const DEV_MESSAGE_VERSION = '1.7.10'; // Update this with each release
+    const DEV_MESSAGE = 'App bijgewerkt<br /><br />Nieuwe functies: Bestelling tab is aangepast naar een Aanpassing tab. Zo kan je positieve of negatieve bedragen toevoegen die los staan van de overuren.<br /><br />PDF export is nu meer overzichtelijk'; // Change this message as needed
 
     function showDevMessageIfNeeded() {
       try {
         const lastSeen = localStorage.getItem('devMessageVersion');
         if (lastSeen !== DEV_MESSAGE_VERSION) {
-          document.getElementById('devMessageContent').textContent = DEV_MESSAGE;
+          document.getElementById('devMessageContent').innerHTML = DEV_MESSAGE;
           document.getElementById('devMessageModal').style.display = 'flex';
         }
       } catch (e) {}
