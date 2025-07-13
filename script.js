@@ -1,3 +1,44 @@
+// Normalize transactions in localStorage: hours as 'X uur Y min', description as 'toegevoegd', 'opgenomen', or reason for adjustment
+function normalizeTransactions() {
+    if (!Array.isArray(transactions) || transactions.length === 0) {
+        alert('Geen transacties gevonden om te normaliseren.');
+        return;
+    }
+    let changed = false;
+    transactions = transactions.map(t => {
+        // Normalize type to English if needed
+        let type = t.type;
+        if (type === 'toevoegen' || type === 'toegevoegd' || type === 'add' || type === 'plus') type = 'overtime';
+        if (type === 'opnemen' || type === 'opgenomen' || type === 'oppakken' || type === 'take' || type === 'min') type = 'take';
+        if (type === 'aanpassing' || type === 'adjustment' || type === 'correctie' || type === 'correction') type = 'adjustment';
+
+        let newDesc = t.description || '';
+        if (type === 'overtime' || type === 'take') {
+            // Always use 'X uur Y min' format, never decimal
+            let urenStr = '';
+            if (typeof t.hours === 'number' && !isNaN(t.hours)) {
+                urenStr = decimalToHoursMinutes(t.hours);
+            }
+            if (urenStr === '0m') urenStr = '';
+            const actie = type === 'overtime' ? 'toegevoegd' : 'opgenomen';
+            newDesc = urenStr ? `${urenStr} ${actie}` : actie;
+        } else if (type === 'adjustment') {
+            newDesc = t.description || 'Aanpassing';
+        }
+        // Only update if changed
+        if (t.description !== newDesc || t.type !== type) {
+            changed = true;
+            return { ...t, description: newDesc, type };
+        }
+        return t;
+    });
+    if (changed) {
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+        alert('Transacties zijn succesvol genormaliseerd!');
+    } else {
+        alert('Alle transacties zijn al uniform.');
+    }
+}
 // Helper to convert decimal hours to "X uur Y min" format
 function decimalToHoursMinutes(decimal) {
     if (typeof decimal !== 'number' || isNaN(decimal)) return '';
@@ -18,7 +59,7 @@ let employeeName = localStorage.getItem('employeeName') || '';
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.7.10';
+const CURRENT_VERSION = '1.7.11';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -37,24 +78,48 @@ async function checkVersion() {
     console.log('[Version] Current version:', CURRENT_VERSION);
     const lastVersion = localStorage.getItem(LAST_VERSION_KEY);
     console.log('[Version] Last version from storage:', lastVersion);
-    
+
     if (lastVersion !== CURRENT_VERSION) {
-        console.log('[Version] Version mismatch detected');
+        console.log('[Version] Nieuwe update gedetecteerd! Versie wordt bijgewerkt naar', CURRENT_VERSION);
         // Clear cache to force reload of new assets
         if ('caches' in window) {
             try {
-                console.log('[Cache] Clearing all caches...');
+                console.log('[Cache] Alle caches worden gewist voor een schone update...');
                 const cacheKeys = await caches.keys();
-                console.log('[Cache] Found caches:', cacheKeys);
+                console.log('[Cache] Gevonden caches:', cacheKeys);
                 await Promise.all(
                     cacheKeys.map(key => caches.delete(key))
                 );
-                console.log('[Cache] All caches cleared successfully');
+                console.log('[Cache] Alle caches succesvol gewist');
             } catch (err) {
-                console.error('[Cache] Error clearing cache:', err);
+                console.error('[Cache] Fout bij wissen van cache:', err);
             }
         }
-        
+
+        // Maak een volledige JSON-backup vóór normalisatie
+        try {
+            if (typeof exportData === 'function') {
+                exportData();
+                console.log('[Backup] Volledige JSON-backup gemaakt na update.');
+            } else {
+                console.warn('[Backup] exportData functie niet gevonden, backup niet gemaakt.');
+            }
+        } catch (err) {
+            console.error('[Backup] Fout bij maken van backup:', err);
+        }
+
+        // Voer automatisch normalisatie uit
+        try {
+            if (typeof normalizeTransactions === 'function') {
+                normalizeTransactions();
+                console.log('[Normalisatie] Transacties automatisch genormaliseerd na update.');
+            } else {
+                console.warn('[Normalisatie] normalizeTransactions functie niet gevonden, normalisatie niet uitgevoerd.');
+            }
+        } catch (err) {
+            console.error('[Normalisatie] Fout bij normaliseren van transacties:', err);
+        }
+
         // Update stored version
         localStorage.setItem(LAST_VERSION_KEY, CURRENT_VERSION);
     }
@@ -111,7 +176,7 @@ function registerServiceWorker() {
         }
 
         // Register and check for updates
-        navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker.register('sw.js')
             .then(registration => {
                 console.log('[SW] Registration successful. Scope:', registration.scope);
                 
@@ -401,7 +466,7 @@ function registerServiceWorker() {
         }
 
         // Register and check for updates
-        navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker.register('sw.js')
             .then(registration => {
                 console.log('[SW] Registration successful. Scope:', registration.scope);
                 
@@ -1537,8 +1602,8 @@ function enableDailyWageEdit() {
 
  
     // --- Developer Message Modal Logic ---
-    const DEV_MESSAGE_VERSION = '1.7.10'; // Update this with each release
-    const DEV_MESSAGE = 'App bijgewerkt<br /><br />Nieuwe functies: Bestelling tab is aangepast naar een Aanpassing tab. Zo kan je positieve of negatieve bedragen toevoegen die los staan van de overuren.<br /><br />PDF export is nu meer overzichtelijk'; // Change this message as needed
+    const DEV_MESSAGE_VERSION = '1.7.11'; // Update this with each release
+    const DEV_MESSAGE = 'App bijgewerkt<br /><br />Er is juist een automatische backup genomen van alle gegevens. Enkele dingen zijn veranderd achter de schermen. <br />Als er iets misloopt, contacteer de developer'; // Change this message as needed
 
     function showDevMessageIfNeeded() {
       try {
