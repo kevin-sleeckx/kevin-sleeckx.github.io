@@ -59,7 +59,7 @@ let employeeName = localStorage.getItem('employeeName') || '';
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.7.11';
+const CURRENT_VERSION = '1.7.13';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -836,11 +836,31 @@ function closeDailyModal() {
 
 // Backup reminder system
 function checkBackupReminder() {
+    const now = new Date();
     const lastBackup = localStorage.getItem('lastBackupWeek');
-    const currentWeek = getWeekNumber(new Date());
+    const currentWeek = getWeekNumber(now);
     
-    if (!lastBackup || parseInt(lastBackup) !== currentWeek) {
-        document.getElementById('backupReminder').classList.add('show');
+    // Show weekly backup reminder only on Fridays at 12:00
+    const isFriday = now.getDay() === 5; // 0 = Sunday, 5 = Friday
+    const isNoonHour = now.getHours() === 12;
+    
+    if (isFriday && isNoonHour && lastBackup !== currentWeek.toString()) {
+        const modal = document.getElementById('weeklyBackupModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+}
+
+function closeWeeklyBackupModal() {
+    const modal = document.getElementById('weeklyBackupModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        // Save that we've shown it this week
+        const currentWeek = getWeekNumber(new Date());
+        localStorage.setItem('lastBackupWeek', currentWeek.toString());
     }
 }
 
@@ -1402,7 +1422,8 @@ function exportCurrentWeekToPDF() {
         doc.text(`Pagina ${i} van ${pageCount}`, 20, doc.internal.pageSize.height - 10);
         doc.text('Gegenereerd door Overuren Logger', doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 10);
     }
-    doc.save(`overuren-week-${employeeName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`);
+    const { weekNumber: fileWeekNumber } = getISOWeekData(new Date());
+    doc.save(`overuren-week-${fileWeekNumber}-${employeeName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`);
     markBackupDone();
     alert('PDF van huidige week succesvol geëxporteerd! Backup herinnering gewist voor deze week.');
 }
@@ -1548,7 +1569,13 @@ function exportToText() {
 }
 
 // Initialize the app when page loads
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', function() {
+    init();
+    // Force show backup reminder immediately for testing
+    setTimeout(checkBackupReminder, 100);
+    // Check backup reminder status every minute
+    setInterval(checkBackupReminder, 60000);
+});
 
 // Update notification functions
 function showUpdateNotification() {
@@ -1602,8 +1629,8 @@ function enableDailyWageEdit() {
 
  
     // --- Developer Message Modal Logic ---
-    const DEV_MESSAGE_VERSION = '1.7.11'; // Update this with each release
-    const DEV_MESSAGE = 'App bijgewerkt<br /><br />Er is juist een automatische backup genomen van alle gegevens. Enkele dingen zijn veranderd achter de schermen. <br />Als er iets misloopt, contacteer de developer'; // Change this message as needed
+    const DEV_MESSAGE_VERSION = '1.7.13'; // Update this with each release
+    const DEV_MESSAGE = 'App bijgewerkt<br /><br />Weekelijkse en maandelijkse backups iets meer laten opvallen.'; // Change this message as needed
 
     function showDevMessageIfNeeded() {
       try {
@@ -1621,3 +1648,39 @@ function enableDailyWageEdit() {
       document.getElementById('devMessageModal').style.display = 'none';
     }
     window.addEventListener('DOMContentLoaded', showDevMessageIfNeeded);
+
+    // --- Maandelijkse Backup Reminder ---
+    function shouldShowMonthlyBackup() {
+        const now = new Date();
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        // Show on last 2 days of the month (28/29/30/31 depending on month)
+        if (now.getDate() < lastDay - 1) return false;
+        // Only show once per month
+        const lastShown = localStorage.getItem('monthlyBackupLastShown');
+        const thisMonth = `${now.getFullYear()}-${now.getMonth() + 1}`;
+        return lastShown !== thisMonth;
+    }
+
+    function showMonthlyBackupModal() {
+        const modal = document.getElementById('monthlyBackupModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeMonthlyBackupModal() {
+        const modal = document.getElementById('monthlyBackupModal');
+        if (modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+            // Save that we've shown it this month
+            const now = new Date();
+            localStorage.setItem('monthlyBackupLastShown', `${now.getFullYear()}-${now.getMonth() + 1}`);
+        }
+    }
+
+    // Check for monthly backup on load
+    if (shouldShowMonthlyBackup()) {
+        setTimeout(showMonthlyBackupModal, 800); // Delay to let UI load
+    }

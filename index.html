@@ -43,8 +43,8 @@
         </div>
 
         <div class="backup-reminder" id="backupReminder">
-            <strong>⚠️ Wekelijkse Backup Herinnering:</strong> Vergeet niet om uw gegevens deze week naar PDF te exporteren! 
-            <button class="button" onclick="exportToPDF()" style="margin-left: 15px;">Nu Exporteren</button>
+            <strong>⚠️ Wekelijkse Backup Herinnering:</strong> Vergeet niet om uw gegevens deze week naar PDF te exporteren en door te sturen naar Operations. 
+            <button class="button" onclick="exportCurrentWeekToPDF()" style="margin-left: 15px;">Nu Exporteren</button>
         </div>
 
         <div class="total-display">
@@ -292,6 +292,32 @@
     <!-- Versie Weergave -->
     <div class="version-display">
         <span id="versionInfo"></span>
+    </div>
+
+    <!-- Maandelijkse Backup Modal -->
+    <div id="monthlyBackupModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.55); z-index:10000; justify-content:center; align-items:center;">
+        <div style="background:#fffbe6; border:4px solid #fbbf24; border-radius:16px; max-width:95vw; width:420px; padding:36px 28px 28px 28px; box-shadow:0 6px 32px rgba(0,0,0,0.22); text-align:center; position:relative;">
+            <h2 style="color:#b45309; margin-bottom:18px; font-size:2em;">📅 Maandelijkse Backup Nodig!</h2>
+            <div style="font-size:1.15em; margin-bottom:28px; color:#92400e;">
+                Het is het einde van de maand.<br><b>Maak direct een backup van uw gegevens!</b><br><br>
+                <span style="background:#fde68a; color:#b45309; padding:6px 12px; border-radius:8px; font-weight:bold;">Voorkom gegevensverlies!</span>
+            </div>
+            <button class="button success" onclick="exportData(); closeMonthlyBackupModal();" style="font-size:1.1em; min-width:160px; margin-bottom:10px;">Nu Exporteren</button><br>
+            <button class="button danger" onclick="closeMonthlyBackupModal()" style="min-width:100px;">Later Herinneren</button>
+        </div>
+    </div>
+
+    <!-- Wekelijkse Backup Modal -->
+    <div id="weeklyBackupModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.55); z-index:10000; justify-content:center; align-items:center;">
+        <div style="background:#fffbe6; border:4px solid #fbbf24; border-radius:16px; max-width:95vw; width:420px; padding:36px 28px 28px 28px; box-shadow:0 6px 32px rgba(0,0,0,0.22); text-align:center; position:relative;">
+            <h2 style="color:#b45309; margin-bottom:18px; font-size:2em;">📅 Wekelijkse Backup Nodig!</h2>
+            <div style="font-size:1.15em; margin-bottom:28px; color:#92400e;">
+                Het is vrijdag middag.<br><b>Vergeet niet om uw gegevens deze week te backuppen!</b><br>Exporteer uw data naar PDF en stuur deze naar Operations.<br><br>
+                <span style="background:#fde68a; color:#b45309; padding:6px 12px; border-radius:8px; font-weight:bold;">Voorkom gegevensverlies!</span>
+            </div>
+            <button class="button success" onclick="exportCurrentWeekToPDF(); closeWeeklyBackupModal();" style="font-size:1.1em; min-width:160px; margin-bottom:10px;">Nu Exporteren</button><br>
+            <button class="button danger" onclick="closeWeeklyBackupModal()" style="min-width:100px;">Later Herinneren</button>
+        </div>
     </div>
 
     <!-- JavaScript -->
