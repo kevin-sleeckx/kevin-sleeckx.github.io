@@ -232,6 +232,7 @@
                 <div class="export-section">
                     <button class="button success" onclick="exportCurrentWeekToPDF()">📅 Huidige week exporteren</button>
                     <button class="button success" onclick="exportToPDF()">📄 Volledig exporteren (PDF)</button>
+                    <button class="button success" onclick="showCustomWeekExport()">📊 Specifieke weken exporteren</button>
                 </div>
                 <p class="small-text mt-2">
                     💡 <strong>Tip:</strong> Exporteer uw gegevens wekelijks om verlies te voorkomen.
@@ -266,7 +267,7 @@
                     <p class="text-center small-text">Geen transacties voor deze dag.</p>
                 </div>
                 <div class="text-center mt-3">
-                    <strong>Dag Totaal: €<span id="dayTotal">0,00</span></strong>
+                    <strong>Dag Totaal: € <span id="dayTotal">0,00</span></strong>
                 </div>
                 <div class="text-center mt-3">
                     <button class="emoji-action-btn" id="addOvertimeFromDayBtn" title="Overuren Toevoegen">➕</button>
@@ -287,6 +288,20 @@
         <div id="devMessageContent" style="font-size:1.1em; margin-bottom:24px;">Welkom bij de nieuwe versie!</div>
         <button class="button danger" onclick="closeDevMessageModal()" style="min-width:100px;">Sluiten</button>
       </div>
+    </div>
+
+    <!-- Custom Week Export Modal -->
+    <div id="customWeekExportModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.55); z-index:10000; justify-content:center; align-items:center;">
+        <div style="background:#fff; border-radius:16px; max-width:95vw; width:420px; padding:36px 28px 28px 28px; box-shadow:0 6px 32px rgba(0,0,0,0.22); text-align:left; position:relative;">
+            <h2 style="text-align:center; margin-bottom:24px;">📊 Selecteer Weken</h2>
+            <div id="weeksList" style="max-height:300px; overflow-y:auto; margin-bottom:20px;">
+                <!-- Weeks will be dynamically populated here -->
+            </div>
+            <div style="text-align:center; margin-top:20px;">
+                <button class="button success" onclick="exportSelectedWeeksToPDF()" style="margin-right:10px;">Exporteren</button>
+                <button class="button danger" onclick="closeCustomWeekExportModal()">Annuleren</button>
+            </div>
+        </div>
     </div>
 
     <!-- Versie Weergave -->

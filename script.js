@@ -59,7 +59,7 @@ let employeeName = localStorage.getItem('employeeName') || '';
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.7.13';
+const CURRENT_VERSION = '1.8.1';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -682,11 +682,7 @@ function showDayDetails(dateStr) {
             const isPositive = transaction.amount > 0;
             const shiftBadge = transaction.shiftType ? 
                 `<span class="shift-badge ${transaction.shiftType}">${transaction.shiftType}</span>` : '';
-            // Show hours/minutes if present, else show amount
-            let extraInfo = '';
-            if (typeof transaction.hours === 'number' && !isNaN(transaction.hours)) {
-                extraInfo = `<span style=\"margin-left:8px; color:#888; font-size:0.95em;\">(${decimalToHoursMinutes(transaction.hours)})</span>`;
-            }
+            
             return `
                 <div class="daily-transaction ${isPositive ? 'positive' : 'negative'}">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -697,7 +693,6 @@ function showDayDetails(dateStr) {
                                 <span style="margin-left: 10px; font-weight: bold;" class="${isPositive ? 'positive-amount' : 'negative-amount'}">
                                     ${isPositive ? '+' : ''}€${Math.abs(transaction.amount).toFixed(2).replace('.', ',')}
                                 </span>
-                                ${extraInfo}
                             </div>
                         </div>
                         <button class="button danger" style="padding: 6px 12px; font-size: 12px; margin-left: 12px;" 
@@ -996,6 +991,7 @@ function addOvertime() {
     
     const earnings = calculateEarnings(actualHours, shiftType);
     
+    const hoursFormatted = decimalToHoursMinutes(actualHours);
     const transaction = {
         id: Date.now(),
         type: 'overtime',
@@ -1003,7 +999,7 @@ function addOvertime() {
         hours: actualHours,
         shiftType: shiftType,
         amount: earnings,
-        description: `${actualHours}u overuren (${shiftType} dienst)`
+        description: `${hoursFormatted} toegevoegd`
     };
     
     transactions.unshift(transaction);
@@ -1041,6 +1037,7 @@ function takeOvertime() {
     
     const deduction = calculateDeduction(actualHours, shiftType);
     
+    const hoursFormatted = decimalToHoursMinutes(actualHours);
     const transaction = {
         id: Date.now(),
         type: 'take',
@@ -1048,7 +1045,7 @@ function takeOvertime() {
         hours: actualHours,
         shiftType: shiftType,
         amount: -deduction,
-        description: `${actualHours}u overuren opgenomen (${shiftType} dienst)`
+        description: `${hoursFormatted} opgenomen`
     };
     
     transactions.unshift(transaction);
@@ -1629,8 +1626,8 @@ function enableDailyWageEdit() {
 
  
     // --- Developer Message Modal Logic ---
-    const DEV_MESSAGE_VERSION = '1.7.13'; // Update this with each release
-    const DEV_MESSAGE = 'App bijgewerkt<br /><br />Weekelijkse en maandelijkse backups iets meer laten opvallen.'; // Change this message as needed
+    const DEV_MESSAGE_VERSION = '1.8.1'; // Update this with each release
+    const DEV_MESSAGE = 'App bijgewerkt<br /><br />Specifieke weken kunnen nu uitgekozen worden als je een PDF wil exporteren voor Operations.'; // Change this message as needed
 
     function showDevMessageIfNeeded() {
       try {
@@ -1648,6 +1645,239 @@ function enableDailyWageEdit() {
       document.getElementById('devMessageModal').style.display = 'none';
     }
     window.addEventListener('DOMContentLoaded', showDevMessageIfNeeded);
+
+    // --- Custom Week Export Functions ---
+    function showCustomWeekExport() {
+        // Get all weeks that have transactions
+        let weeks = new Map(); // Use Map to store unique week-year combinations
+        
+        transactions.forEach(t => {
+            const date = new Date(t.date);
+            const { weekNumber, year } = getISOWeekData(date);
+            const weekKey = `${year}-W${String(weekNumber).padStart(2, '0')}`;
+            
+            if (!weeks.has(weekKey)) {
+                const weekTotal = transactions
+                    .filter(trans => {
+                        const transDate = new Date(trans.date);
+                        const transWeekData = getISOWeekData(transDate);
+                        return transWeekData.weekNumber === weekNumber && transWeekData.year === year;
+                    })
+                    .reduce((sum, trans) => sum + trans.amount, 0);
+                
+                if (weekTotal !== 0) { // Only add weeks with transactions
+                    weeks.set(weekKey, {
+                        weekNumber,
+                        year,
+                        total: weekTotal
+                    });
+                }
+            }
+        });
+
+        // Convert to array and sort by year and week descending
+        const sortedWeeks = Array.from(weeks.entries())
+            .sort(([keyA], [keyB]) => keyB.localeCompare(keyA));
+
+        // Generate HTML for weeks
+        const weeksListHtml = sortedWeeks.map(([key, data]) => `
+            <div class="week-selection" style="padding:10px; margin:5px 0; border:1px solid #ddd; border-radius:8px; background:#f8f9fa;">
+                <label style="display:flex; align-items:center; justify-content:space-between; margin:0; cursor:pointer;">
+                    <div>
+                        <input type="checkbox" value="${key}" style="margin-right:10px;">
+                        Week ${data.weekNumber}, ${data.year}
+                    </div>
+                    <span class="${data.total >= 0 ? 'positive-amount' : 'negative-amount'}" style="font-weight:bold;">
+                        €${Math.abs(data.total).toFixed(2).replace('.', ',')}
+                    </span>
+                </label>
+            </div>
+        `).join('');
+
+        document.getElementById('weeksList').innerHTML = weeksListHtml || '<p style="text-align:center">Geen weken met transacties gevonden.</p>';
+        document.getElementById('customWeekExportModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeCustomWeekExportModal() {
+        document.getElementById('customWeekExportModal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    function exportSelectedWeeksToPDF() {
+        // Get selected weeks
+        const selectedWeeks = Array.from(document.querySelectorAll('#weeksList input[type="checkbox"]:checked'))
+            .map(cb => cb.value);
+
+        if (selectedWeeks.length === 0) {
+            alert('Selecteer minimaal één week om te exporteren.');
+            return;
+        }
+
+        if (!employeeName) {
+            alert('Stel eerst uw naam in bij de configuratie voordat u exporteert.');
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Calculate totals for selected weeks
+        const selectedTransactions = transactions.filter(t => {
+            const date = new Date(t.date);
+            const { weekNumber, year } = getISOWeekData(date);
+            const weekKey = `${year}-W${String(weekNumber).padStart(2, '0')}`;
+            return selectedWeeks.includes(weekKey);
+        });
+
+        const transactionTotal = selectedTransactions.reduce((sum, t) => sum + t.amount, 0);
+        const grandTotal = startingAmount + transactions.reduce((sum, t) => sum + t.amount, 0);
+
+        // Header
+        doc.setFontSize(20);
+        doc.setTextColor(40, 40, 40);
+        doc.text('Overuren Rapport (Geselecteerde Weken)', 20, 30);
+        doc.setFontSize(12);
+        doc.text(`Naam: ${employeeName}`, 20, 45);
+        doc.text(`Gegenereerd: ${new Date().toLocaleDateString('nl-NL')}`, 20, 55);
+        doc.text(`Start Bedrag: €${startingAmount.toFixed(2).replace('.', ',')}`, 20, 65);
+        doc.text(`Geselecteerde weken totaal: €${transactionTotal.toFixed(2).replace('.', ',')}`, 20, 75);
+        doc.text(`Totaal Saldo: €${grandTotal.toFixed(2).replace('.', ',')}`, 20, 85);
+
+        let yPosition = 105;
+
+        if (selectedTransactions.length === 0) {
+            doc.text('Geen transacties gevonden in de geselecteerde weken.', 20, yPosition);
+        } else {
+            // Group transactions by week
+            const weeklyGroups = new Map();
+            selectedTransactions.forEach(t => {
+                const date = new Date(t.date);
+                const { weekNumber, year } = getISOWeekData(date);
+                const weekKey = `${year}-W${String(weekNumber).padStart(2, '0')}`;
+                
+                if (!weeklyGroups.has(weekKey)) {
+                    weeklyGroups.set(weekKey, {
+                        weekNumber,
+                        year,
+                        transactions: [],
+                        total: 0
+                    });
+                }
+                const group = weeklyGroups.get(weekKey);
+                group.transactions.push(t);
+                group.total += t.amount;
+            });
+
+            // Prepare table data
+            const tableData = [];
+            Array.from(weeklyGroups.values())
+                .sort((a, b) => (b.year - a.year) || (b.weekNumber - a.weekNumber))
+                .forEach((weekData, weekIndex) => {
+                    // Add spacing before each week (except the first one)
+                    if (weekIndex > 0) {
+                        tableData.push(['', '', '', '']);
+                    }
+
+                    weekData.transactions
+                        .sort((a, b) => new Date(b.date) - new Date(a.date))
+                        .forEach(t => {
+                            let beschrijving = '';
+                            if (t.type === 'overtime' || t.type === 'take') {
+                                const uren = (typeof t.hours === 'number' && !isNaN(t.hours)) ? decimalToHoursMinutes(t.hours) : '';
+                                const actie = t.type === 'overtime' ? 'toegevoegd' : 'opgenomen';
+                                beschrijving = `${uren ? uren + ' ' : ''}${actie}`;
+                            } else {
+                                beschrijving = t.description;
+                            }
+
+                            let amountStr = '';
+                            if (t.amount > 0) {
+                                amountStr = `+ ${t.amount.toFixed(2).replace('.', ',')} €`;
+                            } else {
+                                amountStr = `- ${Math.abs(t.amount).toFixed(2).replace('.', ',')} €`;
+                            }
+
+                            tableData.push([
+                                new Date(t.date).toLocaleDateString('nl-NL'),
+                                beschrijving,
+                                t.shiftType || '-',
+                                amountStr
+                            ]);
+                        });
+
+                    // Add weekly summary row
+                    const weekTotalFormatted = (weekData.total >= 0 ? '+ ' : '- ') +
+                        `${Math.abs(weekData.total).toFixed(2).replace('.', ',')} €`;
+                    tableData.push([
+                        '',
+                        `Week ${weekData.weekNumber} (${weekData.year}) - Totaal`,
+                        '',
+                        weekTotalFormatted
+                    ]);
+                });
+
+            doc.autoTable({
+                startY: yPosition,
+                head: [['Datum', 'Beschrijving', 'Shift', 'Bedrag']],
+                body: tableData,
+                theme: 'grid',
+                styles: { fontSize: 9 },
+                headStyles: { fillColor: [108, 117, 125] },
+                columnStyles: {
+                    3: {
+                        textColor: function(data) {
+                            let val = data.cell.text[0];
+                            let num = parseFloat(val.replace(/[^\d,\.-]/g, '').replace(',', '.'));
+                            if (val.trim().startsWith('-')) num = -Math.abs(num);
+                            if (val.trim().startsWith('+')) num = Math.abs(num);
+                            if (num > 0) return [34, 139, 34];
+                            if (num < 0) return [220, 53, 69];
+                            return [0, 0, 0];
+                        }
+                    }
+                },
+                didParseCell: function(data) {
+                    if (data.row.raw[0] === '' && data.row.raw[1] === '' && data.row.raw[2] === '' && data.row.raw[3] === '') {
+                        data.cell.styles.minCellHeight = 8;
+                        data.cell.styles.fillColor = [255, 255, 255];
+                        data.cell.styles.lineColor = [255, 255, 255];
+                        data.cell.styles.lineWidth = 0;
+                        return;
+                    }
+                    if (data.row.raw[1] && data.row.raw[1].includes('Week ') && data.row.raw[1].includes('Totaal')) {
+                        data.cell.styles.fillColor = [173, 216, 230];
+                        data.cell.styles.fontStyle = 'bold';
+                        data.cell.styles.fontSize = 10;
+                        if (data.column.index === 3) {
+                            let val = data.cell.text[0];
+                            let num = parseFloat(val.replace(/[^\d,\.-]/g, '').replace(',', '.'));
+                            if (val.trim().startsWith('-')) num = -Math.abs(num);
+                            if (val.trim().startsWith('+')) num = Math.abs(num);
+                            data.cell.styles.textColor = num >= 0 ? [34, 139, 34] : [220, 53, 69];
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                    }
+                },
+                margin: { left: 20, right: 20 }
+            });
+        }
+
+        // Footer
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(128, 128, 128);
+            doc.text(`Pagina ${i} van ${pageCount}`, 20, doc.internal.pageSize.height - 10);
+            doc.text('Gegenereerd door Overuren Logger', doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 10);
+        }
+
+        // Save PDF
+        doc.save(`overuren-rapport-selectie-${employeeName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`);
+        closeCustomWeekExportModal();
+        alert('PDF van geselecteerde weken succesvol geëxporteerd!');
+    }
 
     // --- Maandelijkse Backup Reminder ---
     function shouldShowMonthlyBackup() {
