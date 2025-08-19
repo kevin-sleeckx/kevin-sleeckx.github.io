@@ -10,7 +10,7 @@ function normalizeTransactions() {
         let type = t.type;
         if (type === 'toevoegen' || type === 'toegevoegd' || type === 'add' || type === 'plus') type = 'overtime';
         if (type === 'opnemen' || type === 'opgenomen' || type === 'oppakken' || type === 'take' || type === 'min') type = 'take';
-        if (type === 'aanpassing' || type === 'adjustment' || type === 'correctie' || type === 'correction') type = 'adjustment';
+        if (type === 'aanpassing' || type === 'adjustment' || type === 'correctie' || type === 'correction' || type === 'Bestelling' || type === 'bestelling' || type === 'order') type = 'adjustment';
 
         let newDesc = t.description || '';
         if (type === 'overtime' || type === 'take') {
@@ -59,7 +59,7 @@ let employeeName = localStorage.getItem('employeeName') || '';
 let currentDate = new Date();
 
 // Version management
-const CURRENT_VERSION = '1.8.1';
+const CURRENT_VERSION = '1.8.2';
 const LAST_VERSION_KEY = 'app_version';
 
 // Update version display in the UI
@@ -398,11 +398,30 @@ function switchTab(tabName) {
     document.getElementById(`${tabName}Tab`).classList.add('active');
 }
 
+// Ensure all transactions are using the correct type
+function ensureTransactionTypes() {
+    let changed = false;
+    transactions = transactions.map(t => {
+        let type = t.type;
+        // Normalize old "Bestelling" types to "adjustment"
+        if (type === 'Bestelling' || type === 'bestelling' || type === 'order') {
+            changed = true;
+            return { ...t, type: 'adjustment' };
+        }
+        return t;
+    });
+    if (changed) {
+        saveTransactions();
+        console.log('[Normalize] Transactions types normalized');
+    }
+}
+
 // Initialize app
 async function init() {
     await checkVersion(); // wacht op versiecontrole, inclusief eventuele reload
 
     // Alleen verdergaan als er geen reload gebeurde
+    ensureTransactionTypes(); // Add this line to normalize transaction types
     updateTotalDisplay();
     updateWageDisplay();
     updateStartingDisplay();
@@ -910,12 +929,21 @@ function calculateDeduction(hours, shiftType) {
 }
 
 // Calculation preview toggle
-let showCalculations = true;
+let showCalculations = localStorage.getItem('showCalculations') !== 'false'; // Default to true if not set
 function toggleShowCalculations() {
     showCalculations = document.getElementById('showCalcCheckbox').checked;
+    localStorage.setItem('showCalculations', showCalculations);
     updateEarnPreview();
     updateTakePreview();
 }
+
+// Initialize checkbox state from localStorage on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const checkbox = document.getElementById('showCalcCheckbox');
+    if (checkbox) {
+        checkbox.checked = showCalculations;
+    }
+});
 
 // Patch preview functions to respect toggle
 function updateEarnPreview() {
@@ -1105,6 +1133,95 @@ function updateTotalDisplay() {
     } else {
         totalElement.classList.add('negative-amount');
     }
+}
+
+// Export only adjustments to PDF
+function exportAdjustmentsToPDF() {
+    if (!employeeName) {
+        alert('Stel eerst uw naam in bij de configuratie voordat u exporteert.');
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    // Filter only adjustment transactions and sort by date (newest first)
+    const adjustments = transactions
+        .filter(t => t.type === 'adjustment' || t.description === 'Aanpassing')
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    const adjustmentTotal = adjustments.reduce((sum, t) => sum + t.amount, 0);
+
+    // Header
+    doc.setFontSize(20);
+    doc.setTextColor(40, 40, 40);
+    doc.text('Aanpassingen Overzicht', 20, 30);
+    doc.setFontSize(12);
+    doc.text(`Naam: ${employeeName}`, 20, 45);
+    doc.text(`Gegenereerd: ${new Date().toLocaleDateString('nl-NL')}`, 20, 55);
+    doc.text(`Totaal Aanpassingen: €${adjustmentTotal.toFixed(2).replace('.', ',')}`, 20, 65);
+    
+    let yPosition = 85;
+
+    if (adjustments.length === 0) {
+        doc.text('Geen aanpassingen geregistreerd.', 20, yPosition);
+    } else {
+        // Prepare table data
+        const tableData = adjustments.map(t => {
+            // Debug log to check the transaction
+            console.log('Processing adjustment:', {
+                date: t.date,
+                description: t.description,
+                amount: t.amount,
+                type: t.type
+            });
+            
+            const amountFormatted = (t.amount >= 0 ? '+ ' : '- ') + 
+                `${Math.abs(t.amount).toFixed(2).replace('.', ',')} €`;
+            return [
+                new Date(t.date).toLocaleDateString('nl-NL'),
+                t.description,
+                amountFormatted
+            ];
+        });
+
+        doc.autoTable({
+            startY: yPosition,
+            head: [['Datum', 'Beschrijving', 'Bedrag']],
+            body: tableData,
+            theme: 'grid',
+            styles: { fontSize: 9 },
+            headStyles: { fillColor: [108, 117, 125] },
+            columnStyles: {
+                2: { 
+                    textColor: function(data) {
+                        let val = data.cell.text[0];
+                        let num = parseFloat(val.replace(/[^\d,\.-]/g, '').replace(',', '.'));
+                        if (val.trim().startsWith('-')) num = -Math.abs(num);
+                        if (val.trim().startsWith('+')) num = Math.abs(num);
+                        if (num > 0) return [34, 139, 34]; // green
+                        if (num < 0) return [220, 53, 69]; // red
+                        return [0, 0, 0];
+                    }
+                }
+            },
+            margin: { left: 20, right: 20 }
+        });
+    }
+
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(128, 128, 128);
+        doc.text(`Pagina ${i} van ${pageCount}`, 20, doc.internal.pageSize.height - 10);
+        doc.text('Gegenereerd door Overuren Logger', doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 10);
+    }
+
+    // Save PDF
+    doc.save(`aanpassingen-rapport-${employeeName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`);
+    alert('PDF van aanpassingen succesvol geëxporteerd!');
 }
 
 // PDF Export Function (Updated - no daily wage, includes starting amount)
@@ -1626,8 +1743,8 @@ function enableDailyWageEdit() {
 
  
     // --- Developer Message Modal Logic ---
-    const DEV_MESSAGE_VERSION = '1.8.1'; // Update this with each release
-    const DEV_MESSAGE = 'App bijgewerkt<br /><br />Specifieke weken kunnen nu uitgekozen worden als je een PDF wil exporteren voor Operations.'; // Change this message as needed
+    const DEV_MESSAGE_VERSION = '1.8.2'; // Update this with each release
+    const DEV_MESSAGE = 'App bijgewerkt<br /><br />Kleine bugfixes'; // Change this message as needed
 
     function showDevMessageIfNeeded() {
       try {
