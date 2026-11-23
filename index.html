@@ -15,7 +15,8 @@
     />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="theme-color" content="#0f172a" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -34,13 +35,21 @@
         try {
           var mode = localStorage.getItem('overuren_logger_theme_v1') || 'system';
           var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (mode === 'dark' || (mode === 'system' && prefersDark)) {
+          var isDark = mode === 'dark' || (mode === 'system' && prefersDark);
+          if (isDark) {
             document.documentElement.classList.add('dark');
+          }
+          if (mode === 'light' || mode === 'dark') {
+            var color = mode === 'dark' ? '#0f172a' : '#ffffff';
+            var metas = document.querySelectorAll('meta[name="theme-color"]');
+            for (var i = 0; i < metas.length; i++) {
+              metas[i].setAttribute('content', color);
+            }
           }
         } catch (e) {}
       })();
     </script>
-    <script type="module" crossorigin src="./assets/index-tGA260Sa.js"></script>
+    <script type="module" crossorigin src="./assets/index-DLve7j7r.js"></script>
     <link rel="stylesheet" crossorigin href="./assets/index-BX2JkDVa.css">
   <link rel="manifest" href="./manifest.webmanifest"></head>
   <body class="bg-slate-50 text-slate-900 antialiased selection:bg-emerald-100 selection:text-emerald-900 dark:bg-slate-950 dark:text-slate-100 dark:selection:bg-emerald-900 dark:selection:text-emerald-100">
